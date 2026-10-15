@@ -366,7 +366,7 @@ def test_real_context_search_and_inferred_relationships(real, tmp_path):
     result = service.get_context(b)
     assert any(p["association"] == "inferred_relationship" for p in result["evidence"])
     assert not result["untrusted_source_excerpts"]
-    assert result["coverage"]["cross_module_call_resolution"] == "unsupported"
+    assert result["coverage"]["cross_module_call_resolution"] == "direct_static_imports_only"
 
 
 @pytest.mark.asyncio
@@ -407,3 +407,36 @@ async def test_real_stdio_context_delivers_history_without_decisions(real, tmp_p
             )
             result = (await client.call_tool("get_context", {"query": private_uid})).data
             assert "PRIVATE_STDIO" not in json.dumps(result)
+
+
+def test_static_cross_file_calls_real_graph(real):
+    root = real.cfg.repo_root
+    (root / "caller.py").write_text(
+        "from ztarget import target as replay\ndef upload(): replay()\n"
+    )
+    (root / "ztarget.py").write_text("def target(): pass\n")
+    subprocess.run(["git", "-C", str(root), "add", "."], check=True, capture_output=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.com",
+            "commit",
+            "-m",
+            "import fixture",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    sync(real)
+    rows = real.query(
+        'MATCH (a:Symbol {repo_id:$repo, qualname:"upload"})-[r:CALLS]->'
+        '(b:Symbol {repo_id:$repo, qualname:"target"}) '
+        "RETURN r.confidence AS confidence, r.resolution AS resolution",
+        {"repo": real.cfg.repo_id},
+    )
+    assert rows == [{"confidence": "static", "resolution": "statically_resolved_import"}]

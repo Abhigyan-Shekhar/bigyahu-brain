@@ -426,7 +426,7 @@ class Services:
                     r["work_uid"] for r in coverage if r["file_link_count"] == 0
                 ],
                 "no_missing_edges_inferred": True,
-                "cross_module_call_resolution": "unsupported",
+                "cross_module_call_resolution": "direct_static_imports_only",
                 "historical_file_links_are_not_symbol_constraints": True,
             },
             limits=limits,

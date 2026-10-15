@@ -4,6 +4,7 @@ import tokenize
 from .ast_parser import parse
 from .codeowners import owners_for, read_rules
 from .git_parser import clean, commits, git, revision
+from .imports import resolve_imports
 
 
 def sync(store):
@@ -13,7 +14,7 @@ def sync(store):
     sha = revision(cfg.repo_root)
     files = git(cfg.repo_root, "ls-files", "-z").split("\0")
     # Parse everything before modifying the graph, including encoding validation.
-    modules = {}
+    modules, texts = {}, {}
     for path in files:
         if not path.endswith(".py") or any(
             p in path.split("/") for p in ("vendor", "build", ".venv", "node_modules")
@@ -21,7 +22,9 @@ def sync(store):
             continue
         cfg.path(path)
         with tokenize.open(cfg.repo_root / path) as f:
-            modules[path] = parse(f.read(), path, cfg.repo_id, sha)
+            texts[path] = f.read()
+            modules[path] = parse(texts[path], path, cfg.repo_id, sha)
+    resolve_imports(modules, texts)
     store.bootstrap()
     store.upsert(
         "Project", cfg.repo_id, {"repo_id": cfg.repo_id, "url": cfg.repo_url, "syncing": True}
@@ -86,18 +89,27 @@ def sync(store):
                 store.upsert("Symbol", s["uid"], {**s, "repo_id": cfg.repo_id})
                 store.edge(file_uid, "DECLARES", s["uid"])
                 count += 1
-            for call in module.calls:
-                store.edge(
-                    call["source"],
-                    "CALLS",
-                    call["target"],
-                    {
-                        "confidence": call["confidence"],
-                        "method": "python_ast",
-                        "line": call["line"],
-                        "source_uid": file_uid,
-                    },
-                )
+    # All symbols must exist before cross-file edges are inserted.
+    for path, module in modules.items():
+        file_uid = f"{cfg.repo_id}@{sha}:{path}"
+        for call in module.calls:
+            store.edge(
+                call["source"],
+                "CALLS",
+                call["target"],
+                {
+                    "confidence": call["confidence"],
+                    "method": "python_ast",
+                    "resolution": call.get(
+                        "resolution",
+                        "heuristic"
+                        if call["confidence"] == "heuristic"
+                        else "statically_resolved_lexical",
+                    ),
+                    "line": call["line"],
+                    "source_uid": file_uid,
+                },
+            )
     for commit in commits(cfg.repo_root):
         uid = f"{cfg.repo_id}:commit:{commit['sha']}"
         person = "git:" + hashlib.sha256(commit["email"].encode()).hexdigest()
