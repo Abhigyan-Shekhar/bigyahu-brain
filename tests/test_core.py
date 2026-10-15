@@ -142,13 +142,16 @@ def test_caller_constraint_and_stale_downgrade(cfg, monkeypatch, stale):
     ]
     store.query.side_effect = [
         [target],
-        [{"path": ["C", "B", "A"], "confidence": ["exact", "exact"]}],
+        [{"path": ["C", "B", "A"], "confidence": ["exact", "exact"], "resolution": [None, None]}],
         decisions,
-        [],
-        [],
+        [],  # affected file declarations
+        [],  # explicit owners
+        [],  # Git maintainers
+        [],  # PR reviewers
     ]
     result = Services(store).check_change(["x.py"], ["a"])
     assert result["caller_paths"][0]["path"] == ["C", "B", "A"]
+    assert result["caller_paths"][0]["resolution"] == ["static", "static"]
     assert result["precision"] == ("file" if stale else "symbol")
     assert bool(result["must_preserve"]) is not stale
     assert "text" not in (result["review"] if stale else result["must_preserve"])[0]

@@ -1,0 +1,379 @@
+{
+  "note": "Selected fields from actual isolated FalkorDBLite STDIO responses; caller paths and excerpt display shortened for review. No decisions created or approved.",
+  "examples": [
+    {
+      "scenario": "urllib3",
+      "tool": "check_change",
+      "arguments": {
+        "files": [
+          "src/urllib3/poolmanager.py",
+          "src/urllib3/connectionpool.py",
+          "src/urllib3/util/request.py"
+        ],
+        "symbols": [
+          "PoolManager.urlopen",
+          "HTTPConnectionPool.urlopen",
+          "set_file_position"
+        ]
+      },
+      "response_selection": {
+        "status": "incomplete",
+        "graph_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+        "precision": "symbol",
+        "targets": [
+          {
+            "uid": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py::PoolManager.urlopen",
+            "path": "src/urllib3/poolmanager.py",
+            "qualname": "PoolManager.urlopen",
+            "lineno": 430,
+            "end_lineno": 517
+          },
+          {
+            "uid": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py::HTTPConnectionPool.urlopen",
+            "path": "src/urllib3/connectionpool.py",
+            "qualname": "HTTPConnectionPool.urlopen",
+            "lineno": 598,
+            "end_lineno": 996
+          },
+          {
+            "uid": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/util/request.py::set_file_position",
+            "path": "src/urllib3/util/request.py",
+            "qualname": "set_file_position",
+            "lineno": 176,
+            "end_lineno": 193
+          }
+        ],
+        "caller_paths": [
+          {
+            "path": [
+              "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py::HTTPConnectionPool.urlopen",
+              "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py::HTTPConnectionPool.urlopen"
+            ],
+            "confidence": [
+              "heuristic"
+            ],
+            "resolution": [
+              "heuristic"
+            ],
+            "target_uid": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py::HTTPConnectionPool.urlopen",
+            "graph_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8"
+          },
+          {
+            "path": [
+              "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py::HTTPConnectionPool.urlopen",
+              "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py::HTTPConnectionPool.urlopen",
+              "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/util/request.py::set_file_position"
+            ],
+            "confidence": [
+              "heuristic",
+              "static"
+            ],
+            "resolution": [
+              "heuristic",
+              "statically_resolved_import"
+            ],
+            "target_uid": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/util/request.py::set_file_position",
+            "graph_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8"
+          },
+          {
+            "path": [
+              "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py::HTTPConnectionPool.urlopen",
+              "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/util/request.py::set_file_position"
+            ],
+            "confidence": [
+              "static"
+            ],
+            "resolution": [
+              "statically_resolved_import"
+            ],
+            "target_uid": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/util/request.py::set_file_position",
+            "graph_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8"
+          },
+          {
+            "path": [
+              "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py::PoolManager.urlopen",
+              "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py::PoolManager.urlopen"
+            ],
+            "confidence": [
+              "heuristic"
+            ],
+            "resolution": [
+              "heuristic"
+            ],
+            "target_uid": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py::PoolManager.urlopen",
+            "graph_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8"
+          }
+        ],
+        "file_associations": [
+          {
+            "work_uid": "github.com/urllib3/urllib3:pr:3780",
+            "file_uid": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/util/request.py",
+            "path": "src/urllib3/util/request.py",
+            "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "source_uid": "github.com/urllib3/urllib3:pr:3780:source",
+            "confidence": "snapshot_path_only",
+            "association": "file_level_historical",
+            "symbol_constraint": false
+          },
+          {
+            "work_uid": "github.com/urllib3/urllib3:pr:5161",
+            "file_uid": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py",
+            "path": "src/urllib3/connectionpool.py",
+            "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "source_uid": "github.com/urllib3/urllib3:pr:5161:source",
+            "confidence": "snapshot_path_only",
+            "association": "file_level_historical",
+            "symbol_constraint": false
+          },
+          {
+            "work_uid": "github.com/urllib3/urllib3:pr:5161",
+            "file_uid": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py",
+            "path": "src/urllib3/poolmanager.py",
+            "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "source_uid": "github.com/urllib3/urllib3:pr:5161:source",
+            "confidence": "snapshot_path_only",
+            "association": "file_level_historical",
+            "symbol_constraint": false
+          },
+          {
+            "work_uid": "github.com/urllib3/urllib3:pr:5242",
+            "file_uid": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py",
+            "path": "src/urllib3/poolmanager.py",
+            "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "source_uid": "github.com/urllib3/urllib3:pr:5242:source",
+            "confidence": "snapshot_path_only",
+            "association": "file_level_historical",
+            "symbol_constraint": false
+          }
+        ],
+        "warnings": [
+          "missing_call_edges_do_not_prove_no_dependencies",
+          "historical_file_links_are_not_symbol_constraints"
+        ],
+        "truncated": [
+          "evidence",
+          "excerpt_chars",
+          "ownership",
+          "total_excerpt_chars"
+        ],
+        "must_preserve": [],
+        "review": [],
+        "untrusted_source_excerpts": [
+          {
+            "source_uid": "github.com/urllib3/urllib3:pr:3780:source",
+            "uri": "https://github.com/urllib3/urllib3/pull/3780",
+            "text": "Resolves #3779",
+            "original_chars": 14,
+            "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "revision_basis": "indexed_checkout_not_source_revision",
+            "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+            "work_uid": "github.com/urllib3/urllib3:pr:3780",
+            "work_type": "PR",
+            "work_status": "merged",
+            "status_basis": "github_api_snapshot",
+            "merged_at": "2026-09-05T14:51:36Z",
+            "retrieval": "direct_source_link",
+            "association": "file_level_historical",
+            "symbol_constraint": false,
+            "truncated": false,
+            "scope": "org",
+            "repo_id": "github.com/urllib3/urllib3",
+            "trust_status": "untrusted_evidence",
+            "binding": false,
+            "evidence_confidence": "recorded_source",
+            "example_display_truncated": false
+          },
+          {
+            "source_uid": "github.com/urllib3/urllib3:pr:5161:source",
+            "uri": "https://github.com/urllib3/urllib3/pull/5161",
+            "text": "Following a 303 redirect, urllib3 switches the method to `GET` and drops the request body per RFC 9110, Section 15.4.4 \u2014 but the state that *describes* that body survives the switch. Two things go wrong as a result.\r\n\r\n### 1. The redirected",
+            "original_chars": 4631,
+            "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "revision_basis": "indexed_checkout_not_source_revision",
+            "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+            "work_uid": "github.com/urllib3/urllib3:pr:5161",
+            "work_type": "PR",
+            "work_status": "merged",
+            "status_basis": "github_api_snapshot",
+            "merged_at": "2026-09-08T19:59:50Z",
+            "retrieval": "direct_source_link",
+            "association": "file_level_historical",
+            "symbol_constraint": false,
+            "truncated": true,
+            "scope": "org",
+            "repo_id": "github.com/urllib3/urllib3",
+            "trust_status": "untrusted_evidence",
+            "binding": false,
+            "evidence_confidence": "recorded_source",
+            "example_display_truncated": true
+          },
+          {
+            "source_uid": "github.com/urllib3/urllib3:pr:5242:source",
+            "uri": "https://github.com/urllib3/urllib3/pull/5242",
+            "text": "Fixes #5181.\r\n\r\n## The bug\r\n\r\n`HTTPConnectionPool.urlopen` records where a file-like body starts, so that it can rewind the body before resending it on a redirect. `PoolManager.urlopen` turns that machinery off (`kw[\"redirect\"] = False`) an",
+            "original_chars": 3548,
+            "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "revision_basis": "indexed_checkout_not_source_revision",
+            "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+            "work_uid": "github.com/urllib3/urllib3:pr:5242",
+            "work_type": "PR",
+            "work_status": "open_proposal",
+            "status_basis": "github_api_snapshot",
+            "merged_at": null,
+            "retrieval": "direct_source_link",
+            "association": "file_level_historical",
+            "symbol_constraint": false,
+            "truncated": true,
+            "scope": "org",
+            "repo_id": "github.com/urllib3/urllib3",
+            "trust_status": "untrusted_evidence",
+            "binding": false,
+            "evidence_confidence": "recorded_source",
+            "example_display_truncated": true
+          },
+          {
+            "source_uid": "github.com/urllib3/urllib3:issue:5181:source",
+            "uri": "https://github.com/urllib3/urllib3/issues/5181",
+            "text": "## Summary\n\n`PoolManager.urlopen()` implements its own cross-pool redirect loop but never carries `body_pos` (the file-position bookkeeping that `HTTPConnectionPool.urlopen` uses to rewind file-like bodies before resending). On any 301/307/",
+            "original_chars": 4106,
+            "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "revision_basis": "indexed_checkout_not_source_revision",
+            "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+            "work_uid": "github.com/urllib3/urllib3:issue:5181",
+            "work_type": "Issue",
+            "work_status": "open",
+            "status_basis": "github_api_snapshot",
+            "merged_at": null,
+            "retrieval": "file_pr_referenced_issue_source",
+            "association": "file_reference_mention",
+            "symbol_constraint": false,
+            "truncated": true,
+            "scope": "org",
+            "repo_id": "github.com/urllib3/urllib3",
+            "trust_status": "untrusted_evidence",
+            "binding": false,
+            "evidence_confidence": "recorded_source",
+            "example_display_truncated": true
+          },
+          {
+            "source_uid": "github.com/urllib3/urllib3:pr:3780:comment:3870387493:source",
+            "uri": "https://github.com/urllib3/urllib3/pull/3780#pullrequestreview-3870387493",
+            "text": "Thanks for the contribution!",
+            "original_chars": 28,
+            "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "revision_basis": "indexed_checkout_not_source_revision",
+            "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+            "work_uid": "github.com/urllib3/urllib3:pr:3780",
+            "work_type": "PR",
+            "work_status": "merged",
+            "status_basis": "github_api_snapshot",
+            "merged_at": "2026-09-05T14:51:36Z",
+            "retrieval": "discussion_source_link",
+            "association": "file_level_historical",
+            "symbol_constraint": false,
+            "truncated": false,
+            "scope": "org",
+            "repo_id": "github.com/urllib3/urllib3",
+            "trust_status": "untrusted_evidence",
+            "binding": false,
+            "evidence_confidence": "recorded_source",
+            "example_display_truncated": false
+          },
+          {
+            "source_uid": "github.com/urllib3/urllib3:pr:3780:comment:3927409335:source",
+            "uri": "https://github.com/urllib3/urllib3/pull/3780#pullrequestreview-3927409335",
+            "text": "",
+            "original_chars": 0,
+            "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "revision_basis": "indexed_checkout_not_source_revision",
+            "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+            "work_uid": "github.com/urllib3/urllib3:pr:3780",
+            "work_type": "PR",
+            "work_status": "merged",
+            "status_basis": "github_api_snapshot",
+            "merged_at": "2026-09-05T14:51:36Z",
+            "retrieval": "discussion_source_link",
+            "association": "file_level_historical",
+            "symbol_constraint": false,
+            "truncated": false,
+            "scope": "org",
+            "repo_id": "github.com/urllib3/urllib3",
+            "trust_status": "untrusted_evidence",
+            "binding": false,
+            "evidence_confidence": "recorded_source",
+            "example_display_truncated": false
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "requests",
+      "tool": "check_change",
+      "arguments": {
+        "files": [
+          "src/requests/sessions.py"
+        ],
+        "symbols": [
+          "SessionRedirectMixin.should_strip_auth"
+        ]
+      },
+      "response_selection": {
+        "status": "ok",
+        "graph_revision": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "precision": "symbol",
+        "targets": [
+          {
+            "uid": "github.com/psf/requests@611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60:src/requests/sessions.py::SessionRedirectMixin.should_strip_auth",
+            "path": "src/requests/sessions.py",
+            "qualname": "SessionRedirectMixin.should_strip_auth",
+            "lineno": 154,
+            "end_lineno": 184
+          }
+        ],
+        "caller_paths": [
+          {
+            "path": [
+              "github.com/psf/requests@611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60:src/requests/sessions.py::SessionRedirectMixin.rebuild_auth",
+              "github.com/psf/requests@611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60:src/requests/sessions.py::SessionRedirectMixin.should_strip_auth"
+            ],
+            "confidence": [
+              "heuristic"
+            ],
+            "resolution": [
+              "heuristic"
+            ],
+            "target_uid": "github.com/psf/requests@611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60:src/requests/sessions.py::SessionRedirectMixin.should_strip_auth",
+            "graph_revision": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60"
+          },
+          {
+            "path": [
+              "github.com/psf/requests@611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60:src/requests/sessions.py::SessionRedirectMixin.resolve_redirects",
+              "github.com/psf/requests@611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60:src/requests/sessions.py::SessionRedirectMixin.rebuild_auth",
+              "github.com/psf/requests@611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60:src/requests/sessions.py::SessionRedirectMixin.should_strip_auth"
+            ],
+            "confidence": [
+              "heuristic",
+              "heuristic"
+            ],
+            "resolution": [
+              "heuristic",
+              "heuristic"
+            ],
+            "target_uid": "github.com/psf/requests@611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60:src/requests/sessions.py::SessionRedirectMixin.should_strip_auth",
+            "graph_revision": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60"
+          }
+        ],
+        "file_associations": [],
+        "warnings": [
+          "missing_call_edges_do_not_prove_no_dependencies",
+          "historical_file_links_are_not_symbol_constraints",
+          "no_recorded_historical_file_associations"
+        ],
+        "truncated": [],
+        "must_preserve": [],
+        "review": [],
+        "untrusted_source_excerpts": []
+      }
+    }
+  ]
+}

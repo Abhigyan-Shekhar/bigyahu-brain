@@ -18,6 +18,7 @@ def ingest_snapshots(store, directory):
         raise ValueError("Snapshot content differs from manifest")
     records = json.loads(raw)
     references = []
+    source_urls = {}
     for record in records:
         label = "PR" if "pull_request" in record else "Issue"
         uid = f"{store.cfg.repo_id}:{label.lower()}:{record['number']}"
@@ -56,6 +57,7 @@ def ingest_snapshots(store, directory):
             },
         )
         source = uid + ":source"
+        source_urls[source] = record["html_url"]
         if label == "PR":
             references.extend(
                 (uid, number, source)
@@ -83,6 +85,7 @@ def ingest_snapshots(store, directory):
             cid = f"{uid}:comment:{comment['id']}"
             store.upsert("Comment", cid, {"repo_id": store.cfg.repo_id, "url": comment["html_url"]})
             sid = cid + ":source"
+            source_urls[sid] = comment["html_url"]
             store.upsert(
                 "Source",
                 sid,
@@ -123,7 +126,14 @@ def ingest_snapshots(store, directory):
                 uid,
                 "CHANGES",
                 f"{store.cfg.repo_id}@{manifest['sha']}:{file['filename']}",
-                {"source_uid": source, "confidence": "snapshot_path_only"},
+                {
+                    "source_uid": source,
+                    "confidence": "snapshot_path_only",
+                    "basis": "historical_file_association",
+                    "snapshot_at": manifest["collected_at"],
+                    "revision": manifest["sha"],
+                    "revision_basis": "indexed_checkout_not_source_revision",
+                },
             )
     # Second pass makes reference edges independent of snapshot record order.
     linked, missing = {}, set()
@@ -156,6 +166,10 @@ def ingest_snapshots(store, directory):
                 "confidence": "explicit_text_reference",
                 "basis": "untrusted_source_mention",
                 "resolution_verified": False,
+                "relationship_type": "REFERENCES",
+                "snapshot_at": manifest["collected_at"],
+                "provenance": "github_api_snapshot_text",
+                "source_url": source_urls[sources[0]],
             },
         )
     return {
