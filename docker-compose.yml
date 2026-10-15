@@ -1,0 +1,10 @@
+services:
+  falkordb:
+    image: falkordb/falkordb:v4.14.7
+    ports:
+      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - falkordb_data:/data
+volumes:
+  falkordb_data:

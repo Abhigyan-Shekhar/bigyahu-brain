@@ -1,0 +1,29 @@
+# Company Brain contract — 0.1
+
+Five MCP tools: get_context, trace_decision, find_owner, check_change, remember.
+No administrative tool or arbitrary Cypher endpoint exists.
+
+Operation `status` is ok/error/unavailable/unknown/incomplete. Decision lifecycle
+uses the separate `decision_status` field: proposed, active, superseded.
+All responses include graph_revision, evidence, warnings, verification, and
+untrusted_source_excerpts. Source and decision prose are quoted in the latter;
+only structured evidence metadata appears in must_preserve/review.
+
+Graphs are fixed to org_demo and private_<configured principal>. Scope arguments
+accept only org/private. Configuration, not MCP arguments, selects the repository.
+Project UID is canonical repo_id. File/symbol UIDs include repo, SHA, path and
+qualified symbol; historical revision nodes remain available. Commit UIDs include
+repo and commit SHA. Git author identities are separate from GitHub identities.
+No unsupported identity joins or inferred team membership are created.
+
+A CALLS edge points from caller to callee. check_change traverses incoming paths
+of one or two edges and batches decisions over targets and callers. Limits never
+silently yield an apparently complete constraint check. Incomplete syncs fail closed.
+Any dirty working tree or changed HEAD downgrades precision to file; constraints
+are advisory until the checkout and approved revision match again. Diff-only
+requests currently use conservative file coverage.
+
+Only an independent interactive operator session may run approval. The CLI checks
+reviewed evidence/text/subjects and replacement scope in one database mutation.
+Local shell/database administrators can bypass this application boundary; no
+production isolation claim is made. Agents must never run the approval command.

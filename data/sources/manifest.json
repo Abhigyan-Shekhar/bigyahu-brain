@@ -1,0 +1,37 @@
+{
+  "repo_url": "https://github.com/psf/requests",
+  "repo_id": "github.com/psf/requests",
+  "sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+  "license": "Apache-2.0",
+  "collected_at": "2026-10-15T04:19:04.254929+00:00",
+  "visibility": "public",
+  "records": 21,
+  "sources": [
+    "https://github.com/psf/requests/issues/7634",
+    "https://github.com/psf/requests/issues/7633",
+    "https://github.com/psf/requests/issues/7632",
+    "https://github.com/psf/requests/issues/7631",
+    "https://github.com/psf/requests/issues/7630",
+    "https://github.com/psf/requests/issues/7629",
+    "https://github.com/psf/requests/pull/7628",
+    "https://github.com/psf/requests/issues/7627",
+    "https://github.com/psf/requests/issues/7624",
+    "https://github.com/psf/requests/issues/7623",
+    "https://github.com/psf/requests/issues/7622",
+    "https://github.com/psf/requests/issues/7621",
+    "https://github.com/psf/requests/issues/7620",
+    "https://github.com/psf/requests/pull/7619",
+    "https://github.com/psf/requests/issues/7618",
+    "https://github.com/psf/requests/issues/7617",
+    "https://github.com/psf/requests/pull/7616",
+    "https://github.com/psf/requests/issues/7615",
+    "https://github.com/psf/requests/issues/7611",
+    "https://github.com/psf/requests/issues/7610",
+    "https://github.com/psf/requests/issues/4716"
+  ],
+  "work_sha256": "c75abc756051a87cf1b104d438ee0c3ea6cee22a3d14ab5df6bd326af76c3cf6",
+  "limitations": [
+    "API discussion state is a collection-time snapshot, not commit-time state",
+    "First 100 comments/reviews/files per item only; pagination omitted"
+  ]
+}

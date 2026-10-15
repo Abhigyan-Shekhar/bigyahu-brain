@@ -1,0 +1,6 @@
+repo_root: /ABSOLUTE/PATH/TO/PINNED/CHECKOUT
+repo_id: github.com/owner/repo
+repo_url: https://github.com/owner/repo
+principal: demo_operator
+host: 127.0.0.1
+port: 6379

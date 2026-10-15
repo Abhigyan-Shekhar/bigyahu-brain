@@ -1,0 +1,22 @@
+status: candidate_not_release_ready
+repo_url: https://github.com/psf/requests
+repo_license: Apache-2.0
+baseline_sha: 611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60
+codeowners_path: .github/CODEOWNERS
+codeowners_target_coverage: none
+constraint_source_urls:
+  - https://github.com/psf/requests/issues/4716
+constraint_candidate: Authorization must be removed when redirecting from HTTPS to HTTP on the same host.
+constraint_status: not_human_approved
+target_file: src/requests/sessions.py
+target_symbol: SessionRedirectMixin.should_strip_auth
+caller_symbols:
+  - SessionRedirectMixin.rebuild_auth
+  - SessionRedirectMixin.resolve_redirects
+change_prompt: Simplify SessionRedirectMixin.should_strip_auth while preserving behavior.
+tests:
+  - tests/test_requests.py -k should_strip_auth
+baseline_result: NOT_RUN
+graph_result: NOT_RUN
+selection_gate: NOT_PASSED
+caveat: The constraint is visible in the existing code and tests; graph benefit has not been demonstrated. Reject this candidate if the baseline already handles it.
