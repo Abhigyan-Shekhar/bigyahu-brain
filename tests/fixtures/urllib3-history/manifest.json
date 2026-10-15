@@ -1,0 +1,22 @@
+{
+  "repo_url": "https://github.com/urllib3/urllib3",
+  "repo_id": "github.com/urllib3/urllib3",
+  "sha": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+  "license": "MIT",
+  "collected_at": "2026-10-15T15:39:29.758191+00:00",
+  "visibility": "public",
+  "records": 4,
+  "sources": [
+    "https://github.com/urllib3/urllib3/issues/5181",
+    "https://github.com/urllib3/urllib3/pull/5242",
+    "https://github.com/urllib3/urllib3/pull/5161",
+    "https://github.com/urllib3/urllib3/pull/3780"
+  ],
+  "work_sha256": "b4c843c2930d379e4f2d80a7cb4d7c88c0d7e342114c59d18fcab4b203d375e3",
+  "limitations": [
+    "Targeted source selection, not exhaustive history.",
+    "First 100 comments/reviews/files; no pagination.",
+    "API state at collection time, not pin time.",
+    "Open PR text is an unapproved claim, not a binding decision."
+  ]
+}

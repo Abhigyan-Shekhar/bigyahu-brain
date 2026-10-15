@@ -16,6 +16,27 @@ def ingest_snapshots(store, directory):
     for record in json.loads(raw):
         label = "PR" if "pull_request" in record else "Issue"
         uid = f"{store.cfg.repo_id}:{label.lower()}:{record['number']}"
+        # API metadata, never claims in the body/review prose. A merge is not decision approval.
+        pull = record.get("pull_request") or {}
+        state = record.get("state")
+        status = state if label == "Issue" and state in {"open", "closed"} else "unknown"
+        if label == "PR":
+            if pull.get("merged_at"):
+                status = "merged"
+            elif state == "open":
+                status = "open_proposal"
+            elif state == "closed" and "merged_at" in pull:
+                status = "closed_unmerged"
+        provenance = {
+            "work_uid": uid,
+            "work_type": label,
+            "work_status": status,
+            "status_basis": "github_api_snapshot" if status != "unknown" else "unknown",
+            "merged_at": pull.get("merged_at"),
+            "revision": manifest["sha"],
+            "revision_basis": "indexed_checkout_not_source_revision",
+            "snapshot_at": manifest["collected_at"],
+        }
         store.upsert(
             label,
             uid,
@@ -26,6 +47,7 @@ def ingest_snapshots(store, directory):
                 "body": record["body"] or "",
                 "url": record["html_url"],
                 "snapshot_at": manifest["collected_at"],
+                **provenance,
             },
         )
         source = uid + ":source"
@@ -38,6 +60,7 @@ def ingest_snapshots(store, directory):
                 "excerpt": record["body"] or "",
                 "snapshot_at": manifest["collected_at"],
                 "revision": manifest["sha"],
+                **provenance,
             },
         )
         store.edge(uid, "SUPPORTS", source)
@@ -53,6 +76,7 @@ def ingest_snapshots(store, directory):
                     "uri": comment["html_url"],
                     "excerpt": comment.get("body") or "",
                     "snapshot_at": manifest["collected_at"],
+                    **provenance,
                 },
             )
             store.edge(uid, "DISCUSSED_IN", cid)
