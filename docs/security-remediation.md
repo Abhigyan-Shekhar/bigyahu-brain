@@ -15,13 +15,15 @@ Local experiment, validation and runtime/demo records are ignored and removed fr
 Before committing or publishing, run:
 
 ```sh
-python scripts/check_publication.py
+python scripts/check_publication.py --history
 ```
 
 The same guard runs in the read-only publication-boundary GitHub Actions workflow.
-It reads the Git index and rejects local record directories, runtime trace names, machine-specific paths and common credential shapes. It does not replace history scanning or binary/export review. Tests exercise rejection and a safe provenance-backed export. Never force-add ignored raw records.
+It reads the Git index and every commit tree reachable from HEAD, rejecting local record directories, runtime trace names, machine-specific paths and common credential shapes. CI fetches full history; a shallow clone fails closed because it cannot prove earlier records are absent. This prevents a later merge from reintroducing deleted records through old ancestry. It does not replace a dedicated secret scanner or binary/export review. Tests exercise rejection and a safe provenance-backed export. Never force-add ignored raw records.
 
-Removing a file from the current tree does not remove earlier commits. A separate mirror rewrite is prepared and verified locally. Publishing that rewrite requires independent operator approval because it changes existing commit IDs and requires a force-push. The original checkout and local research records remain recoverable. No force-push is performed without that approval.
+The operator approved and the history rewrite was applied on 2026-10-16 (India time), replacing master `0142e74` with `5ef5536`. A fresh GitHub mirror verified six rewritten commits and 90 historical blobs: raw-record paths and machine-specific home/temp paths were absent, the current source tree was identical, and Gitleaks found zero secret detections. Original non-noreply author/committer emails were replaced with a placeholder while public names and verified account noreply identities were retained.
+
+The repository remains private. Anonymous historical raw trace URLs returned 404, but an old commit remained retrievable through the owner-authenticated GitHub API. Server-side object purging is therefore not confirmed. A Support-request draft was prepared locally and has not been sent. The local original checkout, experiment records and backup bundle were preserved; do not merge or push old ancestry back into the cleaned history. Current follow-up commits may update documentation/guards without changing the reviewed rewrite result.
 
 GitHub documents that rewritten commits may remain in clones, cached commit views or PR references. Support may be needed for sensitive cached data; no promise of complete erasure is made. References: [removing sensitive data](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository), [Gitleaks](https://github.com/gitleaks/gitleaks).
 

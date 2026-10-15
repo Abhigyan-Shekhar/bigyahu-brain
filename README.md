@@ -172,6 +172,9 @@ submission requirements remain to be verified.
 
 Raw agent traces, experiment runs, validation logs and database state are local-only.
 Use the reviewed [demo export](docs/demo/README.md), and run
-`python scripts/check_publication.py` against the Git index before publishing.
+`python scripts/check_publication.py --history` against the Git index and all
+reachable history before publishing.
 See [exposure remediation](docs/security-remediation.md) for the confirmed prior
-public trace exposure and pending history cleanup.
+public trace exposure and completed history rewrite.
+Old local branches must be rebased or have their changes transplanted onto the
+cleaned history; merging old history can reintroduce exposed records.
