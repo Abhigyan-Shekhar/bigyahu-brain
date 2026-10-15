@@ -18,7 +18,8 @@ Before committing or publishing, run:
 python scripts/check_publication.py
 ```
 
-The guard reads the Git index and rejects local record directories, runtime trace names, machine-specific paths and common credential shapes. It does not replace history scanning or binary/export review. Tests exercise rejection and a safe provenance-backed export. Never force-add ignored raw records.
+The same guard runs in the read-only publication-boundary GitHub Actions workflow.
+It reads the Git index and rejects local record directories, runtime trace names, machine-specific paths and common credential shapes. It does not replace history scanning or binary/export review. Tests exercise rejection and a safe provenance-backed export. Never force-add ignored raw records.
 
 Removing a file from the current tree does not remove earlier commits. A separate mirror rewrite is prepared and verified locally. Publishing that rewrite requires independent operator approval because it changes existing commit IDs and requires a force-push. The original checkout and local research records remain recoverable. No force-push is performed without that approval.
 

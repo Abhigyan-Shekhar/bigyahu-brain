@@ -4,6 +4,7 @@ import tokenize
 from .ast_parser import parse
 from .codeowners import owners_for, read_rules
 from .git_parser import clean, commits, git, revision
+from .identity import identity_uid
 from .imports import resolve_imports
 
 
@@ -36,6 +37,13 @@ def sync(store):
     )
     store.query(
         "MATCH (n {repo_id:$repo}) WHERE n:File OR n:Symbol SET n.current=false",
+        {"repo": cfg.repo_id},
+    )
+    # Detach legacy shared author nodes only from this repository's commits.
+    # Other repositories keep their own edges until explicitly resynced.
+    store.query(
+        "MATCH (p:Person)-[r:AUTHORED]->(c:Commit {repo_id:$repo}) "
+        "WHERE p.repo_id IS NULL DELETE r",
         {"repo": cfg.repo_id},
     )
     location, rules = read_rules(cfg.repo_root)
@@ -71,8 +79,18 @@ def sync(store):
                 },
             )
             for owner in match["owners"]:
-                uid = f"github:{owner}"
-                store.upsert("Team" if "/" in owner else "Person", uid, {"name": owner})
+                identity = f"github:{owner}"
+                uid = identity_uid(cfg.repo_id, identity)
+                store.upsert(
+                    "Team" if "/" in owner else "Person",
+                    uid,
+                    {
+                        "name": owner,
+                        "repo_id": cfg.repo_id,
+                        "identity_uid": identity,
+                        "identity_basis": "codeowners",
+                    },
+                )
                 store.edge(
                     uid,
                     "CODEOWNER_OF",
@@ -112,8 +130,18 @@ def sync(store):
             )
     for commit in commits(cfg.repo_root):
         uid = f"{cfg.repo_id}:commit:{commit['sha']}"
-        person = "git:" + hashlib.sha256(commit["email"].encode()).hexdigest()
-        store.upsert("Person", person, {"name": commit["name"], "identity_basis": "git_author"})
+        identity = "git:" + hashlib.sha256(commit["email"].encode()).hexdigest()
+        person = identity_uid(cfg.repo_id, identity)
+        store.upsert(
+            "Person",
+            person,
+            {
+                "name": commit["name"],
+                "identity_basis": "git_author",
+                "identity_uid": identity,
+                "repo_id": cfg.repo_id,
+            },
+        )
         store.upsert(
             "Commit",
             uid,

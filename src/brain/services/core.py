@@ -234,14 +234,14 @@ class Services:
         file = self.cfg.path(file)
         params = {"repo": self.cfg.repo_id, "path": file}
         owners = self.store.query(
-            "MATCH (p)-[r:CODEOWNER_OF]->(f:File {repo_id:$repo, path:$path, current:true}) "
+            "MATCH (p {repo_id:$repo})-[r:CODEOWNER_OF]->(f:File {repo_id:$repo, path:$path, current:true}) "
             "RETURN p.uid AS uid, p.name AS name, r.source_uid AS source_uid, r.pattern AS pattern",
             params,
         )
         if owners:
             return envelope(graph_revision=sha, ownership="explicit_file_owner", items=owners)
         owners = self.store.query(
-            "MATCH (p:Person)-[:AUTHORED]->(c:Commit)-[:MODIFIES]->"
+            "MATCH (p:Person {repo_id:$repo})-[:AUTHORED]->(c:Commit {repo_id:$repo})-[:MODIFIES]->"
             "(f:File {repo_id:$repo, path:$path, current:true}) "
             "RETURN p.uid AS uid, p.name AS name, count(DISTINCT c) AS commits, "
             "collect(DISTINCT c.uid) AS evidence_commits ORDER BY commits DESC LIMIT 5",
@@ -307,11 +307,12 @@ class Services:
         paths, sources, associations, coverage = [], [], [], []
         if ids:
             paths = self.store.query(
-                "MATCH p=(a)-[*1..2]->(b) WHERE a.uid IN $ids "
+                "MATCH p=(a)-[*1..2]-(b) WHERE a.uid IN $ids "
                 "AND all(n IN nodes(p) WHERE n.repo_id=$repo) "
                 "RETURN [n IN nodes(p)|n.uid] AS path, "
                 "[r IN relationships(p)|type(r)] AS relationships, "
-                "[r IN relationships(p)|r.confidence] AS confidence "
+                "[r IN relationships(p)|r.confidence] AS confidence, "
+                "[r IN relationships(p)|startNode(r).uid] AS relationship_sources "
                 "ORDER BY path LIMIT 51",
                 params,
                 scope,
@@ -320,6 +321,11 @@ class Services:
                 truncated.add("paths")
             paths = paths[: limits["paths"]]
             for path in paths:
+                origins = path.pop("relationship_sources")
+                path["directions"] = [
+                    "outgoing" if start == source else "incoming"
+                    for start, source in zip(path["path"], origins)
+                ]
                 edges = path["relationships"]
                 path["association"] = (
                     "file_level_historical"
@@ -360,6 +366,26 @@ class Services:
                     ),
                 ),
             ]
+            routes.extend(
+                [
+                    (
+                        "referencing_pr_source",
+                        (
+                            "MATCH (a:Issue {repo_id:$repo})<-[:REFERENCES]-"
+                            "(w:PR {repo_id:$repo})-[:SUPPORTS]->(s:Source {repo_id:$repo}) "
+                            "WHERE a.uid IN $ids "
+                        ),
+                    ),
+                    (
+                        "referenced_issue_source",
+                        (
+                            "MATCH (a:PR {repo_id:$repo})-[:REFERENCES]->"
+                            "(w:Issue {repo_id:$repo})-[:SUPPORTS]->(s:Source {repo_id:$repo}) "
+                            "WHERE a.uid IN $ids "
+                        ),
+                    ),
+                ]
+            )
             seen = set()
             for route, pattern in routes:
                 found = self.store.query(pattern + fields, params, scope)

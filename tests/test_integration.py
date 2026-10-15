@@ -389,6 +389,15 @@ async def test_real_stdio_context_delivers_history_without_decisions(real, tmp_p
         )
         async with Client(transport) as client:
             assert len(await client.list_tools()) == 5
+            related = (await client.call_tool("get_context", {"query": "#5181"})).data
+            assert any(
+                p["relationships"] == ["REFERENCES"] and p["directions"] == ["incoming"]
+                for p in related["evidence"]
+            )
+            assert any(
+                s["retrieval"] == "referencing_pr_source"
+                for s in related["untrusted_source_excerpts"]
+            )
             for number, kind in [(5181, "issue"), (5161, "pr"), (3780, "pr"), (5242, "pr")]:
                 uid = f"{real.cfg.repo_id}:{kind}:{number}"
                 result = (await client.call_tool("get_context", {"query": uid})).data
@@ -440,3 +449,162 @@ def test_static_cross_file_calls_real_graph(real):
         {"repo": real.cfg.repo_id},
     )
     assert rows == [{"confidence": "static", "resolution": "statically_resolved_import"}]
+
+
+def test_repository_local_owner_and_author_paths(real):
+    from brain.ingest.identity import identity_uid
+
+    sync(real)
+    svc = Services(real)
+    sha = real.revision()["sha"]
+    file = f"{real.cfg.repo_id}@{sha}:x.py"
+    owner = identity_uid(real.cfg.repo_id, "github:@test-owner")
+    assert svc.find_owner(file="x.py")["items"][0]["uid"] == owner
+    assert any("CODEOWNER_OF" in p["relationships"] for p in svc.get_context(owner)["evidence"])
+    context = svc.get_context(file)
+    assert any(
+        p["path"][-1] == owner and p["directions"] == ["incoming"] for p in context["evidence"]
+    )
+    assert any(
+        p["relationships"] == ["MODIFIES", "AUTHORED"]
+        and p["directions"] == ["incoming", "incoming"]
+        for p in context["evidence"]
+    )
+    # A malicious shared/global or foreign owner must not bypass repository filters.
+    for uid, props in [
+        ("legacy-owner", {"name": "legacy"}),
+        ("foreign-owner", {"name": "foreign", "repo_id": "other-repo"}),
+    ]:
+        real.upsert("Person", uid, props)
+        real.edge(uid, "CODEOWNER_OF", file)
+    assert svc.find_owner(file="x.py")["items"][0]["uid"] == owner
+    assert all(
+        "legacy-owner" not in p["path"] and "foreign-owner" not in p["path"]
+        for p in svc.get_context(file)["evidence"]
+    )
+    real.query(
+        "MATCH (n) WHERE n.uid IN $ids DETACH DELETE n", {"ids": ["legacy-owner", "foreign-owner"]}
+    )
+
+
+def test_scoped_team_identity_and_legacy_author_migration(real):
+    from brain.ingest.identity import identity_uid
+
+    root = real.cfg.repo_root
+    (root / "CODEOWNERS").write_text("* @test-org/team\n")
+    subprocess.run(["git", "-C", str(root), "add", "."], check=True, capture_output=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.com",
+            "commit",
+            "-m",
+            "team fixture",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    sync(real)
+    team = identity_uid(real.cfg.repo_id, "github:@test-org/team")
+    assert Services(real).get_context(team)["evidence"]
+    # Shared legacy authors must not be overwritten with a single repo_id.
+    commit = real.query(
+        "MATCH (c:Commit {repo_id:$repo}) RETURN c.uid AS uid LIMIT 1", {"repo": real.cfg.repo_id}
+    )[0]["uid"]
+    legacy = "legacy:" + real.cfg.repo_id
+    real.upsert("Person", legacy, {"name": "legacy"})
+    real.edge(legacy, "AUTHORED", commit)
+    sync(real)
+    assert not real.query(
+        "MATCH (p {uid:$uid})-[:AUTHORED]->(c {repo_id:$repo}) RETURN c.uid AS uid",
+        {"uid": legacy, "repo": real.cfg.repo_id},
+    )
+    real.query("MATCH (p {uid:$uid}) DELETE p", {"uid": legacy})
+
+
+def test_snapshot_references_paths_and_untrusted_sources(real, tmp_path):
+    from brain.ingest.snapshots import ingest_snapshots
+
+    ingest_real_history_fixture(real, tmp_path)
+    svc = Services(real)
+    repo = real.cfg.repo_id
+    rows = real.query(
+        "MATCH (p:PR {repo_id:$repo, number:5242})-[r:REFERENCES]->"
+        "(i:Issue {repo_id:$repo, number:5181}) "
+        "RETURN r.confidence AS confidence, r.resolution_verified AS resolved, "
+        "r.source_uid AS source",
+        {"repo": repo},
+    )
+    assert rows == [
+        {
+            "confidence": "explicit_text_reference",
+            "resolved": False,
+            "source": f"{repo}:pr:5242:source",
+        }
+    ]
+    issue = svc.get_context("#5181")
+    assert any(
+        p["relationships"] == ["REFERENCES"] and p["directions"] == ["incoming"]
+        for p in issue["evidence"]
+    )
+    assert any(p["relationships"] == ["REFERENCES", "CHANGES"] for p in issue["evidence"])
+    excerpts = [
+        s for s in issue["untrusted_source_excerpts"] if s["retrieval"] == "referencing_pr_source"
+    ]
+    assert excerpts and all(
+        s["binding"] is False
+        and s["trust_status"] == "untrusted_evidence"
+        and s["work_status"] == "open_proposal"
+        for s in excerpts
+    )
+    assert any(
+        s["retrieval"] == "referenced_issue_source"
+        for s in svc.get_context("#5242")["untrusted_source_excerpts"]
+    )
+    # Existing but out-of-repo issue cannot become a reference target.
+    real.upsert("Issue", "foreign-issue", {"repo_id": "other", "number": 3779})
+    rerun = ingest_snapshots(real, tmp_path / "snapshots")
+    assert f"{repo}:issue:3779" in rerun["missing_issue_references"]
+    assert not real.query(
+        "MATCH (i:Issue {repo_id:$repo, number:3779}) RETURN i.uid AS uid", {"repo": repo}
+    )
+    assert not real.query(
+        'MATCH (p:PR {repo_id:$repo})-[:REFERENCES]->(i {uid:"foreign-issue"}) RETURN p.uid AS uid',
+        {"repo": repo},
+    )
+    reviewers = real.query(
+        "MATCH (p:Person {repo_id:$repo})-[:REVIEWED]->(w:PR {repo_id:$repo}) "
+        "RETURN p.uid AS uid LIMIT 1",
+        {"repo": repo},
+    )
+    assert reviewers and any(
+        "REVIEWED" in p["relationships"] for p in svc.get_context(reviewers[0]["uid"])["evidence"]
+    )
+    real.query('MATCH (i {uid:"foreign-issue"}) DETACH DELETE i')
+
+
+def test_shared_public_identity_does_not_bridge_repositories(real):
+    from brain.ingest.identity import identity_uid
+
+    sync(real)
+    other = GraphStore(replace(real.cfg, repo_id=real.cfg.repo_id + ":other"))
+    try:
+        sync(other)
+        first = identity_uid(real.cfg.repo_id, "github:@test-owner")
+        second = identity_uid(other.cfg.repo_id, "github:@test-owner")
+        assert first != second
+        assert Services(real).get_context(first)["items"]
+        assert not Services(real).get_context(second)["items"]
+        assert all(
+            other.cfg.repo_id not in node
+            for p in Services(real).get_context(first)["evidence"]
+            for node in p["path"]
+        )
+        assert Services(other).find_owner(file="x.py")["items"][0]["uid"] == second
+    finally:
+        other.query("MATCH (n {repo_id:$repo}) DETACH DELETE n", {"repo": other.cfg.repo_id})

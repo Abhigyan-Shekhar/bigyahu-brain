@@ -33,7 +33,11 @@ def resolve_imports(modules, texts):
                     )
                     writes[local] += 1
                     if isinstance(statement, ast.Import):
-                        imports[local] = alias.name if alias.asname else alias.name.split(".")[0]
+                        imports[local] = (
+                            alias.name if alias.asname else alias.name.split(".")[0],
+                            alias.name,
+                            "module",
+                        )
                     else:
                         base = statement.module or ""
                         if statement.level:
@@ -44,7 +48,8 @@ def resolve_imports(modules, texts):
                                 pieces[: len(pieces) - statement.level + 1]
                                 + ([base] if base else [])
                             )
-                        imports[local] = ".".join(filter(None, [base, alias.name]))
+                        full = ".".join(filter(None, [base, alias.name]))
+                        imports[local] = (full, full, "from")
             elif isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 writes[statement.name] += 1
             else:
@@ -134,9 +139,16 @@ def resolve_imports(modules, texts):
             target = scopes.get(qual, {}).get(expression[0])
             if local_lines.get(qual, {}).get(expression[0], 0) >= call["line"]:
                 target = None
-            dotted = ".".join([target, *expression[1:]]) if target else ""
+            dotted = ".".join([target[0], *expression[1:]]) if target else ""
             target_module, _, target_name = dotted.rpartition(".")
-            uid = functions.get((target_module, target_name)) if target_module in unique else None
+            eligible = target and (
+                target_module == target[1] or (target[2] == "from" and dotted == target[1])
+            )
+            uid = (
+                functions.get((target_module, target_name))
+                if eligible and target_module in unique
+                else None
+            )
             if uid:
                 module.calls.append(
                     {

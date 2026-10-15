@@ -88,3 +88,15 @@ def test_rebound_or_conditional_target(target):
 
 def test_import_after_call():
     assert not resolve("def caller():\n    target()\n    from .util import target\n").calls
+
+
+@pytest.mark.parametrize(
+    "statement,call",
+    [
+        ("import pkg", "pkg.util.target"),
+        ("import pkg.other", "pkg.util.target"),
+        ("from pkg import other", "other.util.target"),
+    ],
+)
+def test_does_not_assume_unimported_submodule(statement, call):
+    assert not resolve(f"{statement}\ndef caller(): {call}()\n").calls
