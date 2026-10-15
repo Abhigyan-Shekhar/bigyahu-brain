@@ -1,0 +1,44 @@
+[
+  {
+    "trial": "baseline-1",
+    "oracle_exit": 1,
+    "upstream_exit": 0,
+    "oracle_passed": 9,
+    "bare_pool_passed": 6
+  },
+  {
+    "trial": "graph-1",
+    "oracle_exit": 1,
+    "upstream_exit": 0,
+    "oracle_passed": 9,
+    "bare_pool_passed": 6
+  },
+  {
+    "trial": "baseline-2",
+    "oracle_exit": 1,
+    "upstream_exit": 0,
+    "oracle_passed": 9,
+    "bare_pool_passed": 6
+  },
+  {
+    "trial": "graph-2",
+    "oracle_exit": 1,
+    "upstream_exit": 0,
+    "oracle_passed": 9,
+    "bare_pool_passed": 6
+  },
+  {
+    "trial": "baseline-3",
+    "oracle_exit": 1,
+    "upstream_exit": 0,
+    "oracle_passed": 9,
+    "bare_pool_passed": 6
+  },
+  {
+    "trial": "graph-3",
+    "oracle_exit": 1,
+    "upstream_exit": 0,
+    "oracle_passed": 9,
+    "bare_pool_passed": 6
+  }
+]

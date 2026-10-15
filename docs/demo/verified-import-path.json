@@ -1,0 +1,9 @@
+[
+  {
+    "caller": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py::HTTPConnectionPool.urlopen",
+    "callee": "github.com/urllib3/urllib3@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/util/request.py::set_file_position",
+    "confidence": "static",
+    "resolution": "statically_resolved_import",
+    "line": 772
+  }
+]

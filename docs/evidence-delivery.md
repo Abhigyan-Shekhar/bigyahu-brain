@@ -73,9 +73,10 @@ Reproduce from the project root with the local database running:
 ```sh
 BRAIN_INTEGRATION=1 BRAIN_LITE_TESTS=1 PYTHONPATH="$PWD/src" \
   .venv/bin/python -m pytest -q
-PYTHONPATH="$PWD/src" .venv/bin/python data/validation/evidence-delivery/verify_codex.py
 ```
 
 The Codex probe requires the indexed urllib3 checkout and ingested public snapshots.
 Regression tests use checked-in copies under `tests/fixtures/urllib3-history`, isolated
 test repository IDs and cleanup. No online GitHub request is required for these tests.
+
+Raw validation/protocol captures are now ignored local records, not checked-in publication inputs. See `security-remediation.md` for the exposure correction and the reviewed `docs/demo/` export.

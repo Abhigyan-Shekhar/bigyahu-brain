@@ -12,3 +12,13 @@ dist/
 .secrets/
 
 data/runtime/
+
+# Local research records are never publication inputs. Export reviewed material to docs/demo/.
+/data/experiments/
+/data/validation/
+/data/demo/
+# Runtime records must not be committed from any output directory.
+**/trace.jsonl
+**/*-trace.jsonl
+**/stderr.txt
+**/*-stderr.txt

@@ -85,8 +85,9 @@ already target this loopback endpoint; no configuration change was made.
   full-text results, and Codex call were checked again successfully.
 
 Artifacts: `data/demo/lite-tests.xml`, `lite-metrics.json`, `lite-codex-call.json`,
-`lite-service-check.json`, and `lite-proposal.json`. These contain public evidence
-or synthetic fixture outcomes; runtime files and private graphs are excluded.
+`lite-service-check.json`, and `lite-proposal.json`. These are local research records and are ignored by Git. Earlier versions were
+tracked and exposed local environment metadata; see `security-remediation.md`.
+Only the reviewed exports under `docs/demo/` are intended for publication.
 
 ## Compatibility issue fixed
 

@@ -1,0 +1,2215 @@
+{
+  "format": "Selected actual emitted events; command output and session/account metadata omitted. Local paths and emails redacted. Full raw trace retained locally.",
+  "events": [
+    {
+      "original_event_line": 3,
+      "type": "item.completed",
+      "item": {
+        "id": "item_0",
+        "type": "agent_message",
+        "text": "I\u2019ll first inspect the project guidance and use Company Brain\u2019s org-scoped historical evidence to establish relevant context before changing files. Then I\u2019ll trace PoolManager\u2019s redirect flow, add focused regressions, and run the relevant tests with `.venv/bin/python`."
+      }
+    },
+    {
+      "original_event_line": 9,
+      "type": "item.completed",
+      "item": {
+        "id": "item_3",
+        "type": "mcp_tool_call",
+        "server": "company-brain",
+        "tool": "get_context",
+        "arguments": {
+          "query": "PoolManager file-like request body body-preserving redirects replay unread payload",
+          "scope": "org",
+          "keywords": [
+            "PoolManager",
+            "redirect",
+            "file-like body"
+          ]
+        },
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"status\":\"ok\",\"graph_revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"evidence\":[{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5121537340\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5121537340\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444149\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444149\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444917\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444917\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5146397717\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5146397717\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5557447817\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5557447817\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5573839960\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5573839960\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5578684013\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5578684013\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:source\"],\"relationships\":[\"SUPPORTS\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\"],\"relationships\":[\"CHANGES\"],\"confidence\":[\"snapshot_path_only\"],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::_find_built_wheel\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::_get_pyodide_template\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::alpn_protocol\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::apply_caching\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::bigfile\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::certificate\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked.generate\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked_gzip\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked_gzip.generate\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::dripfeed\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::dripfeed.generate\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_json\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_params\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_uri\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::encodingrequest\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::headers\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::headers_and_params\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::index\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::keepalive\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::mediumfile\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::multi_headers\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::multi_redirect\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::pyodide\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::pyodide_upload\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::redirect\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::redirect_after\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::retry_after\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::slow\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::source_address\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::specific_method\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::status\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::successful_retry\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"}],\"warnings\":[\"keyword_search_not_semantic\",\"source_text_is_not_decision_approval\"],\"untrusted_source_excerpts\":[{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161\",\"original_chars\":4631,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"direct_source_link\",\"text\":\"Following a 303 redirect, urllib3 switches the method to `GET` and drops the request body per RFC 9110, Section 15.4.4 \u2014 but the state that *describes* that body survives the switch. Two things go wrong as a result.\\r\\n\\r\\n### 1. The redirected GET announces a body it never sends\\r\\n\\r\\nWith `chunked=True` (or an explicit `Transfer-Encoding: chunked` header), the follow-up request goes out as:\\r\\n\\r\\n```\\r\\nGET /done HTTP/1.1\\r\\nHost: 127.0.0.1:8080\\r\\nAccept-Encoding: identity\\r\\nTransfer-Encoding: chunked\\r\\nUser-Agent: python-urllib3/2.x\\r\\n\\r\\n0\\r\\n```\\r\\n\\r\\nA bodyless `GET` framed with chunked transfer encoding. Harmless against tolerant servers, but it is invalid framing for a request with no content, and strict servers and intermediaries reject it.\\r\\n\\r\\n### 2. A file-like body makes the redirect fail outright\\r\\n\\r\\n`body_pos` also survives the body being set to `None`, so urllib3 then tries to rewind a body that no longer exists:\\r\\n\\r\\n```python\\r\\nimport urllib3\\r\\n\\r\\npool = urllib3.HTTPConnectionPool(host, port)\\r\\npool.urlopen(\\\"POST\\\", \\\"/\\\", body=open(\\\"payload.bin\\\", \\\"rb\\\"), redirect=True)\\r\\n```\\r\\n\\r\\nagainst a server answering `303 See Other`:\\r\\n\\r\\n```\\r\\n  File \\\"urllib3/connectionpool.py\\\", line 768, in urlopen\\r\\n    body_pos = set_file_position(body, body_pos)\\r\\n  File \\\"urllib3/util/request.py\\\", line 184, in set_file_position\\r\\n    rewind_body(body, pos)\\r\\n  File \\\"urllib3/util/request.py\\\", line 221, in rewind_body\\r\\n    raise ValueError(\\r\\nValueError: body_pos must be of type integer, instead it was <class 'int'>.\\r\\n```\\r\\n\\r\\nThe message is self-contradictory because it reports the type of `body_pos` while the actual failure is that `body` is `None` and has no `seek()`.\\r\\n\\r\\nBoth problems affect `HTTPConnectionPool.urlopen()` and `PoolManager.urlopen()`, so the top-level `urllib3.request()` is affected too.\\r\\n\\r\\n## The fix\\r\\n\\r\\nWhen the body is dropped, the state describing it goes with it:\\r\\n\\r\\n- `HTTPConnectionPool.urlopen()` and `PoolManager.urlopen()`: reset `chunked = False` and `body_pos = None` in the 303 branch, alongsid\",\"truncated\":true,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340\",\"original_chars\":0,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149\",\"original_chars\":0,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917\",\"original_chars\":0,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717\",\"original_chars\":13,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"LGTM, thanks!\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817\",\"original_chars\":1451,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"One change worth calling out, since it isn't obviously part of the fix:\\r\\n\\r\\n`test_redirect_with_failed_tell` requested `/redirect`, whose default status is `303 See Other`, and asserted `UnrewindableBodyError`. With this fix the body is dropped on a 303 and so never needs rewinding, which makes that assertion no longer meaningful. I pointed the test at `status=307` so it keeps covering the rewind path (matching `test_redirect_put_file` in the same class), and added `test_303_redirect_with_failed_tell` for the 303 case.\\r\\n\\r\\nHappy to split that into its own commit if you'd prefer it separated from the fix.\\r\\n\\r\\nThe one red check, `Ubuntu 3.13`, looks unrelated: `test_buffer_memory_usage_no_decoding[False-10485760-read]` allocated 11.0MiB against the `limit_memory(\\\"10.5 MB\\\")` mark while reading 10MiB, so the margin is about five percent. Nothing in this branch touches response buffering, and the same job passed on the previous two pushes. A re-run should clear it whenever you get a chance.\\r\\n\\r\\nWhile chasing an unrelated hang I also noticed `test_tunnel_sets_http_11_alpn` is flaky: it asserts `b\\\"h2\\\" not in self.buf` against the whole ClientHello, so it trips whenever those two bytes land in the random material, which is likelier now that the key share carries a post-quantum group. It failed twice in 300 local runs and once on Windows here. Glad to send a separate PR narrowing that assertion to the ALPN extension if that would be useful.\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960\",\"original_chars\":730,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"@SEPURI-SAI-KRISHNA thanks for the updates\\r\\n\\r\\nRegarding the hangs, would it make sense to add `await request.get_data()` at the beginning of dummyserver's `redirect` handler, and possibly to other dummyserver handlers as well in a separate PR?\\r\\n\\r\\n> While chasing an unrelated hang I also noticed `test_tunnel_sets_http_11_alpn` is flaky: it asserts `b\\\"h2\\\" not in self.buf` against the whole ClientHello, so it trips whenever those two bytes land in the random material, which is likelier now that the key share carries a post-quantum group. It failed twice in 300 local runs and once on Windows here. Glad to send a separate PR narrowing that assertion to the ALPN extension if that would be useful.\\r\\n\\r\\nA fix will be very welcome!\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013\",\"original_chars\":801,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"Done, that works well. `/redirect` now reads the body up front, with `parse_form_data=True` so `request.values` on the next line still sees form fields (same pattern as the `/upload` handler). The two framing tests no longer need to disguise their bodies as forms, so the workaround and the comment explaining it are gone.\\r\\n\\r\\nNice side effect: with the body drained, those tests now fail fast instead of hanging when the fix is absent, which makes them a lot friendlier to bisect against.\\r\\n\\r\\nVerified locally: the framing tests fail on `main` and pass with the fix, 200 consecutive runs with no hang, and the rest of `test/with_dummyserver/` is unchanged either way.\\r\\n\\r\\nHappy to do the sweep of the other handlers in a separate PR, and I'll send the `test_tunnel_sets_http_11_alpn` fix separately too.\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"}],\"verification\":\"static_evidence\",\"items\":[{\"uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"labels\":[\"PR\"],\"score\":0.0}],\"file_associations\":[{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"path\":\"dummyserver/app.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false},{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/_collections.py\",\"path\":\"src/urllib3/_collections.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false},{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py\",\"path\":\"src/urllib3/connectionpool.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false},{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py\",\"path\":\"src/urllib3/poolmanager.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false},{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:test/with_dummyserver/test_connectionpool.py\",\"path\":\"test/with_dummyserver/test_connectionpool.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false},{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:test/with_dummyserver/test_poolmanager.py\",\"path\":\"test/with_dummyserver/test_poolmanager.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false}],\"coverage\":{\"work_items\":[{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_link_count\":6}],\"missing_file_links\":[],\"no_missing_edges_inferred\":true,\"cross_module_call_resolution\":\"direct_static_imports_only\",\"historical_file_links_are_not_symbol_constraints\":true},\"limits\":{\"items\":10,\"paths\":50,\"sources\":20,\"excerpt_chars\":2000,\"total_excerpt_chars\":12000,\"file_associations\":20},\"truncated\":[\"excerpt_chars\",\"paths\"]}"
+            }
+          ],
+          "structured_content": {
+            "status": "ok",
+            "graph_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "evidence": [
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:source"
+                ],
+                "relationships": [
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py"
+                ],
+                "relationships": [
+                  "CHANGES"
+                ],
+                "confidence": [
+                  "snapshot_path_only"
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::_find_built_wheel"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::_get_pyodide_template"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::alpn_protocol"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::apply_caching"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::bigfile"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::certificate"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked.generate"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked_gzip"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked_gzip.generate"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::dripfeed"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::dripfeed.generate"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_json"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_params"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_uri"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::encodingrequest"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::headers"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::headers_and_params"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::index"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::keepalive"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::mediumfile"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::multi_headers"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::multi_redirect"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::pyodide"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::pyodide_upload"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::redirect"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::redirect_after"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::retry_after"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::slow"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::source_address"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::specific_method"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::status"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::successful_retry"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              }
+            ],
+            "warnings": [
+              "keyword_search_not_semantic",
+              "source_text_is_not_decision_approval"
+            ],
+            "untrusted_source_excerpts": [
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161",
+                "original_chars": 4631,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "direct_source_link",
+                "text": "Following a 303 redirect, urllib3 switches the method to `GET` and drops the request body per RFC 9110, Section 15.4.4 \u2014 but the state that *describes* that body survives the switch. Two things go wrong as a result.\r\n\r\n### 1. The redirected GET announces a body it never sends\r\n\r\nWith `chunked=True` (or an explicit `Transfer-Encoding: chunked` header), the follow-up request goes out as:\r\n\r\n```\r\nGET /done HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nAccept-Encoding: identity\r\nTransfer-Encoding: chunked\r\nUser-Agent: python-urllib3/2.x\r\n\r\n0\r\n```\r\n\r\nA bodyless `GET` framed with chunked transfer encoding. Harmless against tolerant servers, but it is invalid framing for a request with no content, and strict servers and intermediaries reject it.\r\n\r\n### 2. A file-like body makes the redirect fail outright\r\n\r\n`body_pos` also survives the body being set to `None`, so urllib3 then tries to rewind a body that no longer exists:\r\n\r\n```python\r\nimport urllib3\r\n\r\npool = urllib3.HTTPConnectionPool(host, port)\r\npool.urlopen(\"POST\", \"/\", body=open(\"payload.bin\", \"rb\"), redirect=True)\r\n```\r\n\r\nagainst a server answering `303 See Other`:\r\n\r\n```\r\n  File \"urllib3/connectionpool.py\", line 768, in urlopen\r\n    body_pos = set_file_position(body, body_pos)\r\n  File \"urllib3/util/request.py\", line 184, in set_file_position\r\n    rewind_body(body, pos)\r\n  File \"urllib3/util/request.py\", line 221, in rewind_body\r\n    raise ValueError(\r\nValueError: body_pos must be of type integer, instead it was <class 'int'>.\r\n```\r\n\r\nThe message is self-contradictory because it reports the type of `body_pos` while the actual failure is that `body` is `None` and has no `seek()`.\r\n\r\nBoth problems affect `HTTPConnectionPool.urlopen()` and `PoolManager.urlopen()`, so the top-level `urllib3.request()` is affected too.\r\n\r\n## The fix\r\n\r\nWhen the body is dropped, the state describing it goes with it:\r\n\r\n- `HTTPConnectionPool.urlopen()` and `PoolManager.urlopen()`: reset `chunked = False` and `body_pos = None` in the 303 branch, alongsid",
+                "truncated": true,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340",
+                "original_chars": 0,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149",
+                "original_chars": 0,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917",
+                "original_chars": 0,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717",
+                "original_chars": 13,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "LGTM, thanks!",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817",
+                "original_chars": 1451,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "One change worth calling out, since it isn't obviously part of the fix:\r\n\r\n`test_redirect_with_failed_tell` requested `/redirect`, whose default status is `303 See Other`, and asserted `UnrewindableBodyError`. With this fix the body is dropped on a 303 and so never needs rewinding, which makes that assertion no longer meaningful. I pointed the test at `status=307` so it keeps covering the rewind path (matching `test_redirect_put_file` in the same class), and added `test_303_redirect_with_failed_tell` for the 303 case.\r\n\r\nHappy to split that into its own commit if you'd prefer it separated from the fix.\r\n\r\nThe one red check, `Ubuntu 3.13`, looks unrelated: `test_buffer_memory_usage_no_decoding[False-10485760-read]` allocated 11.0MiB against the `limit_memory(\"10.5 MB\")` mark while reading 10MiB, so the margin is about five percent. Nothing in this branch touches response buffering, and the same job passed on the previous two pushes. A re-run should clear it whenever you get a chance.\r\n\r\nWhile chasing an unrelated hang I also noticed `test_tunnel_sets_http_11_alpn` is flaky: it asserts `b\"h2\" not in self.buf` against the whole ClientHello, so it trips whenever those two bytes land in the random material, which is likelier now that the key share carries a post-quantum group. It failed twice in 300 local runs and once on Windows here. Glad to send a separate PR narrowing that assertion to the ALPN extension if that would be useful.",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960",
+                "original_chars": 730,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "@SEPURI-SAI-KRISHNA thanks for the updates\r\n\r\nRegarding the hangs, would it make sense to add `await request.get_data()` at the beginning of dummyserver's `redirect` handler, and possibly to other dummyserver handlers as well in a separate PR?\r\n\r\n> While chasing an unrelated hang I also noticed `test_tunnel_sets_http_11_alpn` is flaky: it asserts `b\"h2\" not in self.buf` against the whole ClientHello, so it trips whenever those two bytes land in the random material, which is likelier now that the key share carries a post-quantum group. It failed twice in 300 local runs and once on Windows here. Glad to send a separate PR narrowing that assertion to the ALPN extension if that would be useful.\r\n\r\nA fix will be very welcome!",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013",
+                "original_chars": 801,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "Done, that works well. `/redirect` now reads the body up front, with `parse_form_data=True` so `request.values` on the next line still sees form fields (same pattern as the `/upload` handler). The two framing tests no longer need to disguise their bodies as forms, so the workaround and the comment explaining it are gone.\r\n\r\nNice side effect: with the body drained, those tests now fail fast instead of hanging when the fix is absent, which makes them a lot friendlier to bisect against.\r\n\r\nVerified locally: the framing tests fail on `main` and pass with the fix, 200 consecutive runs with no hang, and the rest of `test/with_dummyserver/` is unchanged either way.\r\n\r\nHappy to do the sweep of the other handlers in a separate PR, and I'll send the `test_tunnel_sets_http_11_alpn` fix separately too.",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              }
+            ],
+            "verification": "static_evidence",
+            "items": [
+              {
+                "uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "labels": [
+                  "PR"
+                ],
+                "score": 0.0
+              }
+            ],
+            "file_associations": [
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                "path": "dummyserver/app.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              },
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/_collections.py",
+                "path": "src/urllib3/_collections.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              },
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py",
+                "path": "src/urllib3/connectionpool.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              },
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py",
+                "path": "src/urllib3/poolmanager.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              },
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:test/with_dummyserver/test_connectionpool.py",
+                "path": "test/with_dummyserver/test_connectionpool.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              },
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:test/with_dummyserver/test_poolmanager.py",
+                "path": "test/with_dummyserver/test_poolmanager.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              }
+            ],
+            "coverage": {
+              "work_items": [
+                {
+                  "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                  "file_link_count": 6
+                }
+              ],
+              "missing_file_links": [],
+              "no_missing_edges_inferred": true,
+              "cross_module_call_resolution": "direct_static_imports_only",
+              "historical_file_links_are_not_symbol_constraints": true
+            },
+            "limits": {
+              "items": 10,
+              "paths": 50,
+              "sources": 20,
+              "excerpt_chars": 2000,
+              "total_excerpt_chars": 12000,
+              "file_associations": 20
+            },
+            "truncated": [
+              "excerpt_chars",
+              "paths"
+            ]
+          }
+        },
+        "error": null,
+        "status": "completed"
+      }
+    },
+    {
+      "original_event_line": 11,
+      "type": "item.completed",
+      "item": {
+        "id": "item_4",
+        "type": "mcp_tool_call",
+        "server": "company-brain",
+        "tool": "get_context",
+        "arguments": {
+          "query": "urllib3 PoolManager redirects file body 307 body_pos rewind",
+          "scope": "org",
+          "keywords": [
+            "poolmanager.py",
+            "test_poolmanager.py",
+            "307"
+          ]
+        },
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"status\":\"ok\",\"graph_revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"evidence\":[{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5121537340\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5121537340\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444149\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444149\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444917\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444917\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5146397717\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5146397717\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5557447817\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5557447817\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5573839960\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5573839960\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5578684013\"],\"relationships\":[\"DISCUSSED_IN\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5578684013\",\"experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source\"],\"relationships\":[\"DISCUSSED_IN\",\"SUPPORTS\"],\"confidence\":[null,null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible:pr:5161:source\"],\"relationships\":[\"SUPPORTS\"],\"confidence\":[null],\"association\":\"direct_evidence\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\"],\"relationships\":[\"CHANGES\"],\"confidence\":[\"snapshot_path_only\"],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::_find_built_wheel\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::_get_pyodide_template\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::alpn_protocol\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::apply_caching\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::bigfile\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::certificate\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked.generate\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked_gzip\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked_gzip.generate\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::dripfeed\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::dripfeed.generate\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_json\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_params\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_uri\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::encodingrequest\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::headers\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::headers_and_params\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::index\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::keepalive\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::mediumfile\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::multi_headers\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::multi_redirect\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::pyodide\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::pyodide_upload\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::redirect\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::redirect_after\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::retry_after\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::slow\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::source_address\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::specific_method\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::status\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"},{\"path\":[\"experiment:urllib3:5181:eligible:pr:5161\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::successful_retry\"],\"relationships\":[\"CHANGES\",\"DECLARES\"],\"confidence\":[\"snapshot_path_only\",null],\"association\":\"file_level_historical\"}],\"warnings\":[\"keyword_search_not_semantic\",\"source_text_is_not_decision_approval\"],\"untrusted_source_excerpts\":[{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161\",\"original_chars\":4631,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"direct_source_link\",\"text\":\"Following a 303 redirect, urllib3 switches the method to `GET` and drops the request body per RFC 9110, Section 15.4.4 \u2014 but the state that *describes* that body survives the switch. Two things go wrong as a result.\\r\\n\\r\\n### 1. The redirected GET announces a body it never sends\\r\\n\\r\\nWith `chunked=True` (or an explicit `Transfer-Encoding: chunked` header), the follow-up request goes out as:\\r\\n\\r\\n```\\r\\nGET /done HTTP/1.1\\r\\nHost: 127.0.0.1:8080\\r\\nAccept-Encoding: identity\\r\\nTransfer-Encoding: chunked\\r\\nUser-Agent: python-urllib3/2.x\\r\\n\\r\\n0\\r\\n```\\r\\n\\r\\nA bodyless `GET` framed with chunked transfer encoding. Harmless against tolerant servers, but it is invalid framing for a request with no content, and strict servers and intermediaries reject it.\\r\\n\\r\\n### 2. A file-like body makes the redirect fail outright\\r\\n\\r\\n`body_pos` also survives the body being set to `None`, so urllib3 then tries to rewind a body that no longer exists:\\r\\n\\r\\n```python\\r\\nimport urllib3\\r\\n\\r\\npool = urllib3.HTTPConnectionPool(host, port)\\r\\npool.urlopen(\\\"POST\\\", \\\"/\\\", body=open(\\\"payload.bin\\\", \\\"rb\\\"), redirect=True)\\r\\n```\\r\\n\\r\\nagainst a server answering `303 See Other`:\\r\\n\\r\\n```\\r\\n  File \\\"urllib3/connectionpool.py\\\", line 768, in urlopen\\r\\n    body_pos = set_file_position(body, body_pos)\\r\\n  File \\\"urllib3/util/request.py\\\", line 184, in set_file_position\\r\\n    rewind_body(body, pos)\\r\\n  File \\\"urllib3/util/request.py\\\", line 221, in rewind_body\\r\\n    raise ValueError(\\r\\nValueError: body_pos must be of type integer, instead it was <class 'int'>.\\r\\n```\\r\\n\\r\\nThe message is self-contradictory because it reports the type of `body_pos` while the actual failure is that `body` is `None` and has no `seek()`.\\r\\n\\r\\nBoth problems affect `HTTPConnectionPool.urlopen()` and `PoolManager.urlopen()`, so the top-level `urllib3.request()` is affected too.\\r\\n\\r\\n## The fix\\r\\n\\r\\nWhen the body is dropped, the state describing it goes with it:\\r\\n\\r\\n- `HTTPConnectionPool.urlopen()` and `PoolManager.urlopen()`: reset `chunked = False` and `body_pos = None` in the 303 branch, alongsid\",\"truncated\":true,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340\",\"original_chars\":0,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149\",\"original_chars\":0,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917\",\"original_chars\":0,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717\",\"original_chars\":13,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"LGTM, thanks!\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817\",\"original_chars\":1451,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"One change worth calling out, since it isn't obviously part of the fix:\\r\\n\\r\\n`test_redirect_with_failed_tell` requested `/redirect`, whose default status is `303 See Other`, and asserted `UnrewindableBodyError`. With this fix the body is dropped on a 303 and so never needs rewinding, which makes that assertion no longer meaningful. I pointed the test at `status=307` so it keeps covering the rewind path (matching `test_redirect_put_file` in the same class), and added `test_303_redirect_with_failed_tell` for the 303 case.\\r\\n\\r\\nHappy to split that into its own commit if you'd prefer it separated from the fix.\\r\\n\\r\\nThe one red check, `Ubuntu 3.13`, looks unrelated: `test_buffer_memory_usage_no_decoding[False-10485760-read]` allocated 11.0MiB against the `limit_memory(\\\"10.5 MB\\\")` mark while reading 10MiB, so the margin is about five percent. Nothing in this branch touches response buffering, and the same job passed on the previous two pushes. A re-run should clear it whenever you get a chance.\\r\\n\\r\\nWhile chasing an unrelated hang I also noticed `test_tunnel_sets_http_11_alpn` is flaky: it asserts `b\\\"h2\\\" not in self.buf` against the whole ClientHello, so it trips whenever those two bytes land in the random material, which is likelier now that the key share carries a post-quantum group. It failed twice in 300 local runs and once on Windows here. Glad to send a separate PR narrowing that assertion to the ALPN extension if that would be useful.\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960\",\"original_chars\":730,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"@SEPURI-SAI-KRISHNA thanks for the updates\\r\\n\\r\\nRegarding the hangs, would it make sense to add `await request.get_data()` at the beginning of dummyserver's `redirect` handler, and possibly to other dummyserver handlers as well in a separate PR?\\r\\n\\r\\n> While chasing an unrelated hang I also noticed `test_tunnel_sets_http_11_alpn` is flaky: it asserts `b\\\"h2\\\" not in self.buf` against the whole ClientHello, so it trips whenever those two bytes land in the random material, which is likelier now that the key share carries a post-quantum group. It failed twice in 300 local runs and once on Windows here. Glad to send a separate PR narrowing that assertion to the ALPN extension if that would be useful.\\r\\n\\r\\nA fix will be very welcome!\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"},{\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source\",\"uri\":\"https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013\",\"original_chars\":801,\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"revision_basis\":\"indexed_checkout_not_source_revision\",\"snapshot_at\":\"2026-10-15T15:39:29.758191+00:00\",\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"work_type\":\"PR\",\"work_status\":\"merged\",\"status_basis\":\"github_api_snapshot\",\"merged_at\":\"2026-09-08T19:59:50Z\",\"retrieval\":\"discussion_source_link\",\"text\":\"Done, that works well. `/redirect` now reads the body up front, with `parse_form_data=True` so `request.values` on the next line still sees form fields (same pattern as the `/upload` handler). The two framing tests no longer need to disguise their bodies as forms, so the workaround and the comment explaining it are gone.\\r\\n\\r\\nNice side effect: with the body drained, those tests now fail fast instead of hanging when the fix is absent, which makes them a lot friendlier to bisect against.\\r\\n\\r\\nVerified locally: the framing tests fail on `main` and pass with the fix, 200 consecutive runs with no hang, and the rest of `test/with_dummyserver/` is unchanged either way.\\r\\n\\r\\nHappy to do the sweep of the other handlers in a separate PR, and I'll send the `test_tunnel_sets_http_11_alpn` fix separately too.\",\"truncated\":false,\"scope\":\"org\",\"repo_id\":\"experiment:urllib3:5181:eligible\",\"trust_status\":\"untrusted_evidence\",\"binding\":false,\"evidence_confidence\":\"recorded_source\"}],\"verification\":\"static_evidence\",\"items\":[{\"uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"labels\":[\"PR\"],\"score\":0.0}],\"file_associations\":[{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py\",\"path\":\"dummyserver/app.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false},{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/_collections.py\",\"path\":\"src/urllib3/_collections.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false},{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py\",\"path\":\"src/urllib3/connectionpool.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false},{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py\",\"path\":\"src/urllib3/poolmanager.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false},{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:test/with_dummyserver/test_connectionpool.py\",\"path\":\"test/with_dummyserver/test_connectionpool.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false},{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_uid\":\"experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:test/with_dummyserver/test_poolmanager.py\",\"path\":\"test/with_dummyserver/test_poolmanager.py\",\"revision\":\"a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8\",\"source_uid\":\"experiment:urllib3:5181:eligible:pr:5161:source\",\"confidence\":\"snapshot_path_only\",\"association\":\"file_level_historical\",\"symbol_constraint\":false}],\"coverage\":{\"work_items\":[{\"work_uid\":\"experiment:urllib3:5181:eligible:pr:5161\",\"file_link_count\":6}],\"missing_file_links\":[],\"no_missing_edges_inferred\":true,\"cross_module_call_resolution\":\"direct_static_imports_only\",\"historical_file_links_are_not_symbol_constraints\":true},\"limits\":{\"items\":10,\"paths\":50,\"sources\":20,\"excerpt_chars\":2000,\"total_excerpt_chars\":12000,\"file_associations\":20},\"truncated\":[\"excerpt_chars\",\"paths\"]}"
+            }
+          ],
+          "structured_content": {
+            "status": "ok",
+            "graph_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+            "evidence": [
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013",
+                  "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source"
+                ],
+                "relationships": [
+                  "DISCUSSED_IN",
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null,
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible:pr:5161:source"
+                ],
+                "relationships": [
+                  "SUPPORTS"
+                ],
+                "confidence": [
+                  null
+                ],
+                "association": "direct_evidence"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py"
+                ],
+                "relationships": [
+                  "CHANGES"
+                ],
+                "confidence": [
+                  "snapshot_path_only"
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::_find_built_wheel"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::_get_pyodide_template"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::alpn_protocol"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::apply_caching"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::bigfile"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::certificate"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked.generate"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked_gzip"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::chunked_gzip.generate"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::dripfeed"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::dripfeed.generate"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_json"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_params"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::echo_uri"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::encodingrequest"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::headers"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::headers_and_params"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::index"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::keepalive"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::mediumfile"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::multi_headers"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::multi_redirect"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::pyodide"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::pyodide_upload"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::redirect"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::redirect_after"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::retry_after"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::slow"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::source_address"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::specific_method"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::status"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              },
+              {
+                "path": [
+                  "experiment:urllib3:5181:eligible:pr:5161",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                  "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py::successful_retry"
+                ],
+                "relationships": [
+                  "CHANGES",
+                  "DECLARES"
+                ],
+                "confidence": [
+                  "snapshot_path_only",
+                  null
+                ],
+                "association": "file_level_historical"
+              }
+            ],
+            "warnings": [
+              "keyword_search_not_semantic",
+              "source_text_is_not_decision_approval"
+            ],
+            "untrusted_source_excerpts": [
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161",
+                "original_chars": 4631,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "direct_source_link",
+                "text": "Following a 303 redirect, urllib3 switches the method to `GET` and drops the request body per RFC 9110, Section 15.4.4 \u2014 but the state that *describes* that body survives the switch. Two things go wrong as a result.\r\n\r\n### 1. The redirected GET announces a body it never sends\r\n\r\nWith `chunked=True` (or an explicit `Transfer-Encoding: chunked` header), the follow-up request goes out as:\r\n\r\n```\r\nGET /done HTTP/1.1\r\nHost: 127.0.0.1:8080\r\nAccept-Encoding: identity\r\nTransfer-Encoding: chunked\r\nUser-Agent: python-urllib3/2.x\r\n\r\n0\r\n```\r\n\r\nA bodyless `GET` framed with chunked transfer encoding. Harmless against tolerant servers, but it is invalid framing for a request with no content, and strict servers and intermediaries reject it.\r\n\r\n### 2. A file-like body makes the redirect fail outright\r\n\r\n`body_pos` also survives the body being set to `None`, so urllib3 then tries to rewind a body that no longer exists:\r\n\r\n```python\r\nimport urllib3\r\n\r\npool = urllib3.HTTPConnectionPool(host, port)\r\npool.urlopen(\"POST\", \"/\", body=open(\"payload.bin\", \"rb\"), redirect=True)\r\n```\r\n\r\nagainst a server answering `303 See Other`:\r\n\r\n```\r\n  File \"urllib3/connectionpool.py\", line 768, in urlopen\r\n    body_pos = set_file_position(body, body_pos)\r\n  File \"urllib3/util/request.py\", line 184, in set_file_position\r\n    rewind_body(body, pos)\r\n  File \"urllib3/util/request.py\", line 221, in rewind_body\r\n    raise ValueError(\r\nValueError: body_pos must be of type integer, instead it was <class 'int'>.\r\n```\r\n\r\nThe message is self-contradictory because it reports the type of `body_pos` while the actual failure is that `body` is `None` and has no `seek()`.\r\n\r\nBoth problems affect `HTTPConnectionPool.urlopen()` and `PoolManager.urlopen()`, so the top-level `urllib3.request()` is affected too.\r\n\r\n## The fix\r\n\r\nWhen the body is dropped, the state describing it goes with it:\r\n\r\n- `HTTPConnectionPool.urlopen()` and `PoolManager.urlopen()`: reset `chunked = False` and `body_pos = None` in the 303 branch, alongsid",
+                "truncated": true,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340",
+                "original_chars": 0,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149",
+                "original_chars": 0,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917",
+                "original_chars": 0,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717",
+                "original_chars": 13,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "LGTM, thanks!",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817",
+                "original_chars": 1451,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "One change worth calling out, since it isn't obviously part of the fix:\r\n\r\n`test_redirect_with_failed_tell` requested `/redirect`, whose default status is `303 See Other`, and asserted `UnrewindableBodyError`. With this fix the body is dropped on a 303 and so never needs rewinding, which makes that assertion no longer meaningful. I pointed the test at `status=307` so it keeps covering the rewind path (matching `test_redirect_put_file` in the same class), and added `test_303_redirect_with_failed_tell` for the 303 case.\r\n\r\nHappy to split that into its own commit if you'd prefer it separated from the fix.\r\n\r\nThe one red check, `Ubuntu 3.13`, looks unrelated: `test_buffer_memory_usage_no_decoding[False-10485760-read]` allocated 11.0MiB against the `limit_memory(\"10.5 MB\")` mark while reading 10MiB, so the margin is about five percent. Nothing in this branch touches response buffering, and the same job passed on the previous two pushes. A re-run should clear it whenever you get a chance.\r\n\r\nWhile chasing an unrelated hang I also noticed `test_tunnel_sets_http_11_alpn` is flaky: it asserts `b\"h2\" not in self.buf` against the whole ClientHello, so it trips whenever those two bytes land in the random material, which is likelier now that the key share carries a post-quantum group. It failed twice in 300 local runs and once on Windows here. Glad to send a separate PR narrowing that assertion to the ALPN extension if that would be useful.",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960",
+                "original_chars": 730,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "@SEPURI-SAI-KRISHNA thanks for the updates\r\n\r\nRegarding the hangs, would it make sense to add `await request.get_data()` at the beginning of dummyserver's `redirect` handler, and possibly to other dummyserver handlers as well in a separate PR?\r\n\r\n> While chasing an unrelated hang I also noticed `test_tunnel_sets_http_11_alpn` is flaky: it asserts `b\"h2\" not in self.buf` against the whole ClientHello, so it trips whenever those two bytes land in the random material, which is likelier now that the key share carries a post-quantum group. It failed twice in 300 local runs and once on Windows here. Glad to send a separate PR narrowing that assertion to the ALPN extension if that would be useful.\r\n\r\nA fix will be very welcome!",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              },
+              {
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source",
+                "uri": "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013",
+                "original_chars": 801,
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "revision_basis": "indexed_checkout_not_source_revision",
+                "snapshot_at": "2026-10-15T15:39:29.758191+00:00",
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "work_type": "PR",
+                "work_status": "merged",
+                "status_basis": "github_api_snapshot",
+                "merged_at": "2026-09-08T19:59:50Z",
+                "retrieval": "discussion_source_link",
+                "text": "Done, that works well. `/redirect` now reads the body up front, with `parse_form_data=True` so `request.values` on the next line still sees form fields (same pattern as the `/upload` handler). The two framing tests no longer need to disguise their bodies as forms, so the workaround and the comment explaining it are gone.\r\n\r\nNice side effect: with the body drained, those tests now fail fast instead of hanging when the fix is absent, which makes them a lot friendlier to bisect against.\r\n\r\nVerified locally: the framing tests fail on `main` and pass with the fix, 200 consecutive runs with no hang, and the rest of `test/with_dummyserver/` is unchanged either way.\r\n\r\nHappy to do the sweep of the other handlers in a separate PR, and I'll send the `test_tunnel_sets_http_11_alpn` fix separately too.",
+                "truncated": false,
+                "scope": "org",
+                "repo_id": "experiment:urllib3:5181:eligible",
+                "trust_status": "untrusted_evidence",
+                "binding": false,
+                "evidence_confidence": "recorded_source"
+              }
+            ],
+            "verification": "static_evidence",
+            "items": [
+              {
+                "uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "labels": [
+                  "PR"
+                ],
+                "score": 0.0
+              }
+            ],
+            "file_associations": [
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:dummyserver/app.py",
+                "path": "dummyserver/app.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              },
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/_collections.py",
+                "path": "src/urllib3/_collections.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              },
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/connectionpool.py",
+                "path": "src/urllib3/connectionpool.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              },
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py",
+                "path": "src/urllib3/poolmanager.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              },
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:test/with_dummyserver/test_connectionpool.py",
+                "path": "test/with_dummyserver/test_connectionpool.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              },
+              {
+                "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                "file_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:test/with_dummyserver/test_poolmanager.py",
+                "path": "test/with_dummyserver/test_poolmanager.py",
+                "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+                "source_uid": "experiment:urllib3:5181:eligible:pr:5161:source",
+                "confidence": "snapshot_path_only",
+                "association": "file_level_historical",
+                "symbol_constraint": false
+              }
+            ],
+            "coverage": {
+              "work_items": [
+                {
+                  "work_uid": "experiment:urllib3:5181:eligible:pr:5161",
+                  "file_link_count": 6
+                }
+              ],
+              "missing_file_links": [],
+              "no_missing_edges_inferred": true,
+              "cross_module_call_resolution": "direct_static_imports_only",
+              "historical_file_links_are_not_symbol_constraints": true
+            },
+            "limits": {
+              "items": 10,
+              "paths": 50,
+              "sources": 20,
+              "excerpt_chars": 2000,
+              "total_excerpt_chars": 12000,
+              "file_associations": 20
+            },
+            "truncated": [
+              "excerpt_chars",
+              "paths"
+            ]
+          }
+        },
+        "error": null,
+        "status": "completed"
+      }
+    },
+    {
+      "original_event_line": 12,
+      "type": "item.completed",
+      "item": {
+        "id": "item_5",
+        "type": "agent_message",
+        "text": "The org graph returned a merged urllib3 PR about redirect body state. Its report and comments discuss file-position rewind behavior, but the proposed fix in that history concerns ConnectionPool and body-discarding redirects; I\u2019m treating it only as context, not as a prescription. Its indexed file associations identify PoolManager and its tests as historically related, which matches the files I\u2019m inspecting locally. Waggle\u2019s `prime_context`/`query_graph`/`observe_conversation` tools aren\u2019t exposed in this session, so I can\u2019t run those calls."
+      }
+    },
+    {
+      "original_event_line": 29,
+      "type": "item.completed",
+      "item": {
+        "id": "item_14",
+        "type": "agent_message",
+        "text": "The redirect bug is in the boundary between the two layers: the connection pool records a file\u2019s starting position internally, but PoolManager owns the redirect and makes the next call with the now-consumed file. I\u2019ve added explicit position capture in PoolManager and a 307 regression that checks the redirected server receives the full payload. The existing 303 coverage continues to exercise the body-discard path."
+      }
+    },
+    {
+      "original_event_line": 32,
+      "type": "item.completed",
+      "item": {
+        "id": "item_16",
+        "type": "agent_message",
+        "text": "The focused dummy-server tests could not start: the sandbox blocked Hypercorn from binding its test socket, so all five selected cases errored during class setup before reaching assertions. I\u2019m preserving that failure as-is and checking the patch for correctness and scope now; I won\u2019t change permissions or test infrastructure."
+      }
+    },
+    {
+      "original_event_line": 37,
+      "type": "item.completed",
+      "item": {
+        "id": "item_19",
+        "type": "agent_message",
+        "text": "The historical PR\u2019s relevant evidence was its explanation that a redirect must keep body-position state aligned with whether the body still exists. That reinforced keeping PoolManager\u2019s existing 303 clearing intact while passing the original position through body-preserving redirects. Its merged proposed patch itself did not guide my edit; the local PoolManager flow and existing 303 tests determined the implementation."
+      }
+    },
+    {
+      "original_event_line": 38,
+      "type": "item.completed",
+      "item": {
+        "id": "item_20",
+        "type": "agent_message",
+        "text": "Updated [poolmanager.py](<LOCAL_PATH> to record a file-like body\u2019s starting position before the first request, so PoolManager can replay it after a body-preserving redirect. Added a 307 regression in [test_poolmanager.py](<LOCAL_PATH> The existing 303 body-discard handling remains intact.\n\nCompany Brain\u2019s org-scoped evidence was a merged urllib3 PR discussing redirect body-position state and file-like uploads. It informed what behavior to preserve; its proposed fix was non-binding and did not guide the implementation. Waggle tools were unavailable in this session.\n\n**Verification:** `compileall` and `git diff --check` passed. The focused dummy-server tests could not reach their assertions because the sandbox blocked Hypercorn from binding its test socket. I left the failure and environment unchanged."
+      }
+    }
+  ]
+}

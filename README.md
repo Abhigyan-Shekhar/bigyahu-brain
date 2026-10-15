@@ -167,3 +167,11 @@ See docs/plan.md and docs/implementation.md for intended scope, contracts.md for
 current interfaces, and NEW_WORK.md for AI assistance disclosure. Planned event
 tracks: Company Brain and Agents That Act on Connected Data; eligibility and final
 submission requirements remain to be verified.
+
+## Publication boundary
+
+Raw agent traces, experiment runs, validation logs and database state are local-only.
+Use the reviewed [demo export](docs/demo/README.md), and run
+`python scripts/check_publication.py` against the Git index before publishing.
+See [exposure remediation](docs/security-remediation.md) for the confirmed prior
+public trace exposure and pending history cleanup.

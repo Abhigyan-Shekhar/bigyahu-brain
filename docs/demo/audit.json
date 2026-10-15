@@ -1,0 +1,18 @@
+{
+  "result": "pass",
+  "scope": "Every text file in this publication bundle; video generated exclusively from sanitized selected facts and patch. Raw research records withheld. Pattern checks supplemented by reviewing selected source URLs, graph routes, model messages, patch and result files.",
+  "flags": {},
+  "files": {
+    "README.md": "b5272d07296fb03a93a6b15450f5fc2a5a42f967c03ed2da30ba5ecce0c91f7d",
+    "demo-events.json": "ee3382f189e0d4aa9fbc231b5bea5dc18b342eb4c1f2547f48fd09b1bb715422",
+    "demo-oracle.json": "4aa261a8d25484e5e75b17dfbd85ef63ca4ee9b0f9b56cabf2f9105010872974",
+    "demo-upstream.txt": "2ef7b6b0af4a09393f654e49a14dd3159b1c11261873805c8b31087d170e473a",
+    "demo.mp4": "58e2d895042af55197a07dba8b8066518943eeff31d0abe3c8fba08629d0ef30",
+    "demo.patch": "b106af70acb35104b2313f87c6345115a7cefb2fc9faed962daebc683d483e7d",
+    "oracle.py": "d077b08c3c911fc146f59305ca305d3f216749e0218727b4e3b3adbabe7ff3d0",
+    "paired-results.json": "92484659e5fc015a711d7ab7d3ca2b45684bc362bdc5fc602e048e42f86d605d",
+    "task.txt": "b0517240edd18ef5069d8a98b5f36acd7cb596e95d59de5aeba0630153e68dfa",
+    "urllib3-LICENSE.txt": "130e3a64d5fdd5d096a752694634a7d9df284469de86e5732100268041e3d686",
+    "verified-import-path.json": "93391016a2f902704000f6a7ae2511d3489bc42166ff34b2d192ea540a2f77ce"
+  }
+}

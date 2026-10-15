@@ -1,0 +1,216 @@
+{
+  "import_path": "<LOCAL_PATH>",
+  "results": [
+    {
+      "client": "manager",
+      "redirect": 307,
+      "failed_tell": false,
+      "offset": 0,
+      "expectation": "preserve payload and starting offset; initial upload needs no rewind",
+      "passed": true,
+      "error": null,
+      "wire_requests": [
+        {
+          "method": "PUT",
+          "path": "/307",
+          "body": "PREFIX-PAYLOAD"
+        },
+        {
+          "method": "PUT",
+          "path": "/sink",
+          "body": "PREFIX-PAYLOAD"
+        }
+      ]
+    },
+    {
+      "client": "manager",
+      "redirect": 308,
+      "failed_tell": false,
+      "offset": 7,
+      "expectation": "preserve payload and starting offset; initial upload needs no rewind",
+      "passed": true,
+      "error": null,
+      "wire_requests": [
+        {
+          "method": "PUT",
+          "path": "/308",
+          "body": "PAYLOAD"
+        },
+        {
+          "method": "PUT",
+          "path": "/sink",
+          "body": "PAYLOAD"
+        }
+      ]
+    },
+    {
+      "client": "manager",
+      "redirect": null,
+      "failed_tell": true,
+      "offset": 0,
+      "expectation": "preserve payload and starting offset; initial upload needs no rewind",
+      "passed": false,
+      "error": "UnrewindableBodyError",
+      "wire_requests": []
+    },
+    {
+      "client": "manager",
+      "redirect": 307,
+      "failed_tell": true,
+      "offset": 0,
+      "expectation": "one initial send, then UnrewindableBodyError before replay",
+      "passed": false,
+      "error": "UnrewindableBodyError",
+      "wire_requests": []
+    },
+    {
+      "client": "manager",
+      "redirect": 303,
+      "failed_tell": true,
+      "offset": 0,
+      "expectation": "303 discards body and does not rewind it",
+      "passed": false,
+      "error": "UnrewindableBodyError",
+      "wire_requests": []
+    },
+    {
+      "client": "manager",
+      "redirect": 303,
+      "failed_tell": false,
+      "offset": 7,
+      "expectation": "303 discards body and does not rewind it",
+      "passed": true,
+      "error": null,
+      "wire_requests": [
+        {
+          "method": "PUT",
+          "path": "/303",
+          "body": "PAYLOAD"
+        },
+        {
+          "method": "GET",
+          "path": "/sink",
+          "body": ""
+        }
+      ]
+    },
+    {
+      "client": "bare_pool",
+      "redirect": 307,
+      "failed_tell": false,
+      "offset": 0,
+      "expectation": "preserve payload and starting offset; initial upload needs no rewind",
+      "passed": true,
+      "error": null,
+      "wire_requests": [
+        {
+          "method": "PUT",
+          "path": "/307",
+          "body": "PREFIX-PAYLOAD"
+        },
+        {
+          "method": "PUT",
+          "path": "/sink",
+          "body": "PREFIX-PAYLOAD"
+        }
+      ]
+    },
+    {
+      "client": "bare_pool",
+      "redirect": 308,
+      "failed_tell": false,
+      "offset": 7,
+      "expectation": "preserve payload and starting offset; initial upload needs no rewind",
+      "passed": true,
+      "error": null,
+      "wire_requests": [
+        {
+          "method": "PUT",
+          "path": "/308",
+          "body": "PAYLOAD"
+        },
+        {
+          "method": "PUT",
+          "path": "/sink",
+          "body": "PAYLOAD"
+        }
+      ]
+    },
+    {
+      "client": "bare_pool",
+      "redirect": null,
+      "failed_tell": true,
+      "offset": 0,
+      "expectation": "preserve payload and starting offset; initial upload needs no rewind",
+      "passed": true,
+      "error": null,
+      "wire_requests": [
+        {
+          "method": "PUT",
+          "path": "/sink",
+          "body": "PREFIX-PAYLOAD"
+        }
+      ]
+    },
+    {
+      "client": "bare_pool",
+      "redirect": 307,
+      "failed_tell": true,
+      "offset": 0,
+      "expectation": "one initial send, then UnrewindableBodyError before replay",
+      "passed": true,
+      "error": "UnrewindableBodyError",
+      "wire_requests": [
+        {
+          "method": "PUT",
+          "path": "/307",
+          "body": "PREFIX-PAYLOAD"
+        }
+      ]
+    },
+    {
+      "client": "bare_pool",
+      "redirect": 303,
+      "failed_tell": true,
+      "offset": 0,
+      "expectation": "303 discards body and does not rewind it",
+      "passed": true,
+      "error": null,
+      "wire_requests": [
+        {
+          "method": "PUT",
+          "path": "/303",
+          "body": "PREFIX-PAYLOAD"
+        },
+        {
+          "method": "GET",
+          "path": "/sink",
+          "body": ""
+        }
+      ]
+    },
+    {
+      "client": "bare_pool",
+      "redirect": 303,
+      "failed_tell": false,
+      "offset": 7,
+      "expectation": "303 discards body and does not rewind it",
+      "passed": true,
+      "error": null,
+      "wire_requests": [
+        {
+          "method": "PUT",
+          "path": "/303",
+          "body": "PAYLOAD"
+        },
+        {
+          "method": "GET",
+          "path": "/sink",
+          "body": ""
+        }
+      ]
+    }
+  ],
+  "passed": 9,
+  "total": 12
+}
