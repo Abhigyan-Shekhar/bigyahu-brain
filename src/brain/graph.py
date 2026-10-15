@@ -51,12 +51,7 @@ class GraphStore:
         name = self.cfg.graph_name(scope)
         try:
             if self.db is None:
-                self.db = FalkorDB(
-                    host=self.cfg.host,
-                    port=self.cfg.port,
-                    socket_connect_timeout=2,
-                    socket_timeout=10,
-                )
+                self.db = FalkorDB(**self.cfg.connection_options())
             graph = self.db.select_graph(name)
             result = graph.query(cypher, params or {})
             names = [h[1] for h in result.header]
@@ -66,16 +61,22 @@ class GraphStore:
 
     def bootstrap(self):
         for scope in ("org", "private"):
-            rows = self.query("CALL db.indexes() YIELD label, type RETURN label, type", scope=scope)
-            existing = {(r["label"], r["type"]) for r in rows}
+            rows = self.query("CALL db.indexes()", scope=scope)
+            existing = {
+                (r["label"], field)
+                for r in rows
+                for field, kinds in r.get("types", {}).items()
+                if "FULLTEXT" in kinds
+            }
             for label, fields in {
                 "Decision": ["text"],
                 "Document": ["text"],
                 "Issue": ["title", "body"],
                 "PR": ["title", "body"],
             }.items():
-                if not any(l == label and "FULLTEXT" in str(t).upper() for l, t in existing):
-                    args = ", ".join(repr(x) for x in [label, *fields])
+                missing = [field for field in fields if (label, field) not in existing]
+                if missing:
+                    args = ", ".join(repr(x) for x in [label, *missing])
                     self.query(f"CALL db.idx.fulltext.createNodeIndex({args})", scope=scope)
             self.query(
                 "CALL db.idx.fulltext.queryNodes('Decision', 'bootstrap') "

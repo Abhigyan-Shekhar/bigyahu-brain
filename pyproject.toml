@@ -9,6 +9,9 @@ description = "Evidence-backed graph context for code changes"
 requires-python = ">=3.11"
 dependencies = ["falkordb>=1.2,<2", "fastmcp>=2,<3", "pyyaml>=6,<7", "pathspec>=0.12,<1"]
 
+[project.optional-dependencies]
+lite = ["falkordblite==0.10.0; python_version >= '3.12'"]
+
 [dependency-groups]
 dev = ["pytest>=8,<9", "pytest-asyncio>=0.24", "ruff>=0.11"]
 

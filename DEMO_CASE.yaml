@@ -20,3 +20,7 @@ baseline_result: NOT_RUN
 graph_result: NOT_RUN
 selection_gate: NOT_PASSED
 caveat: The constraint is visible in the existing code and tests; graph benefit has not been demonstrated. Reject this candidate if the baseline already handles it.
+
+graph_transport_result: VERIFIED_VIA_CODEX_APP_SERVER
+graph_transport_evidence: data/demo/lite-codex-call.json
+model_selected_tool_call: NOT_RUN

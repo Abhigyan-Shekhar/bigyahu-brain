@@ -5,13 +5,33 @@ source-backed constraints, and maintainer evidence in FalkorDB. Codex remains th
 code-editing agent. Source prose is untrusted evidence; remembering something
 creates a proposal, never an approved rule.
 
-**Status: working Python/MCP foundation, not a completed hackathon submission.**
-14 tests pass locally. The real-server integration test is opt-in and has not
-passed here: Docker is absent and the newly initialized Podman VM lost its
-connection; restart entered emergency mode with ignition/filesystem errors. No real graph metrics, human approval, or baseline-versus-graph outcome
-is claimed. The Requests candidate is explicitly unvalidated in DEMO_CASE.yaml.
+**Status: real local graph integration verified; coding experiment still pending.**
+FalkorDBLite 0.10.0 runs on this Mac with Redis 8.6.2 and graph module 4.18.3.
+All 41 tests pass with live integration enabled. The pinned Requests repository
+syncs, the real two-hop path is verified, and Codex's app-server successfully
+invokes `check_change` through MCP after a database restart. This is a protocol
+integration result, not yet a model-selected tool call or measured coding benefit.
 
-## Run locally
+## Docker-free local setup (verified)
+
+See [Lite integration results and commands](docs/lite-integration.md). Install
+`libomp`, run `uv sync --frozen --extra lite --python 3.12`, and keep one owner running:
+
+```sh
+.venv/bin/python scripts/run_lite.py --db "$PWD/data/runtime/lite/brain.rdb"
+```
+
+Sync and MCP connect to that engine through the existing loopback configuration.
+Keep the entire ignored runtime directory for persistence. No paid Cloud resource
+or global Codex configuration change is required.
+
+## Optional Cloud setup (not live-verified)
+
+[Cloud provisioning](docs/cloud-setup.md) and `config/brain.cloud.example.yaml`
+remain available. Remote connections require verified TLS and a protected local
+password file. Cloud provisioning is deferred while the hackathon uses Lite.
+
+## Alternative Docker setup
 
 Requires Python 3.11+, uv, Git, and a running FalkorDB 4.14.7 server. Python
 packages are pinned in uv.lock (tested with Python 3.12).
@@ -37,7 +57,8 @@ podman run -d --name company-brain-db \
 STDIO waits for MCP input; it does not print a success message. Configure an MCP
 client to launch the absolute `.venv/bin/python` path with arguments
 `["-m", "brain.mcp_server"]` and an absolute `BRAIN_CONFIG` environment value.
-The package is installed, so the launcher's working directory does not matter.
+Set `PYTHONPATH` to the absolute `src` directory in the MCP launcher as well, so
+module discovery remains reliable even if an editable-install path file is ignored.
 The server discovers its five tools even while the database is down; dependent
 calls return `status: unavailable`.
 
@@ -115,13 +136,18 @@ BRAIN_INTEGRATION=1 uv run pytest -q -m integration
 Unit/contract checks cover poisoning proposals, private routing, scope/path
 validation, CODEOWNERS precedence, caller constraints, stale revision behavior,
 admin rejection, exact five-tool discovery, and real STDIO launch from another
-working directory with the database unavailable. Test mocks do not prove Cypher
-compatibility. The opt-in integration test exercises real two-hop traversal,
-repeated sync, full-text private search, and private nonleakage.
+working directory with the database unavailable. The live suite has now verified
+Cypher on the measured Lite engine; mocks alone
+do not prove compatibility. Set BRAIN_INTEGRATION=1 and BRAIN_LITE_TESTS=1 to
+include the live graph and process-lifecycle checks.
+
+Codex discovery is now verified through the actual app-server API. See
+[the integration gate status](docs/integration-status.md) for the exact evidence
+and remaining database/agent gates.
 
 ## Remaining release gates
 
-- Verify all Cypher, indexing and approval/supersession behavior on FalkorDB.
+- Revalidate on any different engine version; current live checks pass on Lite 4.18.3.
 - Validate a real demo packet and compare independent baseline/graph runs on the
   same revision. The Requests candidate may be too obvious to show added value.
 - Human-review and approve a real applicable constraint; agents must not do this.

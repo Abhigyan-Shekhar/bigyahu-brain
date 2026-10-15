@@ -1,0 +1,11 @@
+# Template only: copy provider-issued values after provisioning. Never store passwords here.
+repo_root: /ABSOLUTE/PATH/TO/PINNED/CHECKOUT
+repo_id: github.com/psf/requests
+repo_url: https://github.com/psf/requests
+principal: demo_operator
+host: null  # Exact database DNS hostname from Cloud Connectivity, not Browser URL
+port: null  # Exact database port from Cloud Connectivity; do not assume 6379
+username: null  # Exact database username supplied by provider
+password_file: /ABSOLUTE/PATH/TO/.secrets/falkordb-password
+tls: true
+ca_file: null  # System trust by default; absolute PEM path only if provider requires it
