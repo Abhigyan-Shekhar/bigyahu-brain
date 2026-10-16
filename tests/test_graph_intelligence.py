@@ -279,3 +279,61 @@ def test_additive_ingestion_provenance_remains_nonbinding(real, tmp_path):
     assert mention["association"] == "untrusted_reference_mention" and not mention["binding"]
     assert mention["relationship_evidence"][0]["uri"] == primary_uri
     assert mention["relationship_evidence"][0]["resolution_verified"] is False
+
+
+@pytest.mark.parametrize(
+    "direct_count,history_count,overlap", [(11, 10, False), (10, 10, False), (10, 10, True)]
+)
+def test_context_combined_file_association_limit(real, direct_count, history_count, overlap):
+    sync(real)
+    repo, sha = real.cfg.repo_id, real.revision()["sha"]
+    current_file = f"{repo}@{sha}:x.py"
+    # Exercise mixed exact seeds: a synthetic work UID also matches a real symbol qualname.
+    # Each retrieval path stays below its own limit; only their union can overflow.
+    real.upsert("PR", "a", {"repo_id": repo})
+    expected = {}
+    for work, count in [("a", direct_count), (None, history_count)]:
+        for index in range(count):
+            uid = work or f"{repo}:history:{index:02}"
+            file_uid = (
+                current_file
+                if work is None or (overlap and index == 0)
+                else f"{repo}:direct:{index:02}"
+            )
+            path = "x.py" if file_uid == current_file else f"direct{index:02}.py"
+            real.upsert("PR", uid, {"repo_id": repo})
+            real.upsert("File", file_uid, {"repo_id": repo, "path": path, "revision": sha})
+            source = uid + ":source"
+            real.upsert(
+                "Source",
+                source,
+                {"repo_id": repo, "excerpt": "history", "uri": "https://example.invalid/history"},
+            )
+            real.edge(uid, "SUPPORTS", source)
+            provenance = {
+                "source_uid": source,
+                "confidence": "snapshot_path_only",
+                "basis": "historical_file_association",
+                "snapshot_at": "2026-10-16T00:00:00Z",
+                "revision": sha,
+                "revision_basis": "indexed_checkout_not_source_revision",
+            }
+            real.edge(uid, "CHANGES", file_uid, provenance)
+            expected[(uid, file_uid)] = provenance
+    service = Services(real)
+    result = service.get_context("a")
+    links = result["file_associations"]
+    keys = [(link["work_uid"], link["file_uid"]) for link in links]
+    assert keys == sorted(expected)[:20]
+    assert ("file_associations" in result["truncated"]) == (len(expected) > 20)
+    if len(expected) > 20:
+        assert result["status"] == "incomplete"
+    assert service.get_context("a")["file_associations"] == links
+    for link in links:
+        original = expected[(link["work_uid"], link["file_uid"])]
+        assert all(
+            link[field] == original[field]
+            for field in ("source_uid", "confidence", "basis", "snapshot_at", "revision_basis")
+        )
+        assert link["association_revision"] == sha
+        assert link["association"] == "file_level_historical" and not link["symbol_constraint"]

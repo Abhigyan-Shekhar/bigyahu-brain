@@ -610,8 +610,17 @@ class Services:
             historical, file_links, _, history_truncation = self._change_history(symbol_ids, scope)
             sources.extend(historical)
             associations.extend(file_links)
-            associations = associations[:20]
             truncated.update(history_truncation)
+        # Routes can overlap or each fit their budget while their union overflows.
+        # Keep the first complete provenance record for each recorded work/file link.
+        unique_associations = {}
+        for association in associations:
+            key = (association["work_uid"], association["file_uid"])
+            unique_associations.setdefault(key, association)
+        associations = [unique_associations[key] for key in sorted(unique_associations)]
+        if len(associations) > limits["file_associations"]:
+            truncated.add("file_associations")
+        associations = associations[: limits["file_associations"]]
         excerpts, excerpt_truncation = bound_excerpts(sources, self.cfg.repo_id, scope)
         truncated.update(excerpt_truncation)
         return envelope(
