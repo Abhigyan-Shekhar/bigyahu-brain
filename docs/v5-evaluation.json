@@ -1,0 +1,829 @@
+{
+  "date_ist": "2026-10-16",
+  "status": "six_completed_trials",
+  "conclusion": "No correctness advantage established: both arms succeeded in 3/3 runs; n=3 differences are anecdotal.",
+  "graph_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+  "corpus_sha256": "b16fc995c9d4429a54c20601ae471bbc7a789d61a1256184068aa30c5ef688f6",
+  "corpus_nodes": 2877,
+  "corpus_edges": 3904,
+  "active_decision": "D-b00dc7379a3a4ca0a08dbce704942574",
+  "oracle_sha256": "d077b08c3c911fc146f59305ca305d3f216749e0218727b4e3b3adbabe7ff3d0",
+  "model_requested": "gpt-6.1-sol",
+  "reasoning": "high",
+  "model_identity_independently_attested": false,
+  "codex_version": "codex-cli 0.162.0-alpha.17.2",
+  "runner_python": "3.12.13",
+  "task_python": "Python 3.12.13",
+  "prompt_sha256": "c9ab628a07cb29aed845fd8bfcd03eaeccfa016361bf30c68663d93f5dd69e6c",
+  "input_sha256": {
+    "docs/agent-task.txt": "1790378907b085dc240864d7386d1656ac7c24f7509be02b7174819cb87c1cac",
+    "docs/v5-agent-instructions.txt": "c49b7cfcc2d396c4cf0c5432da34dfb017bf9bbfe8c1696b9fed5a8d33431f60",
+    "scripts/run_codex_agent.py": "cb47d9418d1eef995fda100cb72164ceb33bba98b1a57c257413551a3e9fb3bf",
+    "scripts/evaluate_agent_run.py": "c03e1a5f6d84b0795cd8a11e3897a4dd1b3482285b5f96672370a7bd566d16ad",
+    "uv.lock": "4a55ff578bd4f44d06eeabf54642decead54b9c1599ab4c734974a00aad141f5",
+    "data/sources/urllib3/work.json": "0d0118aa7fb0b635955ad0c9ba00d8890da2b3e7c8c2854aaffa87b5088bf5bc"
+  },
+  "backend_file_sha256": {
+    "src/brain/__init__.py": "e095198960e46c973f7d07f3647c5e80e8df50a605feca7f7e30ccc806312e2b",
+    "src/brain/__main__.py": "fcd50deafaa7a88f05dec0f9d88a26520d34b218458fcf1df36f2fbf6d9bb450",
+    "src/brain/admin.py": "7154249e1ede4f6d4cdf090c518249dd05d576f0219357536f205eba9b5bc75a",
+    "src/brain/config.py": "cb72304dda44a13dc75c6a69308e85e35c7159de3019e6a368b0d1accb400dac",
+    "src/brain/graph.py": "94f256557bb60278a22a036705aa66862080069ef3788436ea68921b6ce38feb",
+    "src/brain/ingest/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/brain/ingest/ast_parser.py": "ca354b5771434d3343be2155783a15a2e8e49d296dd0e4d43324277b9c78bd08",
+    "src/brain/ingest/bindings.py": "91a87e756a40737678c541818d963431e4a8a3290a2313f301c5469ca525c1e0",
+    "src/brain/ingest/codeowners.py": "cc3dc37020508115c2f9d5572a9d0959a512c5ac956625c9dee15bef7695583e",
+    "src/brain/ingest/documents.py": "4752990ba54825e33e29ac3d7d6d59af125ee7eccd653051770335c3db2d35df",
+    "src/brain/ingest/git_parser.py": "3344170bba79f34f91f18c297ecdacd9bd21436aa07ba41ed39ef1e11487564f",
+    "src/brain/ingest/identity.py": "2a6ab3a5b13f20e9054da9aad2ffd5a5a33b76d285fbae5405cb6822f122952a",
+    "src/brain/ingest/imports.py": "baadd2a994a0df325a39ba789823d3d9b2f7cd4c576ff86aeddefd831b926e2d",
+    "src/brain/ingest/references.py": "a05713d14e774a3c4d79da99823cc88831e6f0ffb782002cf1ea986c5d95d8bc",
+    "src/brain/ingest/snapshots.py": "005db26f3844ff569f0f5e7e75c37cba8c6475fe5f09f0a690dcd209fb9fd33d",
+    "src/brain/ingest/sync.py": "0131a53c48edd44e4d985de90c8cfb49da8974f3394090843bab9619847b5421",
+    "src/brain/mcp_server.py": "31441856520da14b9941388d6ef605f4034c04ef3532d117eb60a9727928772a",
+    "src/brain/services/__init__.py": "270426e2630456c0d525bb28e9de41f78800b18a8dd7780bbc6a01c33fe480f4",
+    "src/brain/services/core.py": "7611c31638ec90b6301100f612a1240df09d5f5bd4887bbe0906603191a07851",
+    "src/brain/services/evidence.py": "2300c2550dbd53fd06efce8e305debcb3500831db5f8a1a803cc544bc414bc22"
+  },
+  "protocol_sha256": "483efe260eaa839924b4eab74ea46cf2c65e27dd09ca01fb7a122eb5297d7adc",
+  "dependency_inventory_sha256": "0df01be30057b1b6b690c95a376dad804f153cedac27f43792c44a9f5e2ee29b",
+  "matched_checks": {
+    "prompts_identical": true,
+    "normalized_cli_identical_except_mcp": true,
+    "dependency_inventories_identical": true,
+    "all_before_after_corpus_hashes_equal": true,
+    "all_checkouts_remain_at_pin": true,
+    "no_existing_test_assertions_removed": true
+  },
+  "summary": {
+    "baseline": {
+      "attempted": 3,
+      "completed": 3,
+      "successful": 3,
+      "median_seconds": 149.254
+    },
+    "graph": {
+      "attempted": 3,
+      "completed": 3,
+      "successful": 3,
+      "median_seconds": 231.753
+    }
+  },
+  "trials": [
+    {
+      "trial": "baseline-1",
+      "condition": "baseline",
+      "completed": true,
+      "agent_exit": 0,
+      "success": true,
+      "elapsed_seconds": 167.161,
+      "evaluation": {
+        "oracle_exit": 0,
+        "upstream_exit": 0,
+        "oracle_passed": 12,
+        "oracle_total": 12,
+        "bare_pool_passed": 6,
+        "upstream_total": 188,
+        "upstream_failures": 0,
+        "upstream_errors": 0,
+        "upstream_skipped": 0,
+        "upstream_passed": 188
+      },
+      "oracle_cases": [
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        }
+      ],
+      "mcp_completed_calls": 0,
+      "company_brain_completed_calls": 0,
+      "empty_builtin_discovery_calls": 0,
+      "approved_constraint_received_before_edit": false,
+      "first_edit_trace_line": 17,
+      "document_seed_count": 0,
+      "document_excerpt_count": 0,
+      "artifact_sha256": {
+        "agent.patch": "8401351a4f92b75d636fbf3a5e8fa9c4c6c85993cea18e743458322da66c7c71",
+        "trace.jsonl": "80e4bcd04995fbea816b5618c1fee60af1384a7dded3ea0ea86621aa8bdc53ec",
+        "invocation.json": "22815616ea4bf4d824df7c02bf48e2a7c28f4b0fb28adbc25c297cb69f99947c",
+        "completion.json": "e25a8f62bc899acd5730b4e8c88a597554fd51136565688e99c25fc67eb82665",
+        "mcp-events.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "evaluation/oracle-results.json": "96f608f7367a902505ee3c69737df1fa323a940b56c8c015438df91d8f3bbcff",
+        "evaluation/upstream-junit.xml": "5e223f9690d2a5617d1ab1e9d01cce939070c70756cb3d5e64560545a6f99cfe"
+      },
+      "patch": "v5-trials/baseline-1.patch",
+      "command_audit_flags": []
+    },
+    {
+      "trial": "graph-1",
+      "condition": "graph",
+      "completed": true,
+      "agent_exit": 0,
+      "success": true,
+      "elapsed_seconds": 241.96,
+      "evaluation": {
+        "oracle_exit": 0,
+        "upstream_exit": 0,
+        "oracle_passed": 12,
+        "oracle_total": 12,
+        "bare_pool_passed": 6,
+        "upstream_total": 210,
+        "upstream_failures": 0,
+        "upstream_errors": 0,
+        "upstream_skipped": 0,
+        "upstream_passed": 210
+      },
+      "oracle_cases": [
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        }
+      ],
+      "mcp_completed_calls": 4,
+      "company_brain_completed_calls": 4,
+      "empty_builtin_discovery_calls": 0,
+      "approved_constraint_received_before_edit": false,
+      "first_edit_trace_line": 21,
+      "document_seed_count": 0,
+      "document_excerpt_count": 0,
+      "artifact_sha256": {
+        "agent.patch": "bc9338f7a7388f82e11cd830a828fe17aca236a072b793a3d9fb625c75fa7758",
+        "trace.jsonl": "c0e1b2b60a6e383188411fc801610a25e9ebd187bef8040eb09d908e992c4362",
+        "invocation.json": "b15d908bca0263a2a78e6273d68f2c8a2c05a99e9255fca4039b295808b03e95",
+        "completion.json": "400f929655bbe3e8e4efb130aa3ee40852c27c916a3c62591650635b788e1929",
+        "mcp-events.json": "c1c7071cfca06f9683b3dbcc7eecb0ff5ab5692eb4e095bedaf52eca49ec1c43",
+        "evaluation/oracle-results.json": "c7bee4744a2de995d4791bdd60546f0c157bcee286ac7c0212f73020aeca0978",
+        "evaluation/upstream-junit.xml": "9643274e0452547113d48b8c36c1546d6635e80d79e34a081fbdc4e4ab823c82"
+      },
+      "patch": "v5-trials/graph-1.patch",
+      "command_audit_flags": []
+    },
+    {
+      "trial": "graph-2",
+      "condition": "graph",
+      "completed": true,
+      "agent_exit": 0,
+      "success": true,
+      "elapsed_seconds": 231.753,
+      "evaluation": {
+        "oracle_exit": 0,
+        "upstream_exit": 0,
+        "oracle_passed": 12,
+        "oracle_total": 12,
+        "bare_pool_passed": 6,
+        "upstream_total": 225,
+        "upstream_failures": 0,
+        "upstream_errors": 0,
+        "upstream_skipped": 0,
+        "upstream_passed": 225
+      },
+      "oracle_cases": [
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        }
+      ],
+      "mcp_completed_calls": 5,
+      "company_brain_completed_calls": 5,
+      "empty_builtin_discovery_calls": 0,
+      "approved_constraint_received_before_edit": true,
+      "first_edit_trace_line": 32,
+      "document_seed_count": 0,
+      "document_excerpt_count": 0,
+      "artifact_sha256": {
+        "agent.patch": "a2b90c55d803f1a4dcfb8aba9d8493f02f1ebd71810db81e2b1b7be987c84bc9",
+        "trace.jsonl": "def0ce8e2a9e42a484e63f47c22c308c350b9b1fbbc401b65341be9004bdd528",
+        "invocation.json": "03fa5abbf0e60e0e5a4a6a81fd9d1204eb60974ba75c2bd21d95b153abf77505",
+        "completion.json": "003ab9b905d47f393db067aff6c262e17f5b04ada05f0781c567009a62267826",
+        "mcp-events.json": "0ab88200412e2dba1c78dd7ba1c9c35166d1a1ccf6a13bde9b0df175f688bd1d",
+        "evaluation/oracle-results.json": "f4b2a7fd8d8c6bb079a17eea38f0cc11e861807695f2c60130076e7580ccec79",
+        "evaluation/upstream-junit.xml": "d809f0bb17bad11ec31226c73217aaa3ff72b7644c439d54d8f30f8707bd0f23"
+      },
+      "patch": "v5-trials/graph-2.patch",
+      "command_audit_flags": []
+    },
+    {
+      "trial": "baseline-2",
+      "condition": "baseline",
+      "completed": true,
+      "agent_exit": 0,
+      "success": true,
+      "elapsed_seconds": 149.254,
+      "evaluation": {
+        "oracle_exit": 0,
+        "upstream_exit": 0,
+        "oracle_passed": 12,
+        "oracle_total": 12,
+        "bare_pool_passed": 6,
+        "upstream_total": 156,
+        "upstream_failures": 0,
+        "upstream_errors": 0,
+        "upstream_skipped": 0,
+        "upstream_passed": 156
+      },
+      "oracle_cases": [
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        }
+      ],
+      "mcp_completed_calls": 2,
+      "company_brain_completed_calls": 0,
+      "empty_builtin_discovery_calls": 2,
+      "approved_constraint_received_before_edit": false,
+      "first_edit_trace_line": 21,
+      "document_seed_count": 0,
+      "document_excerpt_count": 0,
+      "artifact_sha256": {
+        "agent.patch": "19e54ca823f1907346c9fd8fe19bc8f1fcaff94c8c917e8d47f5fcab0e0e1c27",
+        "trace.jsonl": "70c20fc254a2020a99bd559db7966c5636ceecb57bd9f63e71dd639f68727d21",
+        "invocation.json": "3868607e15744a1a24247b642303327ab74f3335631665ff69f5b6af0493d2c3",
+        "completion.json": "e62223615942f1bb243ed350b22fd1274ebdf7459e2182f1b7c911a51eca888e",
+        "mcp-events.json": "ea0e976250a4f34674329434c1b640f0dcfc884619817d70846216c2544a69a2",
+        "evaluation/oracle-results.json": "98eaa93d8114150f46a00d4dba7bc974710f268881f624e3c9693162a3654141",
+        "evaluation/upstream-junit.xml": "f4e21476b94ac38210c970c878de1257ad3174a20f74cdc800173d0bc73b489e"
+      },
+      "patch": "v5-trials/baseline-2.patch",
+      "command_audit_flags": []
+    },
+    {
+      "trial": "baseline-3",
+      "condition": "baseline",
+      "completed": true,
+      "agent_exit": 0,
+      "success": true,
+      "elapsed_seconds": 136.675,
+      "evaluation": {
+        "oracle_exit": 0,
+        "upstream_exit": 0,
+        "oracle_passed": 12,
+        "oracle_total": 12,
+        "bare_pool_passed": 6,
+        "upstream_total": 164,
+        "upstream_failures": 0,
+        "upstream_errors": 0,
+        "upstream_skipped": 0,
+        "upstream_passed": 164
+      },
+      "oracle_cases": [
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        }
+      ],
+      "mcp_completed_calls": 2,
+      "company_brain_completed_calls": 0,
+      "empty_builtin_discovery_calls": 2,
+      "approved_constraint_received_before_edit": false,
+      "first_edit_trace_line": 22,
+      "document_seed_count": 0,
+      "document_excerpt_count": 0,
+      "artifact_sha256": {
+        "agent.patch": "a5ad05a64ced2a3af4e5621577b2b26122fa90e570ebc05388b8f49b78f0aeba",
+        "trace.jsonl": "39812e2221c2479b8aeba2b8023a56cc85fafa5c161d54d292ea833a33b1b1ff",
+        "invocation.json": "f7e54caca130cec34ec4458e1bb18f24d89c7ae95ce8162f99372f4ea63e825f",
+        "completion.json": "6b7fab4f1c5cb66063e1f256d75d25980b394b544b694d1e7e8ad502c647af0a",
+        "mcp-events.json": "4fdddacaace67268b00ec19d66cb61335d3ee756528a3b13d01c09bda34d028c",
+        "evaluation/oracle-results.json": "080c5b5f6c3cf24a32960c72f2e24952ddc9a7abd8ecf8448dd396e3c4c8f9d5",
+        "evaluation/upstream-junit.xml": "56a6a045dfe5c6d2ee19a3eca82cf37ed4a842e396abe7151c4bd172d6393e16"
+      },
+      "patch": "v5-trials/baseline-3.patch",
+      "command_audit_flags": []
+    },
+    {
+      "trial": "graph-3",
+      "condition": "graph",
+      "completed": true,
+      "agent_exit": 0,
+      "success": true,
+      "elapsed_seconds": 148.936,
+      "evaluation": {
+        "oracle_exit": 0,
+        "upstream_exit": 0,
+        "oracle_passed": 12,
+        "oracle_total": 12,
+        "bare_pool_passed": 6,
+        "upstream_total": 178,
+        "upstream_failures": 0,
+        "upstream_errors": 0,
+        "upstream_skipped": 0,
+        "upstream_passed": 178
+      },
+      "oracle_cases": [
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "manager",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": false,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 308,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": null,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 307,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": true,
+          "offset": 0,
+          "passed": true
+        },
+        {
+          "client": "bare_pool",
+          "redirect": 303,
+          "failed_tell": false,
+          "offset": 7,
+          "passed": true
+        }
+      ],
+      "mcp_completed_calls": 3,
+      "company_brain_completed_calls": 3,
+      "empty_builtin_discovery_calls": 0,
+      "approved_constraint_received_before_edit": true,
+      "first_edit_trace_line": 22,
+      "document_seed_count": 0,
+      "document_excerpt_count": 0,
+      "artifact_sha256": {
+        "agent.patch": "ae71846b4468768fb755c09e3e490c161d155cdb80a7ef4dc363ed852191854d",
+        "trace.jsonl": "b32198a024bca479cd0f403fd51c58a38745f7cf492941f5bf03168f030d120d",
+        "invocation.json": "009b7b5e2bba5f2ef06859273574ecbb09a088a6ea9ddbdaf31fa497c934e1ff",
+        "completion.json": "d9a7b8290df79228a264e0f7f04ea5176cef2e0456c12e32d852e6fdd51c3487",
+        "mcp-events.json": "c12e17a0bd34879fc728d1b886f33361406997e2f5182e2b9ffe28ad3e928eb9",
+        "evaluation/oracle-results.json": "80d164ba7776664db010c8f0b7a95af3c0c84d278f0294c697f9aaf9bf8abe86",
+        "evaluation/upstream-junit.xml": "38c27a80a06bee3ddef7f68c5faa9af5b12c83406d43319166da26fe12217ece"
+      },
+      "patch": "v5-trials/graph-3.patch",
+      "command_audit_flags": []
+    }
+  ],
+  "limitations": [
+    "Local self-reported measurements use an evaluator independent of the coding sessions, not third-party attestation.",
+    "Three trials per arm do not establish significance or general model performance.",
+    "Same selector includes differing agent-added tests; upstream case totals therefore differ.",
+    "Emitted-command audit found no screened external/evaluator reads; this does not prove filesystem confinement or expose hidden reasoning.",
+    "Graph retrieval can be incomplete; exported MCP metadata preserves warnings.",
+    "Graph-1 did not receive the active rule; graph-2/3 exposure is recorded separately.",
+    "Baseline-2/3 used built-in MCP resource discovery, which returned empty results; no Company Brain tools were available in baselines.",
+    "Direct model retrieval of repository doc sections is measured separately from operator/driver verification.",
+    "The old passing run is on an earlier graph and is not part of this comparison."
+  ]
+}

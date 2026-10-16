@@ -9,5 +9,7 @@ demo; do not import the unfiltered test fixture into an experiment graph.
 Public discussion text retains its author attribution and applicable terms.
 urllib3 code is MIT licensed. API state is collection-time state, not pin-time
 state; a merged PR is historical evidence, not operator authorization.
+The upstream [MIT notice](LICENSE.txt) is retained for the code/documentation
+excerpts and derived trial patches. Discussion text keeps its applicable terms.
 
 Rebuild and human approval commands: [v5 reproduction](../../../docs/v5-reproduction.md).

@@ -1,0 +1,624 @@
+[
+  {
+    "trial": "graph-1",
+    "calls": [
+      {
+        "trace_line": 9,
+        "server": "company-brain",
+        "tool": "get_context",
+        "arguments": {
+          "scope": "org",
+          "query": "PoolManager file-like request body replay body-preserving redirects rewind body_pos",
+          "keywords": [
+            "PoolManager",
+            "redirect",
+            "rewind_body",
+            "body_pos"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "incomplete",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "keyword_search_not_semantic",
+          "source_text_is_not_decision_approval"
+        ],
+        "truncated": [
+          "excerpt_chars",
+          "paths"
+        ],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [
+          "experiment:urllib3:5181:eligible:pr:5161:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source"
+        ],
+        "source_urls": [
+          "https://github.com/urllib3/urllib3/pull/5161",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717"
+        ]
+      },
+      {
+        "trace_line": 11,
+        "server": "company-brain",
+        "tool": "get_context",
+        "arguments": {
+          "scope": "org",
+          "query": "src/urllib3/poolmanager.py",
+          "keywords": [
+            "body_pos",
+            "redirect",
+            "rewind"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "incomplete",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "keyword_search_not_semantic",
+          "source_text_is_not_decision_approval"
+        ],
+        "truncated": [
+          "excerpt_chars",
+          "paths"
+        ],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [
+          "experiment:urllib3:5181:eligible:pr:5161:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source"
+        ],
+        "source_urls": [
+          "https://github.com/urllib3/urllib3/pull/5161",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717"
+        ]
+      },
+      {
+        "trace_line": 18,
+        "server": "company-brain",
+        "tool": "check_change",
+        "arguments": {
+          "files": [
+            "src/urllib3/poolmanager.py",
+            "test/with_dummyserver/test_poolmanager.py"
+          ],
+          "symbols": [
+            "PoolManager.urlopen",
+            "TestPoolManager",
+            "set_file_position"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "unknown",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "symbol_not_found"
+        ],
+        "truncated": [],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [],
+        "source_urls": []
+      },
+      {
+        "trace_line": 31,
+        "server": "company-brain",
+        "tool": "check_change",
+        "arguments": {
+          "files": [
+            "src/urllib3/poolmanager.py",
+            "test/with_dummyserver/test_poolmanager.py",
+            "test/test_poolmanager.py"
+          ],
+          "symbols": [
+            "PoolManager.urlopen",
+            "TestPoolManager.test_redirect_file_body",
+            "TestPoolManager.test_file_body_without_rewind"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "incomplete",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "caller_limit_exceeded"
+        ],
+        "truncated": [],
+        "must_preserve": [],
+        "before_first_edit": false,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [],
+        "source_urls": []
+      }
+    ]
+  },
+  {
+    "trial": "graph-2",
+    "calls": [
+      {
+        "trace_line": 11,
+        "server": "company-brain",
+        "tool": "get_context",
+        "arguments": {
+          "scope": "org",
+          "query": "PoolManager file-like request body preserving redirects body_pos rewind unread payload",
+          "keywords": [
+            "PoolManager",
+            "redirect",
+            "rewind_body",
+            "body_pos"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "incomplete",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "keyword_search_not_semantic",
+          "source_text_is_not_decision_approval"
+        ],
+        "truncated": [
+          "excerpt_chars",
+          "paths"
+        ],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [
+          "experiment:urllib3:5181:eligible:pr:5161:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source"
+        ],
+        "source_urls": [
+          "https://github.com/urllib3/urllib3/pull/5161",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717"
+        ]
+      },
+      {
+        "trace_line": 17,
+        "server": "company-brain",
+        "tool": "get_context",
+        "arguments": {
+          "scope": "org",
+          "query": "PoolManager.urlopen",
+          "keywords": [
+            "body_pos"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "incomplete",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "keyword_search_not_semantic",
+          "source_text_is_not_decision_approval"
+        ],
+        "truncated": [
+          "excerpt_chars",
+          "paths"
+        ],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [
+          "experiment:urllib3:5181:eligible:pr:5161:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source"
+        ],
+        "source_urls": [
+          "https://github.com/urllib3/urllib3/pull/5161",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717"
+        ]
+      },
+      {
+        "trace_line": 23,
+        "server": "company-brain",
+        "tool": "check_change",
+        "arguments": {
+          "files": [
+            "src/urllib3/poolmanager.py",
+            "test/with_dummyserver/test_poolmanager.py"
+          ],
+          "symbols": [
+            "PoolManager.urlopen",
+            "TestPoolManager"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "incomplete",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "missing_call_edges_do_not_prove_no_dependencies",
+          "historical_file_links_are_not_symbol_constraints"
+        ],
+        "truncated": [
+          "excerpt_chars",
+          "ownership"
+        ],
+        "must_preserve": [
+          "D-b00dc7379a3a4ca0a08dbce704942574"
+        ],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [
+          "experiment:urllib3:5181:eligible:pr:5161:source",
+          null,
+          null,
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source"
+        ],
+        "source_urls": [
+          "https://github.com/urllib3/urllib3/pull/5161",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717"
+        ]
+      },
+      {
+        "trace_line": 29,
+        "server": "company-brain",
+        "tool": "check_change",
+        "arguments": {
+          "files": [
+            "src/urllib3/poolmanager.py",
+            "test/test_poolmanager.py",
+            "test/with_dummyserver/test_poolmanager.py"
+          ],
+          "symbols": [
+            "PoolManager.urlopen",
+            "TestPoolManager"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "unknown",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "symbol_ambiguous"
+        ],
+        "truncated": [],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [],
+        "source_urls": []
+      },
+      {
+        "trace_line": 31,
+        "server": "company-brain",
+        "tool": "check_change",
+        "arguments": {
+          "files": [
+            "src/urllib3/poolmanager.py",
+            "test/test_poolmanager.py",
+            "test/with_dummyserver/test_poolmanager.py"
+          ],
+          "symbols": [
+            "PoolManager.urlopen"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "incomplete",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "missing_call_edges_do_not_prove_no_dependencies",
+          "historical_file_links_are_not_symbol_constraints"
+        ],
+        "truncated": [
+          "excerpt_chars",
+          "ownership"
+        ],
+        "must_preserve": [
+          "D-b00dc7379a3a4ca0a08dbce704942574"
+        ],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [
+          "experiment:urllib3:5181:eligible:pr:5161:source",
+          null,
+          null,
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source"
+        ],
+        "source_urls": [
+          "https://github.com/urllib3/urllib3/pull/5161",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717"
+        ]
+      }
+    ]
+  },
+  {
+    "trial": "baseline-2",
+    "calls": [
+      {
+        "trace_line": 10,
+        "server": "codex",
+        "tool": "list_mcp_resource_templates",
+        "arguments": {},
+        "call_status": "completed",
+        "response_status": null,
+        "empty_builtin_resource_discovery": true,
+        "warnings": [],
+        "truncated": [],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [],
+        "source_urls": []
+      },
+      {
+        "trace_line": 11,
+        "server": "codex",
+        "tool": "list_mcp_resources",
+        "arguments": {},
+        "call_status": "completed",
+        "response_status": null,
+        "empty_builtin_resource_discovery": true,
+        "warnings": [],
+        "truncated": [],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [],
+        "source_urls": []
+      }
+    ]
+  },
+  {
+    "trial": "baseline-3",
+    "calls": [
+      {
+        "trace_line": 10,
+        "server": "codex",
+        "tool": "list_mcp_resources",
+        "arguments": {},
+        "call_status": "completed",
+        "response_status": null,
+        "empty_builtin_resource_discovery": true,
+        "warnings": [],
+        "truncated": [],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [],
+        "source_urls": []
+      },
+      {
+        "trace_line": 11,
+        "server": "codex",
+        "tool": "list_mcp_resource_templates",
+        "arguments": {},
+        "call_status": "completed",
+        "response_status": null,
+        "empty_builtin_resource_discovery": true,
+        "warnings": [],
+        "truncated": [],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [],
+        "source_urls": []
+      }
+    ]
+  },
+  {
+    "trial": "graph-3",
+    "calls": [
+      {
+        "trace_line": 9,
+        "server": "company-brain",
+        "tool": "get_context",
+        "arguments": {
+          "scope": "org",
+          "query": "PoolManager file-like request body preserving redirects replay unread payload body_pos rewind",
+          "keywords": [
+            "PoolManager",
+            "redirect",
+            "body_pos",
+            "rewind_body"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "incomplete",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "keyword_search_not_semantic",
+          "source_text_is_not_decision_approval"
+        ],
+        "truncated": [
+          "excerpt_chars",
+          "paths"
+        ],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [
+          "experiment:urllib3:5181:eligible:pr:5161:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source"
+        ],
+        "source_urls": [
+          "https://github.com/urllib3/urllib3/pull/5161",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717"
+        ]
+      },
+      {
+        "trace_line": 15,
+        "server": "company-brain",
+        "tool": "check_change",
+        "arguments": {
+          "files": [
+            "src/urllib3/poolmanager.py",
+            "test/test_poolmanager.py",
+            "test/with_dummyserver/test_poolmanager.py"
+          ],
+          "symbols": [
+            "PoolManager.urlopen",
+            "TestPoolManager",
+            "set_file_position",
+            "HTTPConnectionPool.urlopen"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "unknown",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "symbol_ambiguous"
+        ],
+        "truncated": [],
+        "must_preserve": [],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [],
+        "source_urls": []
+      },
+      {
+        "trace_line": 20,
+        "server": "company-brain",
+        "tool": "check_change",
+        "arguments": {
+          "files": [
+            "src/urllib3/poolmanager.py",
+            "test/test_poolmanager.py",
+            "test/with_dummyserver/test_poolmanager.py"
+          ],
+          "symbols": [
+            "src/urllib3/poolmanager.py::PoolManager.urlopen",
+            "test/test_poolmanager.py::TestPoolManager",
+            "test/with_dummyserver/test_poolmanager.py::TestPoolManager"
+          ]
+        },
+        "call_status": "completed",
+        "response_status": "incomplete",
+        "empty_builtin_resource_discovery": false,
+        "warnings": [
+          "missing_call_edges_do_not_prove_no_dependencies",
+          "historical_file_links_are_not_symbol_constraints"
+        ],
+        "truncated": [
+          "excerpt_chars",
+          "ownership"
+        ],
+        "must_preserve": [
+          "D-b00dc7379a3a4ca0a08dbce704942574"
+        ],
+        "before_first_edit": true,
+        "document_seed_count": 0,
+        "document_excerpt_count": 0,
+        "source_ids": [
+          "experiment:urllib3:5181:eligible:pr:5161:source",
+          null,
+          null,
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5121537340:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444149:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5124444917:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5146397717:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5557447817:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5573839960:source",
+          "experiment:urllib3:5181:eligible:pr:5161:comment:5578684013:source"
+        ],
+        "source_urls": [
+          "https://github.com/urllib3/urllib3/pull/5161",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5557447817",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5573839960",
+          "https://github.com/urllib3/urllib3/pull/5161#issuecomment-5578684013",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5121537340",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444149",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5124444917",
+          "https://github.com/urllib3/urllib3/pull/5161#pullrequestreview-5146397717"
+        ]
+      }
+    ]
+  }
+]

@@ -6,7 +6,37 @@ approval; Browser required; reproducible sources promoted to P0; 30-second
 supersession segment; publication review/public visibility Saturday night
 (17 October), leaving Sunday for fixes/submission. No architecture rewrite.
 
-## Completed implementation and observed evidence
+## Current completed milestone
+
+Independent human approval and supersession are complete: D-1 is superseded,
+D-2 is active, and `check_change.must_preserve` returns D-2. The frozen corpus
+SHA-256 is `b16fc995c9d4429a54c20601ae471bbc7a789d61a1256184068aa30c5ef688f6`.
+All six fresh trials completed; both baseline and graph succeeded 3/3, with
+12/12 oracle cases and passing upstream suites in every session. No accuracy
+advantage was observed. See [results](v5-evaluation.md) and
+[operator lifecycle evidence](v5-lifecycle-evidence.json).
+
+Browser visual verification, the actual submission form, final video and the
+Saturday publication review remain release gates. The checkpoints below retain
+the earlier order of work; their proposed/pending states are historical.
+
+Latest Browser check: the user installed FalkorDB Browser and added an explicit
+`http://localhost:3000` browse allow entry. The local configuration confirms
+`access=allow`, but the computer-use gate still denies observing the existing
+Codex browser tab, reporting a saved-permission or managed-policy block. Native
+FalkorDB Browser access was also rejected as not approved. No raw CDP, alternate
+browser surface or indirect control workaround was used. This remains a runtime/
+policy gate; it is not a demonstrated Lite compatibility failure. A fresh app
+session is the next diagnostic after the coding trials, not a claim of resolution.
+
+The latest locked clean-room environment also passes all **134 tests** with
+real graph/Lite lifecycle checks enabled. After the coding trials, a separate
+STDIO probe retrieved the untruncated changelog Source again, and real driver
+queries verified the primary and re-export/caller paths on the frozen graph.
+[Document evidence](v5-document-evidence.json) records that verification without
+claiming Browser access or model use of documentation.
+
+## Initial implementation checkpoint (before human approval)
 
 - Working branch started at `4d8d622`, the integrated recorded agent demo,
   rather than resetting to the plan's older stated starting commit. Preserved
@@ -114,7 +144,7 @@ this log once verified; they cannot certify a future release commit.
 Do not use `docs/demo/demo.mp4` as final successful footage: it records the older
 failed 9/12 attempt. A new final video is still required.
 
-## Continuation: trial preparation
+## Trial preparation checkpoint (before human approval)
 
 Prepared six fresh clean checkouts in the fixed order (baseline-1, graph-1,
 graph-2, baseline-2, baseline-3, graph-3). All are at the same urllib3 pin,

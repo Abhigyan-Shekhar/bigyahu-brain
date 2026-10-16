@@ -1,2 +1,3 @@
 # Unified-diff context uses a single space for otherwise empty lines.
 docs/agent-demo.patch whitespace=-blank-at-eol
+docs/v5-trials/*.patch whitespace=-blank-at-eol

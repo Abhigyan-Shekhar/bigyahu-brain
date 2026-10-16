@@ -6,6 +6,12 @@ code-editing agent. Source prose is untrusted evidence; remembering something
 creates a proposal, never an approved rule.
 
 **Status: graph-aware Codex coding demonstration validated; no baseline coding improvement demonstrated.**
+The fresh approved-v5 comparison completed **3 baseline + 3 graph sessions**:
+every run passed **12/12 independent oracle cases** and its selected upstream
+suite. Both conditions succeeded 3/3; no correctness advantage was observed.
+The approved rule reached graph-2/3 before edits. See the
+[complete results and limitations](docs/v5-evaluation.md).
+
 FalkorDBLite 0.10.0 runs on this Mac with Redis 8.6.2 and graph module 4.18.3.
 Current v5 validation: **134 passed, 0 failed, 0 skipped**, with real graph
 and Lite lifecycle integration enabled. Ruff passes for `src`, `tests`, and
@@ -200,14 +206,17 @@ data stay local and are not publication inputs.
 
 ## Remaining release gates
 
-- Revalidate on any different engine version; current live checks pass on Lite 4.18.3.
-- Broaden controlled coding evaluation beyond the recorded matched pair; no
-  general correctness or reasoning advantage is established.
-- Human-review and approve a real applicable constraint; agents must not do this.
-- Finish old-side diff mapping (currently file fallback) and broader runtime call
-  resolution. Reviewer evidence remains advisory. Document ingestion is implemented.
-- Expand adversarial/integration coverage, record measured metrics, validate Browser
-  routing, record the video, and perform a clean-room setup.
+- Verify the actual Browser visual and org graph selection; computer-use access
+  remains blocked even with the localhost allow entry saved.
+- Record a new video using the fresh graph-2 run, real approval/supersession
+  evidence, complete comparison table and disclosed retrieval limits.
+- Inspect the actual submission form and its required links/declarations.
+- On Saturday 17 October, scan the final release history, manually review source
+  and binary/video exports, make the repository public, and verify logged-out access.
+- Submit by early evening Sunday 18 October, ahead of the 11:59 PM IST deadline.
+
+Broader evaluation and runtime call resolution remain future work. Revalidate
+any engine version other than the measured Lite 4.18.3 setup before claiming it tested.
 
 Static calls cover conservative same-module lexical calls, deterministic direct
 imports and explicit Python `from`-import re-export chains, including aliases and

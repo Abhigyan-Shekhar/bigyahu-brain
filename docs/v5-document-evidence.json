@@ -1,0 +1,58 @@
+{
+  "corpus_sha256": "b16fc995c9d4429a54c20601ae471bbc7a789d61a1256184068aa30c5ef688f6",
+  "verification": "real_FalkorDB_driver_paths_and_separate_STDIO_get_context",
+  "primary_paths": [
+    {
+      "path": [
+        "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:CHANGES.rst:section:L103-L130",
+        "experiment:urllib3:5181:eligible:pr:5161",
+        "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py",
+        "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py::PoolManager.urlopen"
+      ],
+      "document": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:CHANGES.rst:section:L103-L130",
+      "mention_line": 127,
+      "uri": "https://github.com/urllib3/urllib3/blob/a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8/CHANGES.rst#L103-L130"
+    }
+  ],
+  "bonus_paths": [
+    {
+      "path": [
+        "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:docs/reference/urllib3.poolmanager.rst:section:L1-L18",
+        "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py::ProxyManager",
+        "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py::proxy_from_url"
+      ],
+      "reference": "urllib3.ProxyManager",
+      "line": 10
+    }
+  ],
+  "document_source": {
+    "source_uid": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:CHANGES.rst:section:L103-L130:source",
+    "uri": "https://github.com/urllib3/urllib3/blob/a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8/CHANGES.rst#L103-L130",
+    "text": "  certificate policy and proxy identity checks with the target connection's TLS\n  settings when forwarding through an HTTPS proxy.\n\n  ``HTTPSConnection`` no longer applies target SNI, assertions, or client\n  credentials to forwarding proxy handshakes and continues to use its\n  ``ssl_context`` as a fallback when an HTTPS proxy forwards an HTTP target.\n  (`#5093 <https://github.com/urllib3/urllib3/issues/5093>`__)\n- Fixed URL parsing to more strictly enforce RFC 3986 host syntax, rejecting\n  invalid host input such as raw spaces and control characters, malformed\n  percent-encodings, and percent-encoded control characters in HTTP(S) hosts\n  and IPv6 zone identifiers, including proxy CONNECT tunnel targets. Host\n  normalization now also follows RFC 3986 normalization rules for\n  percent-encoded octets by decoding percent-encoded unreserved characters and\n  uppercasing the hexadecimal digits of retained percent-encoded octets.\n  (`#5095 <https://github.com/urllib3/urllib3/issues/5095>`__)\n- Fixed an ``AttributeError`` on Python built with OpenSSL 4+, where\n  ``ssl.PROTOCOL_TLSv1`` no longer exists.\n  (`#5097 <https://github.com/urllib3/urllib3/issues/5097>`__)\n- Fixed ``urllib3.contrib.pyopenssl`` to use cryptography APIs when reading a\n  certificate subject and loading encrypted private keys, avoiding\n  ``DeprecationWarning`` raised by pyOpenSSL 26.3.0+.\n  (`#5103 <https://github.com/urllib3/urllib3/issues/5103>`__)\n- Fixed handling of HTTP 303 redirects for requests with chunked or file-like\n  bodies.\n  (`#5161 <https://github.com/urllib3/urllib3/issues/5161>`__)\n- Fixed ``assert_fingerprint()`` to raise ``SSLError`` instead of\n  ``binascii.Error`` when a fingerprint has a supported length but contains\n  non-hexadecimal characters.\n",
+    "original_chars": 1759,
+    "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+    "revision_basis": "unknown",
+    "snapshot_at": null,
+    "work_uid": null,
+    "work_type": null,
+    "work_status": "unknown",
+    "status_basis": "unknown",
+    "merged_at": null,
+    "retrieval": "direct_source_link",
+    "truncated": false,
+    "scope": "org",
+    "repo_id": "experiment:urllib3:5181:eligible",
+    "trust_status": "untrusted_evidence",
+    "binding": false,
+    "evidence_confidence": "recorded_source"
+  },
+  "response_status": "incomplete",
+  "truncated": [
+    "excerpt_chars"
+  ],
+  "disclosures": [
+    "This is an operator verification probe after coding trials; it was not fed to coding sessions.",
+    "The linked PR body is truncated by the normal excerpt budget.",
+    "No Browser visual attachment is claimed."
+  ]
+}

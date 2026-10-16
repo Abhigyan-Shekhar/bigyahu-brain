@@ -36,11 +36,12 @@ it before `check_change` treats it as an applicable constraint. Supersession
 retains history while replacing the active rule.
 
 The agent investigates, edits and tests code; Company Brain supplies graph
-evidence. The existing earlier-graph demo passed 12/12 independent socket cases
-and 200 selected upstream tests. That run predates v5 docs/approval and does not
-demonstrate their effect. Fresh v5 trials and their outcomes are pending. No
-accuracy lift over baseline is established; any three-per-arm comparison will
-be reported as anecdotal, including ties, failures and incomplete sessions.
+evidence. The fresh approved-v5 comparison completed three sessions per condition;
+both baseline and graph passed all 12 independent socket cases in every run and
+their selected upstream suites. Graph-2/3 received the approved rule before edits.
+No accuracy lift was observed. At three sessions per arm, differences remain
+anecdotal. The [full comparison](v5-evaluation.md) includes all outcomes and
+incomplete retrieval. The older 12/12 demonstration predates v5 docs/approval.
 
 ## Setup, queries and evidence
 
@@ -49,6 +50,8 @@ be reported as anecdotal, including ties, failures and incomplete sessions.
   eligible public snapshots and a pinned urllib3 checkout
 - [FalkorDB traversal queries](v5-reproduction.md#verified-graph-paths)
 - [Fixed paired evaluation protocol](v5-evaluation-protocol.md)
+- [Fresh 3+3 results and exact patches](v5-evaluation.md)
+- [Real human approval/supersession evidence](v5-lifecycle-evidence.json)
 - [Earlier-graph demonstration and limitations](agent-demo-results.md)
 - [Original event work and AI-assistance disclosure](../NEW_WORK.md)
 
