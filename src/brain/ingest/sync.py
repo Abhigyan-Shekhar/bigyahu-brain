@@ -48,10 +48,12 @@ def sync(store):
     )
     location, rules = read_rules(cfg.repo_root)
     count = 0
+    file_count = 0
     for path in files:
         if not path or not (cfg.repo_root / path).is_file():
             continue
         cfg.path(path)
+        file_count += 1
         file_uid = f"{cfg.repo_id}@{sha}:{path}"
         store.upsert(
             "File",
@@ -161,7 +163,18 @@ def sync(store):
         store.edge(uid, "SUPPORTS", source)
         store.edge(person, "AUTHORED", uid)
         for path in commit["files"]:
-            store.edge(uid, "MODIFIES", f"{cfg.repo_id}@{sha}:{path}")
+            store.edge(
+                uid,
+                "MODIFIES",
+                f"{cfg.repo_id}@{sha}:{path}",
+                {
+                    "source_uid": source,
+                    "confidence": "historical_path_match",
+                    "basis": "git_diff_tree_path_at_indexed_revision",
+                    "commit_revision": commit["sha"],
+                    "indexed_revision": sha,
+                },
+            )
     if sha != revision(cfg.repo_root) or not clean(cfg.repo_root):
         raise ValueError("Checkout changed during sync; graph remains unavailable until rerun")
     store.query(
@@ -170,7 +183,13 @@ def sync(store):
     )
     return {
         "revision": sha,
-        "files": len(files),
+        "files": file_count,
+        "calls": sum(len(m.calls) for m in modules.values()),
+        "statically_resolved_imports": sum(
+            c.get("resolution") == "statically_resolved_import"
+            for m in modules.values()
+            for c in m.calls
+        ),
         "symbols": count,
         "unresolved_calls": sum(len(m.unresolved) for m in modules.values()),
     }

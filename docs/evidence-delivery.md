@@ -25,8 +25,9 @@ comment describes its parent work item, not approval of that comment.
 
 Evidence paths distinguish direct recorded evidence, file-level historical associations,
 heuristic relationships and other recorded relationships. A PR touching a file does not
-establish a constraint on every symbol it declares. Coverage reports missing file links
-and states that cross-module call resolution remains unsupported. Confidence labels
+establish a constraint on every symbol it declares. Coverage reports missing file links. Cross-module retrieval consumes recorded static
+import edges, including explicit re-export edges when supplied by the ingester; unrecorded
+runtime dispatch remains outside coverage. Confidence labels
 describe the recorded relationship, not the truth of arbitrary source claims.
 
 Bounds per response:
@@ -80,3 +81,12 @@ Regression tests use checked-in copies under `tests/fixtures/urllib3-history`, i
 test repository IDs and cleanup. No online GitHub request is required for these tests.
 
 Raw validation/protocol captures are now ignored local records, not checked-in publication inputs. See `security-remediation.md` for the exposure correction and the reviewed `docs/demo/` export.
+
+## Ingestion compatibility follow-up
+
+The service now exposes optional historical-link provenance added by ingestion `c2d9d9a`.
+CHANGES associations retain file-level, non-binding semantics. References remain untrusted
+mentions, with primary mention-source metadata separate from the referenced issue's source.
+Older graphs may return null for new properties. See
+[graph-intelligence-progress.md](graph-intelligence-progress.md#compatibility-review-of-ingestion-c2d9d9a--16-october-2026)
+for the isolated compatibility review and current validation results.

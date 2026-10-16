@@ -1,8 +1,10 @@
-"""Resolve direct repository imports only; no runtime dispatch or re-export inference."""
+"""Resolve deterministic imports and explicit re-exports; no runtime dispatch."""
 
 import ast
 from collections import defaultdict
 from pathlib import PurePosixPath
+
+from .bindings import bindings
 
 
 def resolve_imports(modules, texts):
@@ -19,48 +21,21 @@ def resolve_imports(modules, texts):
         module_names[path] = name
     unique = {name: paths[0] for name, paths in names.items() if len(paths) == 1}
 
-    def bindings(body, package):
-        imports, writes = {}, defaultdict(int)
-        for statement in body:
-            if isinstance(statement, (ast.Import, ast.ImportFrom)):
-                for alias in statement.names:
-                    if alias.name == "*":
-                        return {}, {"*"}
-                    local = alias.asname or (
-                        alias.name.split(".")[0]
-                        if isinstance(statement, ast.Import)
-                        else alias.name
-                    )
-                    writes[local] += 1
-                    if isinstance(statement, ast.Import):
-                        imports[local] = (
-                            alias.name if alias.asname else alias.name.split(".")[0],
-                            alias.name,
-                            "module",
-                        )
-                    else:
-                        base = statement.module or ""
-                        if statement.level:
-                            pieces = package.split(".") if package else []
-                            if statement.level > len(pieces):
-                                continue
-                            base = ".".join(
-                                pieces[: len(pieces) - statement.level + 1]
-                                + ([base] if base else [])
-                            )
-                        full = ".".join(filter(None, [base, alias.name]))
-                        imports[local] = (full, full, "from")
-            elif isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                writes[statement.name] += 1
-            else:
-                # Conditional imports, assignments, deletions and loop bindings are ambiguous.
-                for node in ast.walk(statement):
-                    if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
-                        writes[node.id] += 1
-                    if isinstance(node, (ast.Import, ast.ImportFrom)):
-                        for alias in node.names:
-                            writes[alias.asname or alias.name.split(".")[0]] += 1
-        return {k: v for k, v in imports.items() if writes[k] == 1}, set(writes)
+    def unambiguous(name):
+        return name in unique and all(
+            len(names[".".join(name.split(".")[:i])]) <= 1
+            and (
+                i == len(name.split("."))
+                or all(p.endswith("/__init__.py") for p in names[".".join(name.split(".")[:i])])
+            )
+            for i in range(1, len(name.split(".")) + 1)
+        )
+
+    exports = {}
+    for path in modules:
+        name = module_names[path]
+        package = name if path.endswith("/__init__.py") else name.rpartition(".")[0]
+        exports[name], _ = bindings(ast.parse(texts[path]).body, package)
 
     functions = {}
     for path, module in modules.items():
@@ -72,12 +47,28 @@ def resolve_imports(modules, texts):
         for symbol in module.symbols:
             name = symbol["qualname"]
             node = definitions.get(name)
-            if node is None:
+            if node is None or node.decorator_list:
                 continue
             other = [n for n in tree.body if n is not node]
             _, writes = bindings(other, "")
             if name not in writes and "*" not in writes:
                 functions[(module_names[path], name)] = symbol["uid"]
+
+    def exported_function(module_name, symbol_name, seen=None):
+        key = (module_name, symbol_name)
+        seen = set() if seen is None else seen
+        if key in seen or not unambiguous(module_name):
+            return None
+        if key in functions:
+            return functions[key]
+        seen.add(key)
+        binding = exports.get(module_name, {}).get(symbol_name)
+        # Only explicit from-import aliases re-export a function. No star imports,
+        # module __getattr__, assignment aliases, or conditional fallback imports.
+        if binding and binding[2] == "from":
+            next_module, _, next_symbol = binding[0].rpartition(".")
+            return exported_function(next_module, next_symbol, seen)
+        return None
 
     for path, module in modules.items():
         tree = ast.parse(texts[path], filename=path)
@@ -102,6 +93,7 @@ def resolve_imports(modules, texts):
                     if not isinstance(node, ast.ClassDef):
                         local, writes = bindings(node.body, package)
                         args = node.args.posonlyargs + node.args.args + node.args.kwonlyargs
+                        args += [a for a in (node.args.vararg, node.args.kwarg) if a]
                         blocked = writes | {a.arg for a in args}
                         blocked |= {a.arg for a in [node.args.vararg, node.args.kwarg] if a}
                         # Closures and global/nonlocal mutation need a more complete scope analysis.
@@ -144,11 +136,7 @@ def resolve_imports(modules, texts):
             eligible = target and (
                 target_module == target[1] or (target[2] == "from" and dotted == target[1])
             )
-            uid = (
-                functions.get((target_module, target_name))
-                if eligible and target_module in unique
-                else None
-            )
+            uid = exported_function(target_module, target_name) if eligible else None
             if uid:
                 module.calls.append(
                     {

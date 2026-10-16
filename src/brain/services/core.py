@@ -8,6 +8,7 @@ from functools import wraps
 
 from ..graph import GraphUnavailable
 from ..ingest.git_parser import clean, revision
+from .evidence import LIMITS, SOURCE_FIELDS, bound_excerpts, source_routes
 
 
 def envelope(**kwargs):
@@ -160,7 +161,9 @@ class Services:
                 "MATCH p=(caller:Symbol)-[:CALLS*1..2]->(target:Symbol) "
                 "WHERE target.uid IN $ids AND all(n IN nodes(p) WHERE n.current=true AND n.repo_id=$repo) "
                 "RETURN DISTINCT [n IN nodes(p) | n.uid] AS path, "
-                "[r IN relationships(p) | r.confidence] AS confidence LIMIT 101",
+                "[r IN relationships(p) | r.confidence] AS confidence, "
+                "[r IN relationships(p) | r.resolution] AS resolution "
+                "ORDER BY path LIMIT 101",
                 {"ids": ids, "repo": self.cfg.repo_id},
             )
             if ids
@@ -170,6 +173,21 @@ class Services:
             return envelope(
                 status="incomplete", graph_revision=sha, warnings=["caller_limit_exceeded"]
             )
+        for path in paths:
+            path["target_uid"] = path["path"][-1]
+            recorded = path.get("resolution") or []
+            path["resolution"] = [
+                (recorded[i] if i < len(recorded) else None)
+                or (
+                    "heuristic"
+                    if confidence == "heuristic"
+                    else "static"
+                    if confidence in {"exact", "static"}
+                    else "unknown"
+                )
+                for i, confidence in enumerate(path["confidence"])
+            ]
+            path["graph_revision"] = sha
         related = sorted(set(ids) | {uid for p in paths for uid in p["path"]})
         decisions = self._decisions(related)
         if len(decisions) > 100:
@@ -180,11 +198,25 @@ class Services:
         for d in decisions:
             sources = d.pop("sources") or []
             sources = [s for s in sources if s and s.get("uid")]
-            excerpts.extend({"source_uid": s["uid"], "text": s.get("excerpt", "")} for s in sources)
+            excerpts.extend(
+                {
+                    "source_uid": s["uid"],
+                    "uri": s.get("uri"),
+                    "text": s.get("excerpt", ""),
+                    "original_chars": s.get("original_chars", len(s.get("excerpt", ""))),
+                }
+                for s in sources
+            )
             evidence.extend({"source_uid": s["uid"], "uri": s.get("uri")} for s in sources)
             # Decision prose is also untrusted. Structural applicability is separate.
             text = d.pop("text")
-            excerpts.append({"decision_id": d["uid"], "text": text})
+            excerpts.append(
+                {
+                    "decision_id": d["uid"],
+                    "text": text,
+                    "original_chars": d.pop("original_chars", len(text)),
+                }
+            )
             d["source_uids"] = [s["uid"] for s in sources]
             binding = (
                 d["status"] == "active"
@@ -196,8 +228,34 @@ class Services:
             )
             if d["status"] != "superseded":
                 (must if binding else review).append(d)
-        owners = [self.find_owner(file=path) for path in files]
+        history, associations, affected_files, truncated = self._change_history(related)
+        if any(d.get("source_count", 0) > 20 for d in decisions):
+            truncated.add("decision_sources")
+        excerpts, text_truncation = bound_excerpts(history, self.cfg.repo_id, prefix=excerpts)
+        truncated.update(text_truncation)
+        evidence.extend(
+            {k: v for k, v in s.items() if k not in {"text", "original_chars"}} for s in history
+        )
+        evidence = list({e["source_uid"]: e for e in evidence}.values())
+        if len(evidence) > 20:
+            truncated.add("evidence")
+        evidence = evidence[:20]
+        owner_files = sorted(set(files) | {f["path"] for f in affected_files})
+        if len(owner_files) > 50:
+            truncated.add("ownership_files")
+        owners = [self.find_owner(file=path) for path in owner_files[:50]]
+        if any(o["status"] != "ok" for o in owners):
+            truncated.add("ownership")
+        warnings.extend(
+            [
+                "missing_call_edges_do_not_prove_no_dependencies",
+                "historical_file_links_are_not_symbol_constraints",
+            ]
+        )
+        if not associations:
+            warnings.append("no_recorded_historical_file_associations")
         return envelope(
+            status="incomplete" if truncated else "ok",
             graph_revision=sha,
             precision=precision,
             targets=selected,
@@ -208,15 +266,116 @@ class Services:
             untrusted_source_excerpts=excerpts,
             warnings=warnings,
             owners=owners,
+            file_associations=associations,
+            coverage={
+                "affected_files": affected_files,
+                "incoming_call_hops": 2,
+                "cross_module_call_resolution": "recorded_static_imports_including_explicit_reexports",
+                "no_missing_edges_inferred": True,
+                "historical_file_links_are_not_symbol_constraints": True,
+            },
+            limits={
+                **LIMITS,
+                "caller_paths": 100,
+                "file_associations": 20,
+                "affected_files": 200,
+                "ownership_files": 50,
+            },
+            truncated=sorted(truncated),
         )
+
+    def _change_history(self, ids, scope="org"):
+        """Read recorded file history, including older snapshots of the same path."""
+        params = {"repo": self.cfg.repo_id, "ids": ids, "chars": LIMITS["excerpt_chars"]}
+        files = self.store.query(
+            "MATCH (f:File {repo_id:$repo, current:true})-[:DECLARES]->"
+            "(s:Symbol {repo_id:$repo, current:true}) WHERE s.uid IN $ids "
+            "RETURN DISTINCT f.uid AS file_uid, f.path AS path ORDER BY path LIMIT 201",
+            params,
+            scope,
+        )
+        truncated = {"affected_files"} if len(files) > 200 else set()
+        files = files[:200]
+        params["paths"] = [f["path"] for f in files]
+        associations = (
+            self.store.query(
+                "MATCH (w {repo_id:$repo})-[r:CHANGES]->(f:File {repo_id:$repo}) "
+                "WHERE f.path IN $paths AND (w:PR OR w:Issue) "
+                "RETURN DISTINCT w.uid AS work_uid, f.uid AS file_uid, f.path AS path, "
+                "f.revision AS revision, r.source_uid AS source_uid, r.confidence AS confidence, "
+                "r.basis AS basis, r.snapshot_at AS snapshot_at, "
+                "r.revision AS association_revision, r.revision_basis AS revision_basis "
+                "ORDER BY work_uid, file_uid LIMIT 21",
+                params,
+                scope,
+            )
+            if files
+            else []
+        )
+        if len(associations) > 20:
+            truncated.add("file_associations")
+        associations = associations[:20]
+        for association in associations:
+            association.update(association="file_level_historical", symbol_constraint=False)
+        params["ids"] = sorted({a["work_uid"] for a in associations})
+        sources, seen = [], set()
+        # Referenced issues are an additional weak association, never a constraint.
+        routes = source_routes()[1:] + [
+            (
+                "file_pr_referenced_issue_source",
+                (
+                    "MATCH (a:PR {repo_id:$repo})-[ref:REFERENCES]->(w:Issue {repo_id:$repo})"
+                    "-[:SUPPORTS]->(s:Source {repo_id:$repo}) WHERE a.uid IN $ids "
+                ),
+            ),
+            (
+                "file_pr_referenced_issue_discussion",
+                (
+                    "MATCH (a:PR {repo_id:$repo})-[ref:REFERENCES]->(w:Issue {repo_id:$repo})"
+                    "-[:DISCUSSED_IN]->(c:Comment {repo_id:$repo})"
+                    "-[:SUPPORTS]->(s:Source {repo_id:$repo}) WHERE a.uid IN $ids "
+                ),
+            ),
+        ]
+        routes.sort(key=lambda route: "discussion" in route[0])
+        for route, pattern in routes if params["ids"] else []:
+            fields = SOURCE_FIELDS
+            if "referenced_issue" in route:
+                fields = fields.replace(
+                    "RETURN DISTINCT ",
+                    "RETURN DISTINCT {via_work_uid:a.uid, source_uid:ref.source_uid, "
+                    "uri:ref.source_url, confidence:ref.confidence, basis:ref.basis, "
+                    "snapshot_at:ref.snapshot_at, resolution_verified:ref.resolution_verified} "
+                    "AS reference_evidence, ",
+                )
+            found = self.store.query(pattern + fields, params, scope)
+            if len(found) > 20:
+                truncated.add("sources")
+            for source in found:
+                if source["source_uid"] in seen:
+                    continue
+                seen.add(source["source_uid"])
+                source.update(
+                    retrieval=route,
+                    association="file_reference_mention"
+                    if "referenced_issue" in route
+                    else "file_level_historical",
+                    symbol_constraint=False,
+                )
+                sources.append(source)
+        return sources, associations, files, truncated
 
     def _decisions(self, ids):
         return self.store.query(
-            "MATCH (d:Decision {repo_id:$repo, scope:'org'})-[:CONSTRAINS]->(s:Symbol) "
-            "WHERE s.uid IN $ids OPTIONAL MATCH (d)-[:SUPPORTED_BY]->(src:Source) "
-            "RETURN d.uid AS uid, d.text AS text, d.status AS status, d.approval AS approval, "
+            "MATCH (d:Decision {repo_id:$repo, scope:'org'})-[:CONSTRAINS]->(s:Symbol {repo_id:$repo, current:true}) "
+            "WHERE s.uid IN $ids OPTIONAL MATCH (d)-[:SUPPORTED_BY]->(src:Source {repo_id:$repo}) "
+            "RETURN d.uid AS uid, substring(coalesce(d.text,''),0,2000) AS text, "
+            "size(coalesce(d.text,'')) AS original_chars, d.status AS status, d.approval AS approval, "
             "d.kind AS kind, d.approved_revision AS approved_revision, collect(DISTINCT s.uid) AS subjects, "
-            "collect(DISTINCT {uid:src.uid, uri:src.uri, excerpt:src.excerpt}) AS sources LIMIT 101",
+            "collect(DISTINCT {uid:src.uid, uri:src.uri, "
+            "excerpt:substring(coalesce(src.excerpt,''),0,2000), "
+            "original_chars:size(coalesce(src.excerpt,''))})[0..21] AS sources, "
+            "count(DISTINCT src) AS source_count ORDER BY uid LIMIT 101",
             {"repo": self.cfg.repo_id, "ids": ids},
         )
 
@@ -234,24 +393,65 @@ class Services:
         file = self.cfg.path(file)
         params = {"repo": self.cfg.repo_id, "path": file}
         owners = self.store.query(
-            "MATCH (p {repo_id:$repo})-[r:CODEOWNER_OF]->(f:File {repo_id:$repo, path:$path, current:true}) "
-            "RETURN p.uid AS uid, p.name AS name, r.source_uid AS source_uid, r.pattern AS pattern",
+            "MATCH (p {repo_id:$repo})-[r:CODEOWNER_OF]->"
+            "(f:File {repo_id:$repo, path:$path, current:true}) "
+            "RETURN p.uid AS uid, p.name AS name, p.url AS url, "
+            "p.identity_basis AS identity_basis, r.source_uid AS source_uid, r.pattern AS pattern "
+            "ORDER BY uid LIMIT 21",
             params,
         )
-        if owners:
-            return envelope(graph_revision=sha, ownership="explicit_file_owner", items=owners)
-        owners = self.store.query(
+        maintainers = self.store.query(
             "MATCH (p:Person {repo_id:$repo})-[:AUTHORED]->(c:Commit {repo_id:$repo})-[:MODIFIES]->"
             "(f:File {repo_id:$repo, path:$path, current:true}) "
-            "RETURN p.uid AS uid, p.name AS name, count(DISTINCT c) AS commits, "
-            "collect(DISTINCT c.uid) AS evidence_commits ORDER BY commits DESC LIMIT 5",
+            "RETURN p.uid AS uid, p.name AS name, p.identity_basis AS identity_basis, "
+            "count(DISTINCT c) AS commits, collect(DISTINCT c.uid)[0..20] AS evidence_commits "
+            "ORDER BY commits DESC, uid LIMIT 6",
             params,
         )
+        reviewers = self.store.query(
+            "MATCH (p:Person {repo_id:$repo})-[r:REVIEWED]->(w:PR {repo_id:$repo})"
+            "-[:CHANGES]->(f:File {repo_id:$repo}) "
+            "MATCH (w)-[:DISCUSSED_IN]->(c:Comment {repo_id:$repo})"
+            "-[:SUPPORTS]->(s:Source {repo_id:$repo}) "
+            "WHERE f.path=$path AND s.uid=r.source_uid "
+            "RETURN DISTINCT p.uid AS uid, p.name AS name, p.url AS url, "
+            "p.identity_basis AS identity_basis, w.uid AS work_uid, "
+            "s.uid AS source_uid, s.uri AS uri ORDER BY uid, work_uid LIMIT 6",
+            params,
+        )
+        truncated = []
+        for label, rows, limit in (
+            ("explicit_owners", owners, 20),
+            ("maintainers", maintainers, 5),
+            ("reviewers", reviewers, 5),
+        ):
+            if len(rows) > limit:
+                truncated.append(label)
+        items = owners[:20] if owners else maintainers[:5]
+        for item in [*items, *maintainers[:5], *reviewers[:5]]:
+            item["identity_basis"] = item.get("identity_basis") or "unknown"
         return envelope(
+            status="incomplete" if truncated else "ok",
             graph_revision=sha,
-            ownership="inferred_maintainer" if owners else "unknown",
-            items=owners,
-            warnings=["Git activity is not attested symbol ownership"],
+            file=file,
+            ownership="explicit_file_owner"
+            if owners
+            else "inferred_maintainer"
+            if maintainers
+            else "unknown",
+            items=items,
+            inferred_maintainers=maintainers[:5],
+            reviewer_evidence=[
+                {**r, "association": "file_level_historical", "binding": False}
+                for r in reviewers[:5]
+            ],
+            evidence=[{"source_uid": r["source_uid"], "uri": r["uri"]} for r in reviewers[:5]],
+            truncated=truncated,
+            warnings=[
+                "Git activity is not attested symbol ownership",
+                "git_and_github_identities_are_not_joined",
+                "PR review is file-associated expertise, not explicit ownership",
+            ],
         )
 
     @operation
@@ -280,11 +480,13 @@ class Services:
         params["number"] = int(number[1]) if number else -1
         rows = self.store.query(
             "MATCH (n {repo_id:$repo}) WHERE n.uid=$query OR "
+            "(n:Symbol AND n.current=true AND n.qualname=$query) OR "
             "((n:Issue OR n:PR) AND (n.url=$query OR n.number=$number)) "
             "RETURN n.uid AS uid, labels(n) AS labels ORDER BY uid LIMIT 11",
             params,
             scope,
         )
+        retrieval = "exact_uid_symbol_or_work_item" if rows else "keyword_fulltext"
         truncated = set()
         terms = keywords or query.split()[:5]
         terms = [t for t in terms if re.fullmatch(r"[A-Za-z0-9_]{1,64}", t)]
@@ -299,6 +501,7 @@ class Services:
                 )
                 rows.extend(found)
             rows.sort(key=lambda r: (-r.get("score", 0), r["uid"]))
+        rows = list({r["uid"]: r for r in rows}.values())
         if len(rows) > limits["items"]:
             truncated.add("items")
         rows = rows[: limits["items"]]
@@ -312,7 +515,10 @@ class Services:
                 "RETURN [n IN nodes(p)|n.uid] AS path, "
                 "[r IN relationships(p)|type(r)] AS relationships, "
                 "[r IN relationships(p)|r.confidence] AS confidence, "
-                "[r IN relationships(p)|startNode(r).uid] AS relationship_sources "
+                "[r IN relationships(p)|startNode(r).uid] AS relationship_sources, "
+                "[r IN relationships(p)|{source_uid:r.source_uid, uri:r.source_url, "
+                "basis:r.basis, snapshot_at:r.snapshot_at, "
+                "resolution_verified:r.resolution_verified}] AS relationship_evidence "
                 "ORDER BY path LIMIT 51",
                 params,
                 scope,
@@ -330,42 +536,19 @@ class Services:
                 path["association"] = (
                     "file_level_historical"
                     if "CHANGES" in edges or "MODIFIES" in edges
+                    else "untrusted_reference_mention"
+                    if "REFERENCES" in edges
                     else "inferred_relationship"
                     if "heuristic" in path["confidence"]
                     else "direct_evidence"
                     if set(edges) <= {"SUPPORTS", "SUPPORTED_BY", "DISCUSSED_IN"}
                     else "recorded_relationship"
                 )
+                path["binding"] = False
             # Query each evidence route separately: direct Sources first, then work bodies,
             # then discussion. No arbitrary traversal through another repository or graph.
-            fields = (
-                "RETURN s.uid AS source_uid, s.uri AS uri, "
-                "substring(coalesce(s.excerpt,''),0,$chars) AS text, "
-                "size(coalesce(s.excerpt,'')) AS original_chars, "
-                "s.revision AS revision, s.revision_basis AS revision_basis, "
-                "s.snapshot_at AS snapshot_at, s.work_uid AS work_uid, "
-                "s.work_type AS work_type, s.work_status AS work_status, "
-                "s.status_basis AS status_basis, s.merged_at AS merged_at "
-                "ORDER BY source_uid LIMIT 21"
-            )
-            routes = [
-                ("exact_source", "MATCH (s:Source {repo_id:$repo}) WHERE s.uid IN $ids "),
-                (
-                    "direct_source_link",
-                    (
-                        "MATCH (a {repo_id:$repo})-[:SUPPORTS|SUPPORTED_BY]->"
-                        "(s:Source {repo_id:$repo}) WHERE a.uid IN $ids "
-                    ),
-                ),
-                (
-                    "discussion_source_link",
-                    (
-                        "MATCH (a {repo_id:$repo})-[:DISCUSSED_IN]->"
-                        "(c:Comment {repo_id:$repo})-[:SUPPORTS]->(s:Source {repo_id:$repo}) "
-                        "WHERE a.uid IN $ids "
-                    ),
-                ),
-            ]
+            fields = SOURCE_FIELDS
+            routes = source_routes()
             routes.extend(
                 [
                     (
@@ -387,6 +570,7 @@ class Services:
                 ]
             )
             seen = set()
+            routes.sort(key=lambda route: "discussion" in route[0])
             for route, pattern in routes:
                 found = self.store.query(pattern + fields, params, scope)
                 if len(found) > limits["sources"]:
@@ -400,7 +584,9 @@ class Services:
                 "MATCH (w {repo_id:$repo})-[r:CHANGES]->(f:File {repo_id:$repo}) "
                 "WHERE w.uid IN $ids AND (w:PR OR w:Issue) "
                 "RETURN w.uid AS work_uid, f.uid AS file_uid, f.path AS path, "
-                "f.revision AS revision, r.source_uid AS source_uid, r.confidence AS confidence "
+                "f.revision AS revision, r.source_uid AS source_uid, r.confidence AS confidence, "
+                "r.basis AS basis, r.snapshot_at AS snapshot_at, "
+                "r.revision AS association_revision, r.revision_basis AS revision_basis "
                 "ORDER BY work_uid, file_uid LIMIT 21",
                 params,
                 scope,
@@ -419,29 +605,28 @@ class Services:
             )
         if len(sources) > limits["sources"]:
             truncated.add("sources")
-        excerpts, remaining = [], limits["total_excerpt_chars"]
-        for source in sources[: limits["sources"]]:
-            if remaining <= 0:
-                truncated.add("total_excerpt_chars")
-                break
-            text = source.pop("text")
-            source["text"] = text[:remaining]
-            source["truncated"] = len(source["text"]) < source["original_chars"]
-            if source["truncated"]:
-                truncated.add("excerpt_chars" if len(text) <= remaining else "total_excerpt_chars")
-            remaining -= len(source["text"])
-            source.update(
-                scope=scope,
-                repo_id=self.cfg.repo_id,
-                trust_status="untrusted_evidence",
-                binding=False,
-                evidence_confidence="recorded_source" if source["uri"] else "provenance_incomplete",
-            )
-            for key in ("revision_basis", "work_status", "status_basis"):
-                source[key] = source[key] or "unknown"
-            excerpts.append(source)
+        symbol_ids = [r["uid"] for r in rows if "Symbol" in r["labels"]]
+        if symbol_ids:
+            historical, file_links, _, history_truncation = self._change_history(symbol_ids, scope)
+            sources.extend(historical)
+            associations.extend(file_links)
+            truncated.update(history_truncation)
+        # Routes can overlap or each fit their budget while their union overflows.
+        # Keep the first complete provenance record for each recorded work/file link.
+        unique_associations = {}
+        for association in associations:
+            key = (association["work_uid"], association["file_uid"])
+            unique_associations.setdefault(key, association)
+        associations = [unique_associations[key] for key in sorted(unique_associations)]
+        if len(associations) > limits["file_associations"]:
+            truncated.add("file_associations")
+        associations = associations[: limits["file_associations"]]
+        excerpts, excerpt_truncation = bound_excerpts(sources, self.cfg.repo_id, scope)
+        truncated.update(excerpt_truncation)
         return envelope(
+            status="incomplete" if truncated else "ok" if rows else "unknown",
             graph_revision=sha,
+            retrieval=retrieval,
             items=rows,
             evidence=paths,
             untrusted_source_excerpts=excerpts,
@@ -452,7 +637,7 @@ class Services:
                     r["work_uid"] for r in coverage if r["file_link_count"] == 0
                 ],
                 "no_missing_edges_inferred": True,
-                "cross_module_call_resolution": "direct_static_imports_only",
+                "cross_module_call_resolution": "recorded_static_imports_including_explicit_reexports",
                 "historical_file_links_are_not_symbol_constraints": True,
             },
             limits=limits,
@@ -467,13 +652,17 @@ class Services:
             "MATCH (d:Decision {repo_id:$repo, scope:'org'}) "
             "WHERE ($id<>'' AND d.uid=$id) OR ($topic<>'' AND d.text CONTAINS $topic) "
             "OR ($symbol<>'' AND (d)-[:CONSTRAINS]->(:Symbol {uid:$symbol})) "
-            "OPTIONAL MATCH (d)-[:SUPPORTED_BY]->(s:Source) "
-            "OPTIONAL MATCH (d)-[:SUPERSEDES]->(old:Decision) "
-            "OPTIONAL MATCH (new:Decision)-[:SUPERSEDES]->(d) "
+            "OPTIONAL MATCH (d)-[:SUPPORTED_BY]->(s:Source {repo_id:$repo}) "
+            "OPTIONAL MATCH (d)-[:SUPERSEDES]->(old:Decision {repo_id:$repo}) "
+            "OPTIONAL MATCH (new:Decision {repo_id:$repo})-[:SUPERSEDES]->(d) "
             "RETURN d.uid AS uid, d.status AS status, d.approval AS approval, "
             "d.approved_by AS approved_by, d.approved_at AS approved_at, "
-            "d.text AS text, collect(DISTINCT {uid:s.uid, uri:s.uri, excerpt:s.excerpt}) AS sources, "
-            "collect(DISTINCT old.uid) AS supersedes, collect(DISTINCT new.uid) AS replaced_by LIMIT 20",
+            "substring(coalesce(d.text,''),0,2000) AS text, size(coalesce(d.text,'')) AS original_chars, "
+            "collect(DISTINCT {uid:s.uid, uri:s.uri, "
+            "excerpt:substring(coalesce(s.excerpt,''),0,2000), "
+            "original_chars:size(coalesce(s.excerpt,''))})[0..21] AS sources, "
+            "count(DISTINCT s) AS source_count, "
+            "collect(DISTINCT old.uid) AS supersedes, collect(DISTINCT new.uid) AS replaced_by ORDER BY uid LIMIT 21",
             {
                 "repo": self.cfg.repo_id,
                 "id": decision_id,
@@ -483,15 +672,37 @@ class Services:
         )
         excerpts, evidence = [], []
         for row in rows:
-            excerpts.append({"decision_id": row["uid"], "text": row.pop("text")})
+            excerpts.append(
+                {
+                    "decision_id": row["uid"],
+                    "text": row.pop("text"),
+                    "original_chars": row.pop("original_chars"),
+                }
+            )
             for s in row.pop("sources"):
                 if s and s.get("uid"):
-                    excerpts.append({"source_uid": s["uid"], "text": s["excerpt"]})
+                    excerpts.append(
+                        {
+                            "source_uid": s["uid"],
+                            "uri": s["uri"],
+                            "text": s["excerpt"],
+                            "original_chars": s["original_chars"],
+                        }
+                    )
                     evidence.append({"source_uid": s["uid"], "uri": s["uri"]})
+        excerpts, truncated = bound_excerpts(excerpts, self.cfg.repo_id)
+        if len(rows) > 20:
+            truncated.add("decisions")
+        if any(r.get("source_count", 0) > 20 for r in rows):
+            truncated.add("decision_sources")
+        evidence = list({e["source_uid"]: e for e in evidence}.values())
+        if len(evidence) > 20:
+            truncated.add("evidence")
         return envelope(
             graph_revision=sha,
-            status="ok" if rows else "unknown",
-            items=rows,
-            evidence=evidence,
+            status="incomplete" if truncated else "ok" if rows else "unknown",
+            truncated=sorted(truncated),
+            items=rows[:20],
+            evidence=evidence[:20],
             untrusted_source_excerpts=excerpts,
         )

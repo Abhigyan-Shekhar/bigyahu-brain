@@ -5,12 +5,16 @@ source-backed constraints, and maintainer evidence in FalkorDB. Codex remains th
 code-editing agent. Source prose is untrusted evidence; remembering something
 creates a proposal, never an approved rule.
 
-**Status: real local graph integration verified; coding experiment still pending.**
+**Status: backend integration verified; no baseline coding improvement demonstrated.**
 FalkorDBLite 0.10.0 runs on this Mac with Redis 8.6.2 and graph module 4.18.3.
-All 41 tests pass with live integration enabled. The pinned Requests repository
-syncs, the real two-hop path is verified, and Codex's app-server successfully
-invokes `check_change` through MCP after a database restart. This is a protocol
-integration result, not yet a model-selected tool call or measured coding benefit.
+Final backend verification: **120 passed, 0 failed, 0 skipped**, with real graph
+and Lite lifecycle integration enabled. A separate MCP STDIO selection passed
+**4/4**, and an explicit privacy/poisoning/approval/caller/reference selection
+passed **6/6**; those selections overlap the full suite. Ruff passes for
+`src`, `tests`, and `scripts`. See [merge verification](docs/backend-verification.md).
+Codex has independently selected MCP tools, received historical graph evidence,
+and produced independently tested code changes. Some coding attempts failed;
+successful retrieval does not establish improved coding performance.
 
 ## Docker-free local setup (verified)
 
@@ -77,7 +81,7 @@ git -C .checkouts/requests checkout 611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60
 | get_context | Exact ID / bounded full-text seeds, then connected paths |
 | trace_decision | Lifecycle, original evidence, replacement history |
 | find_owner | Explicit file CODEOWNERS, otherwise inferred Git maintainers |
-| check_change | Intended symbols, incoming callers, applicable constraints |
+| check_change | Intended symbols, incoming callers, constraints and source-backed file history |
 | remember | A new non-binding proposal in org or configured private scope |
 
 The key relationship is `(caller)-[:CALLS]->(target)`. Decisions constrain symbols;
@@ -98,6 +102,14 @@ callers in one batch. `must_preserve` requires active, human-approved constraint
 metadata, source evidence, a matching approved revision and a clean checkout.
 Proposals and stale evidence appear in `review`. Both contain IDs and metadata;
 prose stays in `untrusted_source_excerpts`.
+
+`check_change` also follows recorded historical Issue/PR → File associations
+for the target and its bounded incoming callers, including PR references to
+issues. It can return original source bodies and discussion without a Decision.
+These file-level links and untrusted reference mentions are advisory evidence,
+not symbol constraints or proof that an issue was fixed. Missing call edges do
+not prove missing dependencies. Overflow is disclosed through `status="incomplete"`
+and `truncated`, including the final union of context file associations.
 
 ## Evidence and operator approval
 
@@ -130,7 +142,8 @@ The direct Browser graph URL still needs verification on the running version.
 uv run pytest -q
 uv run ruff check src tests scripts
 # Only against a local disposable/test database:
-BRAIN_INTEGRATION=1 uv run pytest -q -m integration
+BRAIN_TEST_CONFIG=/absolute/path/to/isolated-test.yaml \
+  BRAIN_INTEGRATION=1 BRAIN_LITE_TESTS=1 uv run pytest -q
 ```
 
 Unit/contract checks cover poisoning proposals, private routing, scope/path
@@ -141,23 +154,54 @@ Cypher on the measured Lite engine; mocks alone
 do not prove compatibility. Set BRAIN_INTEGRATION=1 and BRAIN_LITE_TESTS=1 to
 include the live graph and process-lifecycle checks.
 
-Codex discovery is now verified through the actual app-server API. See
-[the integration gate status](docs/integration-status.md) for the exact evidence
-and remaining database/agent gates.
+The live suite verifies repository/private graph boundaries, source poisoning,
+independent approval, two-hop callers, Issue → PR → File history, explicit
+re-exports, stale revisions and sync recovery. Separate-process STDIO tests
+verify exactly five tools and real source-backed responses. The publication
+workflow scans indexed content and reachable history; it does **not** run pytest.
+
+## Recorded Codex coding experiments
+
+Saved urllib3 #5181 experiments used pin
+`a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8`. The first graph attempt's MCP call
+was denied and also used an invalid scope; its patch passed 10/12 independent
+socket cases and regressed 303 body disposal. An older six-attempt paired batch
+completed only three coding sessions; usage limits interrupted the others, and
+the completed graph session selected empty private scope. A separate early
+guided run retrieved history but passed only 9/12 oracle cases.
+
+Two later graph-only workflow demonstrations each passed 12/12 socket cases
+and 131 selected upstream tests. A subsequently frozen matched baseline/graph
+pair completed both sessions: **both passed 9/12 socket cases and 131 selected
+upstream tests**, with the same failed-tell first-upload regressions. The graph
+session retrieved org evidence and checked impact before editing, but reported
+that the history did not change its implementation. These are separate protocols;
+the successful graph-only runs cannot be treated as comparison wins.
+
+Eligible comparison history included merged #5161/#3780, with solution-revealing
+#5181/#5191/#5242 content excluded before execution. Related merged history is
+additional information, not evidence of independent discovery. No measured
+baseline coding improvement has been demonstrated. Agent implementation and
+evaluation artifacts remain separate from this backend integration; raw traces
+and experiment data stay local and are not publication inputs.
 
 ## Remaining release gates
 
 - Revalidate on any different engine version; current live checks pass on Lite 4.18.3.
-- Validate a real demo packet and compare independent baseline/graph runs on the
-  same revision. The Requests candidate may be too obvious to show added value.
+- Broaden controlled coding evaluation beyond the recorded matched pair; no
+  general correctness or reasoning advantage is established.
 - Human-review and approve a real applicable constraint; agents must not do this.
-- Finish old-side diff mapping (currently file fallback), cross-module import/call
-  resolution, document ingestion, and reviewer-based maintainer ranking.
+- Finish old-side diff mapping (currently file fallback), document ingestion,
+  and broader runtime call resolution. Reviewer evidence remains advisory.
 - Expand adversarial/integration coverage, record measured metrics, validate Browser
   routing, record the video, and perform a clean-room setup.
 
-Static calls currently cover conservative same-module lexical calls and heuristic
-self/cls method calls; dynamic calls remain unresolved. Dirty checkout detection
+Static calls cover conservative same-module lexical calls, deterministic direct
+imports and explicit Python `from`-import re-export chains, including aliases and
+relative imports in repository-root and src layouts. Ambiguous modules, star or
+conditional imports, reassignment, re-export cycles, decorated targets, closures,
+inheritance and runtime dispatch remain unresolved rather than guessed. Existing
+self/cls method edges are heuristic. Dirty checkout detection
 is intentionally conservative across the entire repository. Graph queries have
 explicit bounds and no offline answer cache. Synchronization is single-operator;
 concurrent writers are not supported. Python dependency warnings currently come

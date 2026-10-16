@@ -264,7 +264,7 @@ def test_real_context_history_provenance_and_no_approval(real, tmp_path, number,
     service = Services(real)
     for query in [uid, uid + ":source", record["html_url"], f"#{number}"]:
         result = service.get_context(query)
-        assert result["status"] == "ok", result
+        assert result["status"] == ("incomplete" if result.get("truncated") else "ok"), result
         body = next(
             s for s in result["untrusted_source_excerpts"] if s["source_uid"] == uid + ":source"
         )
@@ -328,7 +328,7 @@ def test_real_context_bounds_injection_and_scope_isolation(real):
     real.edge(work, "SUPPORTS", foreign)
     try:
         result = service.get_context(work)
-        assert result["status"] == "ok", result
+        assert result["status"] == "incomplete", result
         assert "sources" in result["truncated"]
         assert "total_excerpt_chars" in result["truncated"]
         assert len(result["untrusted_source_excerpts"]) <= 20
@@ -366,7 +366,10 @@ def test_real_context_search_and_inferred_relationships(real, tmp_path):
     result = service.get_context(b)
     assert any(p["association"] == "inferred_relationship" for p in result["evidence"])
     assert not result["untrusted_source_excerpts"]
-    assert result["coverage"]["cross_module_call_resolution"] == "direct_static_imports_only"
+    assert (
+        result["coverage"]["cross_module_call_resolution"]
+        == "recorded_static_imports_including_explicit_reexports"
+    )
 
 
 @pytest.mark.asyncio
@@ -401,7 +404,9 @@ async def test_real_stdio_context_delivers_history_without_decisions(real, tmp_p
             for number, kind in [(5181, "issue"), (5161, "pr"), (3780, "pr"), (5242, "pr")]:
                 uid = f"{real.cfg.repo_id}:{kind}:{number}"
                 result = (await client.call_tool("get_context", {"query": uid})).data
-                assert result["status"] == "ok", result
+                assert result["status"] == ("incomplete" if result.get("truncated") else "ok"), (
+                    result
+                )
                 assert any(
                     s["source_uid"] == uid + ":source" and s["text"]
                     for s in result["untrusted_source_excerpts"]
