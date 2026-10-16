@@ -3,7 +3,7 @@ import subprocess
 
 def git(root, *args):
     return subprocess.run(
-        ["git", "-C", str(root), *args], check=True, capture_output=True, text=True, timeout=30
+        ["git", "-C", str(root), *args], check=True, capture_output=True, text=True, encoding="utf-8", timeout=30
     ).stdout.strip()
 
 

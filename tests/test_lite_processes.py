@@ -13,6 +13,7 @@ from falkordb import FalkorDB
 
 pytestmark = [
     pytest.mark.integration,
+    pytest.mark.skipif(sys.platform == "win32", reason="Native Windows uses Docker, not Lite"),
     pytest.mark.skipif(os.getenv("BRAIN_LITE_TESTS") != "1", reason="opt-in Lite lifecycle test"),
 ]
 LAUNCHER = Path(__file__).resolve().parents[1] / "scripts/run_lite.py"

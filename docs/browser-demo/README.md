@@ -1,6 +1,9 @@
 # Fresh local Browser demonstration
 
-**Completed on 16 October 2026, including human-approved supersession.**
+**Historical macOS/Lite manual verification: 16 October 2026, including human-approved supersession.**
+
+The receipt and footage below describe that specific local run. They do not certify
+Windows execution, automated UI coverage, or approval in a newly rebuilt database.
 
 The reviewed [verification receipt](verification-receipt.json) records the
 final checks, source URLs, saved approval state, and recording hash.
@@ -45,46 +48,89 @@ not been published. Its content is [document.md](document.md). Public historical
 sources retain their actual URLs, snapshot timestamp, and untrusted status.
 CHANGES remains a historical file association, not proof of a symbol-level change.
 
-## Rebuild from public inputs
+## Rebuild on Windows, macOS, or Linux
 
-Run from the Company Brain project directory. Use a new empty persistence
-directory for a rebuild; the preparation script refuses a nonempty database.
-It also refuses ports other than 6390 and a dirty/wrong-revision checkout.
-Stop an existing owner gracefully before reusing its port. Never delete the
-original Requests persistence directory.
-An immediate restart on this Mac briefly reported `Address already in use`
-despite no remaining listener. Waiting for the loopback port to release, then
-rerunning the same owner command, succeeded; no Docker fallback was needed.
+Install Git, uv, and Docker Desktop (Linux containers on Windows). Run these
+commands from this project directory in PowerShell or a Unix terminal. No Bash,
+`PYTHONPATH`, hardcoded absolute paths, or native Windows Lite package is required.
 
-```sh
+```text
+uv sync --frozen --python 3.12
 git clone https://github.com/urllib3/urllib3.git .checkouts/urllib3-browser-demo
 git -C .checkouts/urllib3-browser-demo checkout --detach a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8
-.venv/bin/python scripts/run_lite.py \
-  --db "$PWD/data/runtime/browser-demo/brain.rdb" --port 6390
+docker run -d --name brain-browser-demo -p 127.0.0.1:6379:6379 -p 127.0.0.1:3000:3000 -v brain-browser-demo-data:/data falkordb/falkordb:v4.14.7
+uv run --frozen python scripts/prepare_browser_demo.py --checkout .checkouts/urllib3-browser-demo
+uv run --frozen python scripts/verify_browser_demo.py
 ```
 
-Leave the owner running, then in another terminal:
+The Docker image includes Browser. See the [Docker review receipt](docker-review.md)
+for the separate macOS-hosted Linux-container check. Open `http://127.0.0.1:3000` and connect to
+host `127.0.0.1`, database port `6379`, empty password, TLS off. Existing services
+must release these ports first, or choose different host ports. For example,
+map `127.0.0.1:6390:6379` and `127.0.0.1:3002:3000`, pass `--port 6390` to
+preparation, and open Browser at port 3002. Inside Docker the database remains
+on 6379. The bundled Browser server shares the database container, so its login
+uses host `127.0.0.1`, **port 6379**, even when the host maps database port 6390.
+Python commands running on your host use `--port 6390`. A separately hosted
+Browser needs a host reachable from its own server process. Preparation writes
+the selected host port into its generated config; verification and human review
+read it.
 
-```sh
-PYTHONPATH=src .venv/bin/python scripts/prepare_browser_demo.py \
-  --checkout .checkouts/urllib3-browser-demo
+Use an empty dedicated database and fresh output directory. Preparation refuses
+**any existing graph on every port**, a dirty/wrong checkout, invalid fixture, or
+existing output corpus. It never clears a database. `--output` selects another
+output directory and `--config` selects a separate generated config; pass that
+same config to verification and human review. The default config is ignored
+`config/brain.browser-demo.local.yaml`.
+
+To resume a stopped Docker demo: `docker start brain-browser-demo`.
+Stop it gracefully with `docker stop brain-browser-demo`. Its named volume keeps
+the data; restarting an existing demo does not require rerunning preparation.
+A rebuild needs a separate empty volume/container and unused host ports.
+
+Lite is an alternative on macOS/Linux or inside WSL:
+
+```text
+uv sync --frozen --extra lite --python 3.12
+uv run --frozen python scripts/run_lite.py --db data/runtime/browser-demo/brain.rdb --port 6390
 ```
 
-The script writes ignored `config/brain.browser-demo.local.yaml`, filtered
-snapshot metadata, and `data/validation/browser-demo/build.json`. It never calls
-the approval function or writes approved states. Bounded Git history and
-snapshot omissions mean this corpus is not an exhaustive history or a proof
-against all possible semantic leakage.
+Leave that terminal running. Prepare in a second terminal with `--port 6390`
+and use the separately installed Browser described below. Native Windows Lite
+is unavailable in this setup; the launcher now explains Docker/WSL before
+importing POSIX-only modules. The optional dependency excludes Windows.
+Password-file authentication still requires POSIX permission checks; it is not
+a Windows ACL implementation. The loopback Docker demo does not use a password file.
+
+Fixture SHA-256 is defined over UTF-8 bytes with LF newlines. `.gitattributes`
+keeps snapshot files LF on new checkout; the loader also normalizes CRLF from
+existing Windows checkouts before checking the same digest. Other byte changes
+still fail integrity validation, before database access. Generated config and
+source excerpts explicitly use UTF-8.
+
+## What this demonstration actually exercises
+
+| Graph content | Origin |
+| --- | --- |
+| File, Symbol, DECLARES, CALLS and static call-resolution metadata | Native sync/AST ingestion |
+| PR, snapshot Source, CHANGES and historical provenance | Native snapshot ingestion, filtered to two public PRs |
+| Document and its REFERENCES link | Demo-specific editorial seed; no native document-ingestion claim |
+| Two File IMPORTS edges and exact-line Sources | Demo-specific setup verified against the pinned AST; normal ingestion does not emit these edges |
+| D-1/D-2 proposals and their source/subject links | Demo-specific policy seeds, explicitly marked `is_demo`; not upstream decisions or automatic policy extraction |
+| Human approval, active/superseded states and SUPERSEDES | Existing interactive operator functionality, only after independent human approval |
+
+The script never calls approval or writes approved states. Bounded Git history
+and snapshot omissions mean this is not exhaustive upstream history.
 
 ## Open and verify in Browser
 
 The [Browser setup procedure](../browser-verification.md#reopen-the-verified-local-setup)
 pins official Browser 2.7.0. Open `http://127.0.0.1:3000/graph`.
 
-1. In Connections, add/select host `127.0.0.1`, port **6390**, username `default`,
+1. In Connections, add/select host `127.0.0.1`, port **6379** for Docker or **6390** for the historical Lite run, username `default`,
    empty password, TLS off for loopback. Do not select the Requests port 6389.
    After a database restart, Browser may return to login; reconnect with these
-   same port-6390 details.
+   same connection details.
 2. Open `http://127.0.0.1:3000/graph?graph=org_demo&view=Graph` directly.
 3. Paste each `.cypher` file into the editor and click Run.
 4. Use Graph view for queries 01–03 and 05; use Table view for the other queries.
@@ -92,12 +138,14 @@ pins official Browser 2.7.0. Open `http://127.0.0.1:3000/graph`.
    exact caller lines and target definitions. Queries 09–10 give compact call
    resolution and import-line tables. Query 04 shows retained source URLs.
 5. Tools → Tree → Top → Down makes the document chain easier to inspect.
-   Reload preserves the graph, query, and layout. Keep connection menus closed
+   Record whether reload preserves graph, query, and layout for your Browser version.
+   The bundled Docker Browser used in the portability check reset the query on
+   reload; paste the saved query and Run again. Keep connection menus closed
    during captures. If an auxiliary mobile drawer obstructs the view, reload
    before capturing.
 
-This is a real Browser-to-Lite connection. Docker fallback is unnecessary for
-this successfully attached engine.
+The historical recording used a real Browser-to-Lite connection. A fresh Docker
+run must be recorded and reported separately; it does not inherit those approvals.
 
 ## Captured Browser evidence
 
@@ -121,16 +169,41 @@ drawer after interactions; the capture uses the desktop layout to verify all
 nodes together. This is a Browser presentation limitation, not a Lite connection
 failure. The temporary capture viewport is reset after verification.
 
+## Database verification versus Browser UI verification
+
+`verify_browser_demo.py` checks database query results only. Its JSON explicitly
+reports `verification_layer: database` and `browser_ui_tested_by_this_script: false`.
+It does not test login, graph selection, editor/Run, rendering, clicks, reload,
+layout, source inspection, or recording. A passing database check is insufficient
+to mark Browser UI verification complete. There is no automated UI regression suite.
+
+For a **manual Browser UI acceptance run**, record OS, engine/image, Browser
+version, host ports, and whether the database is fresh or human-approved, then:
+
+1. Log in and select `org_demo`; check the selected graph in the UI.
+2. Paste query 01 and click Run. In Graph view inspect the four-node document →
+   #5161 → file → symbol chain and click nodes to inspect their properties.
+3. Run queries 02/03 and inspect both caller paths. In Table view run 09/10;
+   verify call lines 772/324, definition lines 176/113, and imports 61/20.
+4. Run 04/06 and inspect source URLs, line anchors, revision and snapshot basis;
+   distinguish the local document URN from public GitHub sources.
+5. After independent approval in a human terminal, run 05/11. Inspect D-2 →
+   SUPERSEDES → D-1, statuses active/superseded and retained source counts 4/2.
+   A fresh unapproved build must report this step pending.
+6. Reload the page, record graph/query persistence (including any reset), rerun a query, and capture
+   clean Graph and Table views with menus closed. Record interaction results and
+   footage/screenshot hashes separately from the database report.
+
 Recheck the populated graph without mutating it:
 
 ```sh
-PYTHONPATH=src .venv/bin/python scripts/verify_browser_demo.py
+uv run --frozen python scripts/verify_browser_demo.py
 ```
 
 The final successful acceptance command is:
 
 ```sh
-PYTHONPATH=src .venv/bin/python scripts/verify_browser_demo.py --require-approved
+uv run --frozen python scripts/verify_browser_demo.py --require-approved
 ```
 
 That check requires the actual
@@ -161,7 +234,7 @@ In a fresh rebuild, a human independently reviews the sources and texts, then
 runs this in an interactive terminal from the project directory:
 
 ```sh
-sh scripts/review_browser_demo.sh
+uv run --frozen python scripts/review_browser_demo.py
 ```
 
 It displays each proposal and invokes the existing operator CLI. Approval occurs

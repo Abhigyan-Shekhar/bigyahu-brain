@@ -2,7 +2,7 @@ import os
 import re
 import stat
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import yaml
 
@@ -90,7 +90,8 @@ class Config:
 
     def path(self, value):
         p = Path(value)
-        if p.is_absolute() or not value or ".." in p.parts:
+        if (p.anchor or PureWindowsPath(value).anchor or not value
+                or ".." in p.parts or ".." in PureWindowsPath(value).parts):
             raise ValueError("Expected repo-relative path")
         resolved = (self.repo_root / p).resolve()
         if not resolved.is_relative_to(self.repo_root):
@@ -102,4 +103,4 @@ def load_config(config_path=None):
     path = Path(config_path or os.environ["BRAIN_CONFIG"])
     if not path.is_absolute():
         raise ValueError("BRAIN_CONFIG must be absolute")
-    return Config(**yaml.safe_load(path.read_text()))
+    return Config(**yaml.safe_load(path.read_text(encoding="utf-8")))

@@ -13,7 +13,7 @@ from falkordb import FalkorDB
 from brain.config import Config
 from brain.graph import GraphStore
 from brain.ingest.git_parser import clean, revision
-from brain.ingest.snapshots import ingest_snapshots
+from brain.ingest.snapshots import ingest_snapshots, read_snapshot
 from brain.ingest.sync import sync
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,9 +42,16 @@ class DemoStore(GraphStore):
                 self.query(f"CALL db.idx.fulltext.createNodeIndex({args})")
 
 
-def build(checkout, port, output):
-    if port != 6390:
-        raise ValueError("This demo is restricted to isolated loopback port 6390")
+def build(checkout, port, output, config=None):
+    cfg = Config(checkout, REPO, URL, "browser_demo", port=port)
+    # Complete local preflight before connecting or writing any graph data.
+    original, fixture_records = read_snapshot(ROOT / "tests/fixtures/urllib3-history")
+    records = [record for record in fixture_records if record["number"] in (3780, 5161)]
+    if (sorted(record["number"] for record in records) != [3780, 5161]
+            or not all(record["pull_request"]["merged_at"] for record in records)):
+        raise ValueError("Expected both merged public fixture PRs")
+    if (output / "corpus").exists():
+        raise ValueError("Output corpus already exists; choose a fresh --output directory")
     if revision(checkout) != SHA or not clean(checkout):
         raise ValueError("Expected a clean checkout at the documented pinned revision")
     client = FalkorDB(host="127.0.0.1", port=port)
@@ -52,21 +59,14 @@ def build(checkout, port, output):
     if graphs:
         raise ValueError("Expected an empty isolated database; existing data is never overwritten")
     output.mkdir(parents=True, exist_ok=True)
-    cfg = Config(checkout, REPO, URL, "browser_demo", port=port)
-    config = ROOT / "config/brain.browser-demo.local.yaml"
+    config = config or ROOT / "config/brain.browser-demo.local.yaml"
+    config.parent.mkdir(parents=True, exist_ok=True)
     config.write_text(yaml.safe_dump({
         "repo_root": str(checkout), "repo_id": REPO, "repo_url": URL,
         "principal": "browser_demo", "host": "127.0.0.1", "port": port,
-    }))
+    }), encoding="utf-8")
     store = DemoStore(cfg)
     sync_result = sync(store)
-    fixture = ROOT / "tests/fixtures/urllib3-history"
-    original = json.loads((fixture / "manifest.json").read_text())
-    fixture_bytes = (fixture / "work.json").read_bytes()
-    assert hashlib.sha256(fixture_bytes).hexdigest() == original["work_sha256"]
-    records = [record for record in json.loads(fixture_bytes) if record["number"] in (3780, 5161)]
-    assert sorted(record["number"] for record in records) == [3780, 5161]
-    assert all(record["pull_request"]["merged_at"] for record in records)
     corpus = output / "corpus"
     corpus.mkdir()
     raw = (json.dumps(records, indent=2) + "\n").encode()
@@ -76,7 +76,7 @@ def build(checkout, port, output):
                 "work_sha256": hashlib.sha256(raw).hexdigest(),
                 "reconstruction": "Fresh demo; not the original experiment database",
                 "omitted_work_items": [5181, 5242]}
-    (corpus / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    (corpus / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     history_result = ingest_snapshots(store, corpus)
 
     def file(path):
@@ -90,7 +90,7 @@ def build(checkout, port, output):
         return uid
 
     def source(path, start, end):
-        lines = (checkout / path).read_text().splitlines()
+        lines = (checkout / path).read_text(encoding="utf-8").splitlines()
         uid = f"{file(path)}:L{start}-L{end}:source"
         store.upsert("Source", uid, {
             "repo_id": REPO, "uri": f"{URL}/blob/{SHA}/{path}#L{start}-L{end}",
@@ -123,7 +123,7 @@ def build(checkout, port, output):
         (openssl, init, 61, None, ["util"]),
         (init, wait, 20, "wait", ["wait_for_read", "wait_for_write"]),
     ):
-        imports = [node for node in ast.walk(ast.parse((checkout / path).read_text()))
+        imports = [node for node in ast.walk(ast.parse((checkout / path).read_text(encoding="utf-8")))
                    if isinstance(node, ast.ImportFrom) and node.lineno == line]
         assert len(imports) == 1
         assert imports[0].module == module
@@ -132,7 +132,7 @@ def build(checkout, port, output):
         store.edge(file(path), "IMPORTS", file(target), {
             "line": line, "source_uid": sid, "source_url": f"{URL}/blob/{SHA}/{path}#L{line}",
             "confidence": "static", "method": "demo_verified_ast_import",
-            "basis": "reconstructed_demo_import_evidence", "revision": SHA,
+            "basis": "reconstructed_demo_import_evidence", "revision": SHA, "is_demo": True,
         })
 
     for uid, name in (
@@ -148,7 +148,7 @@ def build(checkout, port, output):
 
     document = f"{REPO}:document:redirect-review"
     document_source = document + ":source"
-    text = (ROOT / "docs/browser-demo/document.md").read_text()
+    text = (ROOT / "docs/browser-demo/document.md").read_text(encoding="utf-8")
     store.upsert("Document", document, {
         "repo_id": REPO, "name": "DEMO document", "text": text,
         "scope": "org", "is_demo": True, "provenance": "reconstructed_demo_document",
@@ -189,18 +189,23 @@ def build(checkout, port, output):
 
     report = {"repo_id": REPO, "revision": SHA, "reconstructed_demo": True,
               "sync": sync_result, "history": history_result,
+              "native_ingestion": ["File", "Symbol", "DECLARES", "CALLS", "PR", "CHANGES"],
+              "demo_seeded": ["Document", "document REFERENCES", "File IMPORTS",
+                              "exact-line Sources", "Decision proposals and evidence links"],
               "proposals": [{"uid": uid, "text": text, "requested_supersedes": old,
                              "source_uids": sources} for uid, text, old, sources in proposals],
               "graph_counts": store.query("MATCH (n) RETURN count(n) AS nodes"),
               "approval": "pending_independent_human_operator"}
-    (output / "build.json").write_text(json.dumps(report, indent=2) + "\n")
+    (output / "build.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkout", type=Path, required=True)
-    parser.add_argument("--port", type=int, default=6390)
+    parser.add_argument("--port", type=int, default=6379)
     parser.add_argument("--output", type=Path, default=ROOT / "data/validation/browser-demo")
+    parser.add_argument("--config", type=Path,
+                        default=ROOT / "config/brain.browser-demo.local.yaml")
     args = parser.parse_args()
-    build(args.checkout.resolve(), args.port, args.output.resolve())
+    build(args.checkout.resolve(), args.port, args.output.resolve(), args.config.resolve())
