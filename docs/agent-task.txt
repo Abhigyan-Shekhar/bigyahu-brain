@@ -1,0 +1,1 @@
+Fix PoolManager's handling of file-like request bodies on body-preserving redirects so redirected uploads correctly replay the original unread payload. Preserve behavior for requests without redirects and redirects that discard the body. Add appropriate regression tests.

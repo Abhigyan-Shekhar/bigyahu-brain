@@ -5,7 +5,7 @@ source-backed constraints, and maintainer evidence in FalkorDB. Codex remains th
 code-editing agent. Source prose is untrusted evidence; remembering something
 creates a proposal, never an approved rule.
 
-**Status: backend integration verified; no baseline coding improvement demonstrated.**
+**Status: graph-aware Codex coding demonstration validated; no baseline coding improvement demonstrated.**
 FalkorDBLite 0.10.0 runs on this Mac with Redis 8.6.2 and graph module 4.18.3.
 Final backend verification: **120 passed, 0 failed, 0 skipped**, with real graph
 and Lite lifecycle integration enabled. A separate MCP STDIO selection passed
@@ -14,7 +14,10 @@ passed **6/6**; those selections overlap the full suite. Ruff passes for
 `src`, `tests`, and `scripts`. See [merge verification](docs/backend-verification.md).
 Codex has independently selected MCP tools, received historical graph evidence,
 and produced independently tested code changes. Some coding attempts failed;
-successful retrieval does not establish improved coding performance.
+successful retrieval does not establish improved coding performance. The final
+[agent demonstration](docs/agent-demo-results.md) passed 12/12 independent socket
+cases and 200 selected upstream tests; the integrated live suite passed 125 tests.
+Use the [runner and reproduction commands](docs/agent-workflow.md).
 
 ## Docker-free local setup (verified)
 
@@ -181,9 +184,11 @@ the successful graph-only runs cannot be treated as comparison wins.
 Eligible comparison history included merged #5161/#3780, with solution-revealing
 #5181/#5191/#5242 content excluded before execution. Related merged history is
 additional information, not evidence of independent discovery. No measured
-baseline coding improvement has been demonstrated. Agent implementation and
-evaluation artifacts remain separate from this backend integration; raw traces
-and experiment data stay local and are not publication inputs.
+baseline coding improvement has been demonstrated. The reviewed runner and evaluation code are now integrated on a fresh branch
+from the merged backend. A new failed attempt (9/12 oracle cases) and a final
+passing graph-aware attempt (12/12) are recorded in
+[agent-demo-results.md](docs/agent-demo-results.md). Raw traces and experiment
+data stay local and are not publication inputs.
 
 ## Remaining release gates
 
