@@ -1,0 +1,1 @@
+MATCH (d:Decision {repo_id:'demo:urllib3:browser:eligible'})-[:SUPPORTED_BY]->(src:Source) RETURN d.uid AS decision,d.status AS status,count(DISTINCT src) AS retained_sources,d.approval AS approval ORDER BY decision

@@ -1,0 +1,1 @@
+MATCH p=(d:Document {repo_id:'demo:urllib3:browser:eligible'})-[:REFERENCES]->(pr:PR {number:5161})-[:CHANGES]->(f:File {path:'src/urllib3/connectionpool.py'})-[:DECLARES]->(s:Symbol {qualname:'HTTPConnectionPool.urlopen'}) RETURN p

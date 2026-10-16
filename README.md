@@ -137,7 +137,13 @@ with unrestricted shell or database write access can bypass it. The environment
 flag is a workflow guard, not a secret credential. The MVP must not be described
 as tamper-proof. Private data is routed to a separate configured graph; it is not
 protected from database administrators. Browser recordings must show only org_demo.
-The direct Browser graph URL still needs verification on the running version.
+Browser 2.7.0 attaches to Lite and opens `/graph?graph=org_demo` directly;
+see the [verified procedure and missing eligible-data blocker](docs/browser-verification.md).
+The original eligible runtime remains unavailable. A separate
+[reconstructed public-source Browser demo](docs/browser-demo/README.md) now
+verifies the document and caller paths and includes sampled Browser footage;
+its human-approved D-2 → superseded D-1 path and retained sources are now
+verified in Browser. The runbook includes reproduction commands and final footage.
 
 ## Verification
 
