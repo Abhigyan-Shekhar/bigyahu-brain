@@ -81,6 +81,16 @@ nodes contain none of the screened excluded-work references. The publication
 guard passed 98 indexed files and complete reachable history at this preflight;
 this is not a final privacy audit or authorization to publish an unreviewed video.
 
+Clean-room reconstruction also passed from a separate committed checkout, a new
+`uv sync --frozen --extra lite --python 3.12` environment, a separate pinned
+urllib3 checkout and an empty isolated database. The prepared non-operator graph
+matches exactly: **2,875 nodes and 3,899 edges**, including properties. Unique
+operator proposal IDs and created-at audit events are intentionally excluded
+from that comparison; no approval was simulated in either graph. The original
+passing patch, checks, MCP evidence, oracle and old video remain byte-identical
+to the starting commit. The fresh locked environment also passed the complete
+130-test suite with real graph and Lite lifecycle checks enabled.
+
 Saturday 17 October: run publication/history scan on the final release commit;
 manually review source, snapshots, binary/video frames, credentials and personal
 data; flip public only after that review, then verify logged-out access. Do not
