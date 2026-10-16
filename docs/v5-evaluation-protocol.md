@@ -34,6 +34,8 @@ independent human approval/supersession and corpus freeze have passed.
 A successful coding session must complete within its budget, pass **all 12/12**
 independent socket-oracle cases (including 303 disposal and bare-pool checks),
 and pass the fixed selected upstream suite in `scripts/evaluate_agent_run.py`.
+The evaluator requires exactly 12 oracle results, with every result passing;
+upstream counts come from pytest JUnit XML, and an empty/all-skipped suite fails.
 Report actual collected/pass/fail/skip counts; do not substitute the older run's
 200 tests. Record patch hash, model/effort, exit status, elapsed time, tool calls,
 retrieval completeness, and whether the active constraint reached the model.

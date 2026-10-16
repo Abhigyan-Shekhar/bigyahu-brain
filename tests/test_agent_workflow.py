@@ -32,11 +32,15 @@ def test_readonly_codex_configuration(tmp_path):
     assert '--ignore-user-config' in command and '--ephemeral' in command
 
 
-@pytest.mark.parametrize('oracle_exit,upstream_exit,passed,expected', [
-    (0, 0, True, 0), (1, 0, False, 1), (0, 1, True, 1), (0, 0, False, 1),
+@pytest.mark.parametrize('oracle_exit,upstream_exit,passed,oracle_cases,upstream_tests,skipped,expected', [
+    (0, 0, True, 12, 200, 0, 0), (1, 0, False, 12, 200, 0, 1),
+    (0, 1, True, 12, 200, 0, 1), (0, 0, False, 12, 200, 0, 1),
+    (0, 0, True, 1, 200, 0, 1), (0, 0, True, 13, 200, 0, 1),
+    (0, 0, True, 12, 0, 0, 1), (0, 0, True, 12, 3, 3, 1),
 ])
 def test_evaluation_exit_tracks_actual_checks(tmp_path, monkeypatch,
-                                              oracle_exit, upstream_exit, passed, expected):
+                                              oracle_exit, upstream_exit, passed, oracle_cases,
+                                              upstream_tests, skipped, expected):
     evaluator = module('evaluate_agent_run')
     work = tmp_path / 'work'
     work.mkdir()
@@ -53,11 +57,19 @@ def test_evaluation_exit_tracks_actual_checks(tmp_path, monkeypatch,
         is_oracle = command[1] == str(oracle)
         if is_oracle:
             json.dump({'import_path': str(work / 'src/urllib3/__init__.py'),
-                       'results': [{'passed': passed, 'client': 'bare_pool'}]}, kwargs['stdout'])
+                       'results': [{'passed': passed, 'client': 'bare_pool'}]
+                                  * oracle_cases}, kwargs['stdout'])
         else:
             kwargs['stdout'].write('upstream test output\n')
+            Path(command[command.index('--junitxml') + 1]).write_text(
+                f'<testsuites><testsuite tests="{upstream_tests}" skipped="{skipped}" '
+                'failures="0" errors="0"/></testsuites>'
+            )
         return SimpleNamespace(returncode=oracle_exit if is_oracle else upstream_exit)
 
     monkeypatch.setattr(evaluator.subprocess, 'run', execute)
     assert evaluator.main() == expected
     assert json.loads((run / 'evaluation/summary.json').read_text())['oracle_exit'] == oracle_exit
+    summary = json.loads((run / 'evaluation/summary.json').read_text())
+    assert summary['upstream_total'] == upstream_tests
+    assert summary['upstream_passed'] == upstream_tests - skipped

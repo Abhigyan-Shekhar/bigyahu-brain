@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 import subprocess
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
@@ -30,7 +31,8 @@ def main():
                 'upstream': [python, '-m', 'pytest', '-q', 'test/test_poolmanager.py',
                              'test/with_dummyserver/test_poolmanager.py', 'test/test_util.py',
                              'test/with_dummyserver/test_connectionpool.py',
-                             '-k', 'PoolManager or redirect or rewind_body or set_file_position']}
+                             '-k', 'PoolManager or redirect or rewind_body or set_file_position',
+                             '--junitxml', str(output / 'upstream-junit.xml')]}
     results = {}
     for name, command in commands.items():
         (output / (name + '-invocation.json')).write_text(json.dumps({'args': command, 'cwd': str(args.work), 'PYTHONPATH': env['PYTHONPATH']}, indent=2) + '\n')
@@ -43,10 +45,20 @@ def main():
     results.update(oracle_passed=sum(r['passed'] for r in oracle['results']),
                    oracle_total=len(oracle['results']),
                    bare_pool_passed=sum(r['passed'] for r in oracle['results'] if r['client'] == 'bare_pool'))
+    report = ET.parse(output / 'upstream-junit.xml').getroot()
+    suites = [report] if report.tag == 'testsuite' else report.findall('testsuite')
+    counts = {key: sum(int(suite.get(key, '0')) for suite in suites)
+              for key in ('tests', 'failures', 'errors', 'skipped')}
+    results.update(upstream_total=counts['tests'], upstream_failures=counts['failures'],
+                   upstream_errors=counts['errors'], upstream_skipped=counts['skipped'],
+                   upstream_passed=counts['tests'] - counts['failures']
+                   - counts['errors'] - counts['skipped'])
     (output / 'summary.json').write_text(json.dumps(results, indent=2) + '\n')
     print(json.dumps(results))
     return 0 if (results['oracle_exit'] == results['upstream_exit'] == 0
-                 and results['oracle_total'] > 0
+                 and results['oracle_total'] == 12
+                 and results['upstream_passed'] > 0
+                 and results['upstream_failures'] == results['upstream_errors'] == 0
                  and results['oracle_passed'] == results['oracle_total']) else 1
 
 

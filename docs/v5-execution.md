@@ -113,3 +113,30 @@ this log once verified; they cannot certify a future release commit.
 
 Do not use `docs/demo/demo.mp4` as final successful footage: it records the older
 failed 9/12 attempt. A new final video is still required.
+
+## Continuation: trial preparation
+
+Prepared six fresh clean checkouts in the fixed order (baseline-1, graph-1,
+graph-2, baseline-2, baseline-3, graph-3). All are at the same urllib3 pin,
+Python 3.12.13, with identical 60-distribution locked environments. Exact launch
+argument arrays, dependency inventories and the common task/instruction copies
+are stored locally under ignored `data/experiments/v5-paired`. No model session
+has started and no corpus is frozen while D-1 remains proposed.
+
+The selected upstream suite passed **130 tests, 705 deselected** on the untouched
+pin during environment preflight. This is setup validation, not a coding-trial
+result, and no oracle or preflight output is placed in an agent checkout.
+
+Closed an evaluator gap before freezing: success now requires exactly 12 oracle
+results, all passing, and a nonempty upstream passing suite. Pytest JUnit XML
+records actual upstream passed/failed/error/skipped counts. Regression cases
+reject 1/12, extra oracle results, no tests and all-skipped suites even if the
+process reports exit 0. Earlier trial artifacts remain untouched.
+
+A [submission draft](submission-draft.md) is ready for the live form once browser
+access is available; required form fields and final video/deployment URL rules
+remain unverified.
+
+After the evaluator change, the complete real graph/Lite suite passes **134 tests**
+with no skips. Ruff passes across src/tests/scripts. The six prepared model
+sessions remain unstarted pending the independent human lifecycle steps.

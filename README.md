@@ -7,16 +7,15 @@ creates a proposal, never an approved rule.
 
 **Status: graph-aware Codex coding demonstration validated; no baseline coding improvement demonstrated.**
 FalkorDBLite 0.10.0 runs on this Mac with Redis 8.6.2 and graph module 4.18.3.
-Final backend verification: **120 passed, 0 failed, 0 skipped**, with real graph
-and Lite lifecycle integration enabled. A separate MCP STDIO selection passed
-**4/4**, and an explicit privacy/poisoning/approval/caller/reference selection
-passed **6/6**; those selections overlap the full suite. Ruff passes for
-`src`, `tests`, and `scripts`. See [merge verification](docs/backend-verification.md).
+Current v5 validation: **134 passed, 0 failed, 0 skipped**, with real graph
+and Lite lifecycle integration enabled. Ruff passes for `src`, `tests`, and
+`scripts`. Earlier merge checks and their overlapping STDIO/security selections
+are retained in [merge verification](docs/backend-verification.md).
 Codex has independently selected MCP tools, received historical graph evidence,
 and produced independently tested code changes. Some coding attempts failed;
 successful retrieval does not establish improved coding performance. The final
 [agent demonstration](docs/agent-demo-results.md) passed 12/12 independent socket
-cases and 200 selected upstream tests; the integrated live suite passed 125 tests.
+cases and 200 selected upstream tests on the earlier graph.
 Use the [runner and reproduction commands](docs/agent-workflow.md).
 
 The v5 additions support deterministic RST/Markdown documentation and exact
