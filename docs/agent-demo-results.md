@@ -1,5 +1,9 @@
 # Completed graph-aware Codex demonstration — 16 October 2026
 
+**Earlier graph:** this run predates v5 repository document nodes and operator
+approval. It cannot demonstrate their effect. Label any replay with this provenance;
+use a fresh frozen-v5 run for the final approval → coding sequence.
+
 **One complete coding run passed independent evaluation. No baseline improvement
 is claimed.** The final patch is [agent-demo.patch](agent-demo.patch); exact
 invocation steps are in [agent-workflow.md](agent-workflow.md).

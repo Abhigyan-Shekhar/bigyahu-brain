@@ -494,9 +494,11 @@ class Services:
             for label in ("Decision", "Document", "Issue", "PR"):
                 found = self.store.query(
                     f"CALL db.idx.fulltext.queryNodes('{label}', $terms) YIELD node, score "
-                    "WHERE node.repo_id=$repo RETURN node.uid AS uid, labels(node) AS labels, "
+                    "WHERE node.repo_id=$repo AND (NOT node:Document OR "
+                    "node.source_kind IS NULL OR node.revision=$sha) "
+                    "RETURN node.uid AS uid, labels(node) AS labels, "
                     "score ORDER BY score DESC, uid LIMIT 11",
-                    {"terms": " ".join(terms), "repo": self.cfg.repo_id},
+                    {"terms": " ".join(terms), "repo": self.cfg.repo_id, "sha": sha},
                     scope,
                 )
                 rows.extend(found)
@@ -517,7 +519,8 @@ class Services:
                 "[r IN relationships(p)|r.confidence] AS confidence, "
                 "[r IN relationships(p)|startNode(r).uid] AS relationship_sources, "
                 "[r IN relationships(p)|{source_uid:r.source_uid, uri:r.source_url, "
-                "basis:r.basis, snapshot_at:r.snapshot_at, "
+                "basis:r.basis, source_line:r.source_line, reference:r.reference, "
+                "snapshot_at:r.snapshot_at, "
                 "resolution_verified:r.resolution_verified}] AS relationship_evidence "
                 "ORDER BY path LIMIT 51",
                 params,
@@ -537,7 +540,7 @@ class Services:
                     "file_level_historical"
                     if "CHANGES" in edges or "MODIFIES" in edges
                     else "untrusted_reference_mention"
-                    if "REFERENCES" in edges
+                    if "REFERENCES" in edges or "MENTIONS" in edges
                     else "inferred_relationship"
                     if "heuristic" in path["confidence"]
                     else "direct_evidence"
@@ -551,6 +554,14 @@ class Services:
             routes = source_routes()
             routes.extend(
                 [
+                    (
+                        "document_pr_source",
+                        (
+                            "MATCH (a:Document {repo_id:$repo})-[:MENTIONS]->"
+                            "(w:PR {repo_id:$repo})-[:SUPPORTS]->(s:Source {repo_id:$repo}) "
+                            "WHERE a.uid IN $ids "
+                        ),
+                    ),
                     (
                         "referencing_pr_source",
                         (

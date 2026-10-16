@@ -27,3 +27,12 @@ Only an independent interactive operator session may run approval. The CLI check
 reviewed evidence/text/subjects and replacement scope in one database mutation.
 Local shell/database administrators can bypass this application boundary; no
 production isolation claim is made. Agents must never run the approval command.
+
+Repository documentation uses the existing Document and Source labels. Bounded
+tracked RST/Markdown sections carry revision, digest, path, line range and an
+immutable blob URL through SUPPORTS. The additive MENTIONS relation connects a
+Document to a PR by exact number or a current Symbol by exact qualified reference.
+It records source_uid, source_line, reference, confidence and binding=false.
+It is distinct from PR-to-Issue REFERENCES and never creates a Decision or
+CONSTRAINS edge. Public explicit re-exports resolve statically; abbreviated,
+ambiguous, inherited and dynamic references remain unresolved.

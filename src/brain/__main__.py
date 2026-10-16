@@ -10,6 +10,7 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("sync")
     sub.add_parser("ingest-snapshots").add_argument("directory")
+    sub.add_parser("ingest-docs").add_argument("paths", nargs="*")
     sub.add_parser("list-proposals")
     for command in ("inspect", "approve"):
         sub.add_parser(command).add_argument("decision_id")
@@ -19,6 +20,10 @@ def main():
         from .ingest.sync import sync
 
         result = sync(store)
+    elif args.command == "ingest-docs":
+        from .ingest.documents import ingest_documents
+
+        result = ingest_documents(store, args.paths or None)
     elif args.command == "ingest-snapshots":
         from .ingest.snapshots import ingest_snapshots
 

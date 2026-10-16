@@ -19,6 +19,15 @@ successful retrieval does not establish improved coding performance. The final
 cases and 200 selected upstream tests; the integrated live suite passed 125 tests.
 Use the [runner and reproduction commands](docs/agent-workflow.md).
 
+The v5 additions support deterministic RST/Markdown documentation and exact
+document → PR → file → symbol traversal, plus conservative public symbol
+re-exports. [Rebuild the eligible urllib3 graph](docs/v5-reproduction.md) from
+included filtered snapshots; no pre-existing demo database is required. Human
+approval remains a separate interactive step. The earlier 12/12 run predates
+these additions and is not evidence of their effect. See the
+[fixed paired protocol](docs/v5-evaluation-protocol.md) and
+[execution status](docs/v5-execution.md).
+
 ## Docker-free local setup (verified)
 
 See [Lite integration results and commands](docs/lite-integration.md). Install
@@ -196,8 +205,8 @@ data stay local and are not publication inputs.
 - Broaden controlled coding evaluation beyond the recorded matched pair; no
   general correctness or reasoning advantage is established.
 - Human-review and approve a real applicable constraint; agents must not do this.
-- Finish old-side diff mapping (currently file fallback), document ingestion,
-  and broader runtime call resolution. Reviewer evidence remains advisory.
+- Finish old-side diff mapping (currently file fallback) and broader runtime call
+  resolution. Reviewer evidence remains advisory. Document ingestion is implemented.
 - Expand adversarial/integration coverage, record measured metrics, validate Browser
   routing, record the video, and perform a clean-room setup.
 
