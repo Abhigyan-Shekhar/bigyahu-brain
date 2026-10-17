@@ -118,7 +118,7 @@ class GraphStore:
     def revision(self, code_only=False):
         syncing = "coalesce(p.syncing,true)" if code_only else (
             "coalesce(p.syncing,true) OR coalesce(p.documents_syncing,false) "
-            "OR coalesce(p.github_syncing,false)")
+            "OR coalesce(p.github_syncing,false) OR coalesce(p.graphify_syncing,false)")
         rows = self.query(
             "MATCH (p:Project {uid:$uid}) RETURN "
             f"p.last_completed_sync_sha AS sha, ({syncing}) AS syncing",

@@ -510,7 +510,12 @@ class Services:
             truncated.add("items")
         rows = rows[: limits["items"]]
         ids = [r["uid"] for r in rows]
-        params = {"ids": ids, "repo": self.cfg.repo_id, "chars": limits["excerpt_chars"],"sha":sha}
+        params = {
+            "ids": ids,
+            "repo": self.cfg.repo_id,
+            "chars": limits["excerpt_chars"],
+            "sha": sha,
+        }
         paths, sources, associations, coverage = [], [], [], []
         if ids:
             paths = self.store.query(
@@ -523,7 +528,7 @@ class Services:
                 "[r IN relationships(p)|r.confidence] AS confidence, "
                 "[r IN relationships(p)|startNode(r).uid] AS relationship_sources, "
                 "[r IN relationships(p)|{source_uid:r.source_uid, uri:r.source_url, "
-                "basis:r.basis, source_line:r.source_line, reference:r.reference, "
+                "basis:r.basis, extractor_relation:r.relation, source_line:r.source_line, reference:r.reference, "
                 "snapshot_at:r.snapshot_at, "
                 "resolution_verified:r.resolution_verified}] AS relationship_evidence "
                 "ORDER BY path LIMIT 51",
@@ -556,6 +561,16 @@ class Services:
             # then discussion. No arbitrary traversal through another repository or graph.
             fields = SOURCE_FIELDS
             routes = source_routes()
+            routes.append(
+                (
+                    "extractor_relationship_source",
+                    (
+                        "MATCH (a:Document {repo_id:$repo,current:true,revision:$sha})"
+                        "-[r:EXTRACTED_RELATION]-(:Document {repo_id:$repo,current:true,revision:$sha}) "
+                        "MATCH (s:Source {repo_id:$repo}) WHERE a.uid IN $ids AND s.uid=r.source_uid AND r.revision=$sha "
+                    ),
+                )
+            )
             routes.extend(
                 [
                     (

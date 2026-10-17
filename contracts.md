@@ -74,3 +74,19 @@ failure until retry; retirement hides old sections while retaining historical
 Source citations. Catalog refresh/deletion is transactional and separately erases
 searchable text/vectors. New GitHub syncing uses content-addressed Source versions
 and commits its cursor only after complete acquisition/publication.
+
+## Graphify and three-brain integration
+
+The operator CLI adds `ingest-graphify [tracked-code-paths...]` with the pinned
+optional Graphify extra. It writes revision-pinned advisory documents and
+`EXTRACTED_RELATION` evidence, never authoritative `CALLS` or decisions. Native
+retrieval uses up to four checked one-hop frontiers with a bounded seed/node state
+budget, returning traversal diagnostics without widening caller scope.
+
+`import-conversation --semantic-model MODEL` explicitly opts into external model
+selection of consented literal durable spans and entities. Model output remains
+non-binding proposals; explicit correction links require separate review. The
+local viewer fixes identity in configuration and routes authenticated graph reads
+through `MemoryTools.memory_graph`. It adds no hosted identity or MCP tools.
+The experimental runner's `--memory-graph` enables both read-only memory tools.
+See [integration contracts and reproduction](docs/graphify-three-brain-integration.md).

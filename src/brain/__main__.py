@@ -11,6 +11,7 @@ def main():
     sub.add_parser("sync")
     sub.add_parser("health")
     sub.add_parser("ingest-snapshots").add_argument("directory")
+    sub.add_parser("ingest-graphify").add_argument("paths", nargs="*")
     sub.add_parser("ingest-docs").add_argument("paths", nargs="*")
     sub.add_parser("retire-docs").add_argument("paths", nargs="+")
     github = sub.add_parser("sync-github")
@@ -44,6 +45,10 @@ def main():
 
         require_operator("RETIRE DOCUMENTS")
         result = delete_documents(store, args.paths)
+    elif args.command == "ingest-graphify":
+        from .ingest.graphify import ingest_graphify
+
+        result = ingest_graphify(store, args.paths or None)
     elif args.command == "ingest-docs":
         from .ingest.documents import ingest_documents
 

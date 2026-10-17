@@ -43,8 +43,10 @@ identify their backend and return a bounded nodes/edges evidence graph.
    terms occurring in their text/name, then UID for deterministic ties. FalkorDB
    corpus-wide relevance scores are deliberately ignored: hidden or expired
    records must not change authorized document-frequency statistics or ranking.
-5. Expand native Cypher paths up to four hops, allowing only eligible nodes and
-   visible assertion UIDs. Relationship types are explicitly allowlisted. Shared
+5. Expand native frontiers up to four hops, allowing only eligible nodes and
+   visible assertion UIDs. At most four one-hop Cypher queries return checked
+   adjacency; deterministic breadth-first expansion retains shortest supporting
+   paths per seed instead of enumerating all variable-length paths. Relationship types are explicitly allowlisted. Shared
    authorship/brain containers are excluded from expansion so unrelated notes
    are not retrieved simply because they have the same author.
 6. Fuse exact and full-text seed ranks with reciprocal-rank contributions. Exact
@@ -94,7 +96,11 @@ team and company memory scopes; unrequested scopes cannot contribute candidates.
 Native retrieval permits ten selected brains but at most 1,000 eligible nodes and
 2,000 edges across the requested view. Each seed channel returns at most fifty
 candidates; at most fifty fused seeds are expanded. Candidate cutoff is reported.
-More than 1,000 expansion paths returns `incomplete` and requires a narrower query.
+Expansion permits at most 10,000 seed/node states and 4,000 directed adjacency
+rows per frontier query; overflow returns `incomplete`. It reports visited states
+and query count. The [connected-memory check](memory-frontier-evaluation.json)
+completed 10/50/100-memory shared-identifier fixtures in four frontier queries;
+this is a synthetic stress check, not enterprise-scale validation.
 At most twenty memory items are returned, with 2,000 characters of item text each.
 Evidence context has at most 200 nodes and 400 edges. Supporting retrieval edges
 are retained when trimming context. Node snippets are at most 1,000 characters,
@@ -149,11 +155,12 @@ ranking invariance, expiry, revocation, stale content, index repair, literal-que
 safety, text limits, MCP/company paths and absence of embedding/catalog search
 calls in the native backend.
 
-Local verification on October 17, 2026: **249 tests passed** in the complete
+Local verification on October 17, 2026: **267 tests passed** in the complete
 disposable FalkorDB/Lite suite. Engine owners stopped with SAVE. Both benchmark
 reports were reproduced against the final implementation, and all recorded
 implementation hashes match. Earlier benchmark attempts remain in ignored local
 validation artifacts. Ruff, whitespace and publication/history scans passed.
 The existing third-party Authlib deprecation warning remains. No approved demo
 graph or frozen coding-trial artifact was modified, and no new coding-agent
-comparison was executed.
+comparison was executed. A separate [guided integration demonstration](three-brain-agent-verification.json)
+now exercises the three-brain architecture; it is not a comparison.

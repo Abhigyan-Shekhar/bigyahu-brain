@@ -132,17 +132,19 @@ deprecation warning. No fresh coding-agent comparison was performed.
 
 Still outstanding:
 
-1. Semantic fact/entity extraction with evaluated correction handling, using the
-   implemented version-pinned `UPDATES`/`EXTENDS`/`RELATES_TO` review lifecycle.
-   Deterministic line extraction and shared-identifier suggestions are not
-   Supermemory-equivalent semantic extraction.
+1. Broadly evaluated semantic extraction/correction handling. The new opt-in
+   model-selected literal spans/entities and explicit correction proposals are
+   implemented, but one synthetic acceptance check does not establish general
+   extraction quality or Supermemory equivalence.
 2. Extend the tested `.abhi/2` record/assertion round trip to historical graphs
    and explicit origin authentication.
-3. Verified Graphify runtime adapter and FalkorDB GraphRAG/PDF extraction.
+3. Graphify semantic extraction and FalkorDB GraphRAG/PDF extraction. The optional
+   structural Graphify runtime adapter is implemented; see the [integration guide](graphify-three-brain-integration.md).
 4. Broaden the implemented exact source/document/lexical code bridge with
    evaluated semantic resolution and agent planning. Approved constraints still
    come exclusively from the existing `check_change` contract.
-5. A permission-aware clickable UI and a fresh coding-agent demonstration proving
+5. Broader validation beyond the local permission-aware viewer and guided synthetic
+   coding-agent demonstration now implemented, including production workflows proving
    use of these paths. MCP integration tests do not establish improved coding.
 6. Hosted identity and storage hardening if deployment moves beyond a trusted
    local operator. Moving vectors to FalkorDB remains optional and unimplemented.

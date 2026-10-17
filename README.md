@@ -14,7 +14,7 @@ adds `memory_search` and `memory_propose`; enabling native memory graphs adds
 
 ```mermaid
 flowchart TD
-    A[Selected conversation turns] --> B[Consent and deterministic candidate extraction]
+    A[Selected conversation turns] --> B[Consent and optional semantic span selection]
     B --> C[SQLite memory catalog]
     D[Reviewed sharing and .abhi/2 import/export] <--> C
     C -->|Explicit operator sync| E[FalkorDB tenant memory graph]
@@ -36,11 +36,13 @@ operator; stale or unavailable native retrieval is reported without silent fallb
 
 | Component | Implemented behavior |
 | --- | --- |
-| Personal memory | Exact-consent selected-turn import, deterministic user-line candidates, citations and private proposals |
+| Personal memory | Exact-consent selected-turn import; deterministic or opt-in model-selected durable spans, literal entities and private proposals |
 | Team/company sharing | Selected reviewed records, current scope grants and destination proposals |
 | Portable memory | `.abhi/2` selected current topology and optional reviewed assertions, with validated import/export round trips |
 | Memory relationships | Separately reviewed, version-pinned `UPDATES`, `EXTENDS` and `RELATES_TO` assertions |
 | Native memory graph | Brain, person, team, memory, source, entity and version nodes; authorized cross-scope citation paths |
+| Graphify extractor | Pinned optional structural ingestion into revision-pinned advisory evidence; separate from authoritative Python calls |
+| Graph viewer | Local fixed-principal API and clickable authorized shared-memory slices |
 | Company bridge | Exact verified citations and unambiguous lexical code identifiers connected to existing company evidence |
 | Native retrieval | Exact/full-text seeds, scope-safe ranking, up to four graph hops, citations and supporting paths |
 
@@ -50,20 +52,27 @@ See [memory architecture](docs/memory-architecture.md),
 [company bridge](docs/memory-company-bridge.md) and
 [native retrieval](docs/falkor-memory-retrieval.md) for contracts and limitations.
 
-**Still planned:** semantic fact/entity extraction from evolving conversations,
-a Graphify runtime adapter, the FalkorDB GraphRAG SDK/PDF semantic pipeline,
-full-history graph portability, a permission-aware three-brain browser and an
-integrated three-brain coding demonstration. Graphify has only been compared on
-small deterministic samples; it is **not integrated into the runtime**. Hosted
-identity, application encryption, distributed synchronization and production-scale
-retrieval also remain outstanding. See the [roadmap](docs/roadmap.md).
+The [Graphify and three-brain integration milestone](docs/graphify-three-brain-integration.md)
+adds a real structural runtime adapter, semantic span selection, bounded native
+frontier traversal, a permission-aware local viewer and a freshly verified guided
+Codex run. The runner's `--memory-graph` option enables search and inspection;
+write/administration tools remain excluded.
+
+**Still planned:** Graphify's semantic model pass, the FalkorDB GraphRAG SDK/PDF
+pipeline, full-history graph portability, a hosted multi-user graph experience,
+and broader agent evaluation. Arbitrary semantic company-concept resolution is
+still unbuilt; automatic correction proposals require an explicit correction and
+an unambiguous code identifier. Hosted identity, application encryption,
+distributed synchronization and production-scale retrieval remain outstanding.
+See the [roadmap](docs/roadmap.md).
 
 ## Validation and measured results
 
-The current full isolated memory/graph suite passed **249 tests**, including real
+The current full isolated memory/graph suite passed **267 tests**, including real
 FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
-pass. The portability workflow now includes live Docker graph/memory regression
-checks; the local result does not establish that the updated CI has passed.
+pass. The portability workflow includes live Docker graph/memory regression
+checks and installs the optional Graphify extractor there. CI for these new changes
+has not run yet.
 
 A small synthetic retrieval comparison separates natural-language queries from
 three deliberately authored graph-path acceptance cases:
@@ -80,6 +89,12 @@ advantage or improved coding outcomes. See the
 [retrieval report](docs/falkor-memory-evaluation.json),
 [vector comparison](docs/falkor-memory-vector-comparison.json) and
 [methodology](docs/falkor-memory-retrieval.md).
+
+The new [guided three-brain agent run](docs/three-brain-agent-verification.json)
+retrieved personal memory, inspected authorized team/company paths and a verified
+source before editing a synthetic retry function. Its patch passed **15 independent
+oracle cases** and its own regression tests; another developer's private canary
+was excluded. This is an integration demonstration, not a baseline comparison.
 
 The earlier approved-v5 coding comparison completed **3 baseline + 3 graph
 sessions**: every run passed **12/12 independent oracle cases** and its selected
@@ -131,6 +146,28 @@ Replace `alice` with the configured principal. Launch MCP with the same
 paths require current company access and `sync-graph --include-company`, followed
 by search with `--include-graph`. See [portable exchange](docs/abhi-format.md) for
 selected `.abhi/2` export/import.
+
+## Graphify, semantic extraction and graph viewing
+
+```sh
+uv sync --frozen --extra lite --extra graphify --python 3.12
+# First sync a clean configured checkout, then ingest selected tracked code:
+uv run python -m brain sync
+uv run --extra graphify python -m brain ingest-graphify src/example.py
+# Configure memory_graph_enabled and the trusted viewer principal first:
+uv run python -m brain.memory_viewer --config /ABSOLUTE/PATH/memory.local.yaml
+```
+
+The viewer prints a local session URL. It binds to loopback, requires a bearer
+session token and retrieves every graph slice through current catalog permissions.
+Clicking a member shows authored memory within the selected authorized scopes.
+It does not expose their private brain.
+
+Conversation import keeps deterministic extraction by default. Explicitly selecting
+`--semantic-model` opts into sending the consented selected turns to the named
+Codex model for durable-span/entity selection. Facts and suggested corrections
+remain proposals. See the [integration guide](docs/graphify-three-brain-integration.md)
+for the exact command, model boundary and reproduction steps.
 
 ## Optional Cloud setup (not live-verified)
 

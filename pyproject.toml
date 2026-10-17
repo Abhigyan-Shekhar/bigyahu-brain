@@ -14,6 +14,9 @@ lite = ["falkordblite==0.10.0; python_version >= '3.12' and sys_platform != 'win
 memory = [
     "sentence-transformers>=5,<6",
 ]
+graphify = [
+    "graphifyy==0.9.92",
+]
 
 [dependency-groups]
 dev = ["pytest>=8,<9", "pytest-asyncio>=0.24", "ruff>=0.11"]

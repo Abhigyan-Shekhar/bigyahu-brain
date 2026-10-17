@@ -31,7 +31,10 @@ Enable it explicitly with `memory_graph_enabled: true`; this adds the read-only
 Schema version 2 additionally stores version-pinned
 [memory relationship assertions](memory-relationships.md), with independent
 review and optional `.abhi/2` exchange. Automatic shared-identifier suggestions
-remain non-binding proposals; semantic correction inference is not implemented.
+remain non-binding proposals. Opt-in model selection now extracts durable literal
+spans/entities and suggests explicitly signaled, unambiguous code-identifier
+corrections; unrestricted semantic supersession remains unimplemented. See the
+[integration milestone](graphify-three-brain-integration.md).
 An [optional company bridge](memory-company-bridge.md) adds native, verified
 source/document and explicit lexical code paths to the projection. Both sync
 and `memory_graph(include_company=true)` require current company membership;
