@@ -61,6 +61,9 @@ are independent; a team filename never creates one. `review --brain ... --uid ..
 exact record/citations and checks the reviewed hash. Graph decisions use existing
 `approve` plus `review-decision --action reject|expire|rollback --reason ...`.
 Memory acceptance does not activate a graph decision.
+`brain review-history <decision_id>` prints the linked bounded audit trail.
+`brain approve <decision_id> --expires-at <future-ISO-8601>` records an explicit
+expiry; omission preserves the existing no-expiry decision behavior.
 
 Session exports are curated `{"format":"session/1","session":"id",
 "selected_memories":["explicitly selected note"]}` JSON. Compute its canonical

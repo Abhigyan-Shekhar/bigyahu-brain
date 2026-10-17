@@ -20,6 +20,14 @@ scope filtering, stale updates, revocation, expiry, deletion and injection bound
 
 ## Coding agents
 
+The [pilot](memory-agent-pilot.json) retains six completed sessions at backend
+`26cd6ab`. Every patch passed its external oracle, but both hybrid sessions
+omitted `brains=["company"]` and returned zero memory items. They demonstrate
+tool invocation and coding success, not use of hybrid memory. No pilot run was
+overwritten or omitted. The corrected protocol fixes scope guidance in both the
+tool description and common instructions, before starting a new six-session set.
+It supplies no prior patches, oracle feedback or known solutions to fresh agents.
+
 `benchmarks/agent-tasks.json` fixes two synthetic Python tasks, initial sources,
 visible tests, policies and an independent evaluator. Run one fresh session per
 task/condition: no brain, graph-only, hybrid. Each condition sees the same source

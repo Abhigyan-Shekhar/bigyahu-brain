@@ -69,7 +69,8 @@ def sync_github(store, output, api=None, reconcile=False):
     if not state["sha"] or state["syncing"]:
         raise ValueError("Complete code sync before GitHub sync")
     rows = store.query(
-        "MATCH (p:Project {uid:$repo}) RETURN p.github_cursor AS cursor", {"repo": cfg.repo_id}
+        "MATCH (p:Project {uid:$repo}) RETURN p.github_cursor AS cursor,p.github_repository_id AS repository_id",
+        {"repo": cfg.repo_id},
     )
     cursor = rows[0]["cursor"] if rows else None
     started = datetime.now(UTC)
@@ -83,6 +84,8 @@ def sync_github(store, output, api=None, reconcile=False):
     repository = api.get(base)
     if repository.get("full_name", "").casefold() != slug.casefold():
         raise ValueError("Repository identity changed; review configured URL")
+    if rows and rows[0].get("repository_id") not in {None, repository["id"]}:
+        raise ValueError("GitHub repository ID changed; reset scope only after operator review")
     private = repository.get("private", True)
     if private and not cfg.tenant_id:
         raise ValueError("Private GitHub acquisition requires a tenant namespace")

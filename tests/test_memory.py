@@ -235,3 +235,12 @@ def test_graph_not_called_for_unauthorized_scope(memory):
     tools = MemoryTools(memory, graph)
     assert tools.memory_search("secret", include_graph=True)["status"] == "error"
     graph.get_context.assert_not_called()
+
+
+def test_catalog_failure_is_unavailable_without_graph_fallback(memory):
+    graph = Mock()
+    tools = MemoryTools(memory, graph)
+    memory.close()
+    assert tools.memory_search("private note")["status"] == "unavailable"
+    assert tools.memory_propose("note", source("note"))["status"] == "unavailable"
+    graph.get_context.assert_not_called()

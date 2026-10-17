@@ -671,6 +671,7 @@ class Services:
             "OPTIONAL MATCH (new:Decision {repo_id:$repo})-[:SUPERSEDES]->(d) "
             "RETURN d.uid AS uid, d.status AS status, d.approval AS approval, "
             "d.approved_by AS approved_by, d.approved_at AS approved_at, "
+            "d.expires_at AS expires_at, "
             "substring(coalesce(d.text,''),0,2000) AS text, size(coalesce(d.text,'')) AS original_chars, "
             "collect(DISTINCT {uid:s.uid, uri:s.uri, "
             "excerpt:substring(coalesce(s.excerpt,''),0,2000), "

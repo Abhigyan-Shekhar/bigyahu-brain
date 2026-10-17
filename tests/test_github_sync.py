@@ -108,6 +108,14 @@ def test_pagination_refuses_silent_truncation():
         api.pages("repos/test/repo/issues", max_pages=2)
 
 
+def test_repository_recreation_cannot_reuse_old_cursor(tmp_path):
+    graph = store()
+    graph.query.return_value = [{"cursor": None, "repository_id": 999}]
+    with pytest.raises(ValueError, match="repository ID changed"):
+        sync_github(graph, tmp_path / "capture", API())
+    assert len(graph.query.call_args_list) == 1
+
+
 def test_missing_changed_files_fails_before_graph_writes(tmp_path):
     graph = store()
     api = API()

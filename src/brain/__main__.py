@@ -17,7 +17,7 @@ def main():
     github.add_argument("--output", required=True)
     github.add_argument("--reconcile", action="store_true")
     sub.add_parser("list-proposals")
-    for command in ("inspect", "approve"):
+    for command in ("inspect", "approve", "review-history"):
         command_parser=sub.add_parser(command)
         command_parser.add_argument("decision_id")
         if command=="approve":
@@ -60,6 +60,12 @@ def main():
         from .admin import review_decision
 
         result=review_decision(store,args.decision_id,args.action,args.reason)
+    elif args.command == "review-history":
+        result=store.query("MATCH (r:ReviewRecord {repo_id:$repo})-[:REVIEWS]->"
+            "(d:Decision {uid:$id,repo_id:$repo}) RETURN r.uid AS uid,r.actor AS reviewer,"
+            "r.at AS at,r.action AS action,r.reason AS reason,r.reviewed_text AS reviewed_text,"
+            "r.source_uids AS source_uids,r.subject_uids AS subject_uids,r.revision AS revision "
+            "ORDER BY at,uid LIMIT 100", {"repo":store.cfg.repo_id,"id":args.decision_id})
     elif args.command == "inspect":
         from .services import Services
 

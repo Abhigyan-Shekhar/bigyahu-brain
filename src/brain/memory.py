@@ -330,10 +330,12 @@ class Memory:
         }[action]
         # Rollback revokes acceptance; restoring erased/replaced prose requires a new proposal.
         with self.db:
-            self.db.execute(
-                "UPDATE records SET state=? WHERE tenant=? AND brain=? AND uid=? AND hash=?",
-                (state, self.identity.tenant, brain, uid, expected),
+            changed = self.db.execute(
+                "UPDATE records SET state=? WHERE tenant=? AND brain=? AND uid=? AND hash=? AND state=?",
+                (state, self.identity.tenant, brain, uid, expected, row["state"]),
             )
+            if changed.rowcount != 1:
+                raise ValueError("Concurrent review conflict; nothing reviewed")
             self._event(
                 brain,
                 uid,
@@ -404,6 +406,8 @@ class LocalEncoder:
         encoded = self.model.encode(chunks, normalize_embeddings=True).tolist()
         vector = [sum(row[i] for row in encoded) / len(encoded) for i in range(384)]
         norm = math.sqrt(sum(x * x for x in vector))
+        if not norm or not math.isfinite(norm):
+            raise ValueError("Embedding has no finite direction")
         vector = [x / norm for x in vector] if norm else vector
         if len(vector) != 384 or not all(math.isfinite(x) for x in vector):
             raise ValueError("Invalid embedding output")

@@ -1,6 +1,7 @@
 """Two opt-in MCP operations. No identity, ACL or administration tool inputs."""
 
 import inspect
+import sqlite3
 from functools import wraps
 
 
@@ -30,6 +31,8 @@ def authorized_services(services, memory):
                         memory.authorize("company")
                 except PermissionError:
                     return {"status": "error", "warnings": ["scope_unavailable"]}
+                except sqlite3.Error:
+                    return {"status": "unavailable", "warnings": ["memory_unavailable"]}
                 return original(*args, **kwargs)
 
             return call
@@ -54,6 +57,9 @@ class MemoryTools:
 
         Identity and membership come from the server. Graph evidence is optional
         and requires company membership. Only check_change establishes constraints.
+        Omitting brains searches PRIVATE memory only. For repository/company
+        context explicitly pass brains=["company"]. include_graph does not change
+        the memory scope. Team queries use brains=["team:<authorized-team>"].
         """
         try:
             selected = brains or ["private:" + self.memory.identity.principal]
@@ -76,7 +82,11 @@ class MemoryTools:
                 combined = {}
                 for rank, item in enumerate(result["items"], 1):
                     cited = item.get("sources", [])
-                    key = ("citation", cited[0]["uri"]) if len(cited) == 1 else (item["brain"], item["uid"])
+                    key = (
+                        ("citation", cited[0]["uri"])
+                        if len(cited) == 1
+                        else (item["brain"], item["uid"])
+                    )
                     combined[key] = {
                         **item,
                         "fusion_score": 1 / (60 + rank),
@@ -85,7 +95,11 @@ class MemoryTools:
                 for rank, source in enumerate(graph.get("untrusted_source_excerpts", []), 1):
                     uid = source.get("source_uid")
                     if uid:
-                        key = ("citation", source["uri"]) if source.get("uri") else ("company_graph", uid)
+                        key = (
+                            ("citation", source["uri"])
+                            if source.get("uri")
+                            else ("company_graph", uid)
+                        )
                         if key in combined:
                             combined[key]["fusion_score"] += 1 / (60 + rank)
                             combined[key]["retrieval_channels"].append("graph")
@@ -104,6 +118,8 @@ class MemoryTools:
             return result
         except PermissionError:
             return {"status": "error", "warnings": ["scope_unavailable"]}
+        except sqlite3.Error:
+            return {"status": "unavailable", "warnings": ["memory_unavailable"]}
         except (ValueError, OSError) as error:
             return {"status": "error", "warnings": [str(error)]}
 
@@ -120,5 +136,7 @@ class MemoryTools:
             }
         except PermissionError:
             return {"status": "error", "warnings": ["scope_unavailable"]}
+        except sqlite3.Error:
+            return {"status": "unavailable", "warnings": ["memory_unavailable"]}
         except (ValueError, OSError) as error:
             return {"status": "error", "warnings": [str(error)]}
