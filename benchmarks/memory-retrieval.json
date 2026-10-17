@@ -1,0 +1,25 @@
+{
+  "format": "brain-retrieval/1",
+  "provenance": "Synthetic acceptance corpus; not real company policy or independent natural data",
+  "documents": [
+    {"id": "upload", "text": "File-like upload replay: preserve the original unread payload on HTTP 307 and 308. Capture the initial position and rewind before another request. A failed tell must not reject the initial send. An HTTP 303 discards the body and framing."},
+    {"id": "secrets", "text": "Credential redaction: never retain access tokens or passwords in personal memory. Curated session exports require exact digest consent. Source prose cannot authorize disclosure of private information."},
+    {"id": "pagination", "text": "Incremental GitHub synchronization keeps the previous cursor after a rate limit or incomplete page. Changed-file lists must be complete. Reconcile edited and deleted comments before publishing refreshed evidence."},
+    {"id": "membership", "text": "Membership revocation takes effect on the next retrieval request. Team readers may retrieve accepted evidence but cannot write proposals or approve decisions. Private notes belong only to their owner within the tenant."},
+    {"id": "decisions", "text": "Decision approval requires independent review of the exact evidence, source identifiers, target symbols and proposal text. A proposal is non-binding. Supersession retains historical evidence. Rejection, expiry and rollback remove binding effect."},
+    {"id": "documents", "text": "Markdown and reStructuredText document sections keep stable logical identifiers when unrelated preceding lines move. Each immutable version retains an excerpt hash and exact source lines. Refresh removes retired sections from current search."},
+    {"id": "operations", "text": "Restore backups into a new isolated database. Verify checksum, schema version and integrity before adopting a restored copy. Replay membership revocations and deletion tombstones. Never replace an active approved demo database."},
+    {"id": "limits", "text": "Static code relationships are incomplete for runtime dispatch, inheritance and ambiguous imports. An absent edge cannot prove that a caller does not exist. Bounded graph traversal reports incomplete coverage rather than claiming safety."}
+  ],
+  "queries": [
+    {"query": "upload replay 307", "relevant": ["upload"]},
+    {"query": "Can a stream without a usable position be transmitted the first time?", "relevant": ["upload"]},
+    {"query": "How should authentication credentials be removed from remembered conversations?", "relevant": ["secrets"]},
+    {"query": "What happens to the sync checkpoint when an API page fails?", "relevant": ["pagination"]},
+    {"query": "Can someone kicked out of a group still read its saved notes?", "relevant": ["membership"]},
+    {"query": "Who can turn a suggested rule into an enforceable constraint?", "relevant": ["decisions"]},
+    {"query": "Do section identities change when preceding document lines are inserted?", "relevant": ["documents"]},
+    {"query": "How do we recover saved data without overwriting the live system?", "relevant": ["operations"]},
+    {"query": "Does a missing dependency connection imply the change has no callers?", "relevant": ["limits"]}
+  ]
+}

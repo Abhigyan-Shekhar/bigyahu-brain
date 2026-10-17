@@ -224,6 +224,7 @@ class Services:
                 and d["kind"] == "constraint"
                 and bool(sources)
                 and d.get("approved_revision") == sha
+                and (not d.get("expires_at") or d["expires_at"] > datetime.now(UTC).isoformat())
                 and not stale
             )
             if d["status"] != "superseded":
@@ -371,7 +372,7 @@ class Services:
             "WHERE s.uid IN $ids OPTIONAL MATCH (d)-[:SUPPORTED_BY]->(src:Source {repo_id:$repo}) "
             "RETURN d.uid AS uid, substring(coalesce(d.text,''),0,2000) AS text, "
             "size(coalesce(d.text,'')) AS original_chars, d.status AS status, d.approval AS approval, "
-            "d.kind AS kind, d.approved_revision AS approved_revision, collect(DISTINCT s.uid) AS subjects, "
+            "d.kind AS kind,d.expires_at AS expires_at, d.approved_revision AS approved_revision, collect(DISTINCT s.uid) AS subjects, "
             "collect(DISTINCT {uid:src.uid, uri:src.uri, "
             "excerpt:substring(coalesce(src.excerpt,''),0,2000), "
             "original_chars:size(coalesce(src.excerpt,''))})[0..21] AS sources, "
@@ -479,11 +480,12 @@ class Services:
         number = re.fullmatch(r"#([0-9]{1,10})", query)
         params["number"] = int(number[1]) if number else -1
         rows = self.store.query(
-            "MATCH (n {repo_id:$repo}) WHERE n.uid=$query OR "
+            "MATCH (n {repo_id:$repo}) WHERE (NOT n:Document OR "
+            "(coalesce(n.current,true) AND (n.source_kind IS NULL OR n.revision=$sha))) AND (n.uid=$query OR "
             "(n:Symbol AND n.current=true AND n.qualname=$query) OR "
-            "((n:Issue OR n:PR) AND (n.url=$query OR n.number=$number)) "
+            "((n:Issue OR n:PR) AND (n.url=$query OR n.number=$number))) "
             "RETURN n.uid AS uid, labels(n) AS labels ORDER BY uid LIMIT 11",
-            params,
+            {**params, "sha": sha},
             scope,
         )
         retrieval = "exact_uid_symbol_or_work_item" if rows else "keyword_fulltext"
@@ -495,7 +497,7 @@ class Services:
                 found = self.store.query(
                     f"CALL db.idx.fulltext.queryNodes('{label}', $terms) YIELD node, score "
                     "WHERE node.repo_id=$repo AND (NOT node:Document OR "
-                    "node.source_kind IS NULL OR node.revision=$sha) "
+                    "(coalesce(node.current,true) AND (node.source_kind IS NULL OR node.revision=$sha))) "
                     "RETURN node.uid AS uid, labels(node) AS labels, "
                     "score ORDER BY score DESC, uid LIMIT 11",
                     {"terms": " ".join(terms), "repo": self.cfg.repo_id, "sha": sha},
@@ -513,7 +515,8 @@ class Services:
         if ids:
             paths = self.store.query(
                 "MATCH p=(a)-[*1..2]-(b) WHERE a.uid IN $ids "
-                "AND all(n IN nodes(p) WHERE n.repo_id=$repo) "
+                "AND all(n IN nodes(p) WHERE n.repo_id=$repo AND "
+                "(NOT n:Document OR coalesce(n.current,true))) "
                 "RETURN [n IN nodes(p)|n.uid] AS path, "
                 "[r IN relationships(p)|type(r)] AS relationships, "
                 "[r IN relationships(p)|r.confidence] AS confidence, "

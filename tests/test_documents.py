@@ -6,7 +6,7 @@ import pytest
 from test_ingestion_connectivity import commit
 from test_integration import real as real  # noqa: PLC0414
 
-from brain.ingest.documents import ingest_documents, sections, symbol_resolver
+from brain.ingest.documents import delete_documents, ingest_documents, sections, symbol_resolver
 from brain.ingest.sync import sync
 from brain.services import Services
 
@@ -42,6 +42,39 @@ def test_bounded_sections_keep_exact_line_ranges():
 
 
 live = pytest.mark.skipif(os.getenv("BRAIN_INTEGRATION") != "1", reason="requires FalkorDB")
+
+
+@live
+def test_document_refresh_fence_recovery_stable_id_and_retirement(real,monkeypatch):
+    root=real.cfg.repo_root
+    document=root/"guide.md"
+    document.write_text("# Uploads\nRead the unread payload.\n# Old\nOld text.\n")
+    commit(root)
+    sync(real)
+    ingest_documents(real,["guide.md"])
+    first=real.query("MATCH (d:Document {repo_id:$repo,current:true}) RETURN d.stable_id AS stable,d.uid AS uid,d.text AS text",
+                     {"repo":real.cfg.repo_id})
+    old_uid=next(row["uid"] for row in first if "Old text" in row["text"])
+    original_stable=next(row["stable"] for row in first if "unread payload" in row["text"])
+    document.write_text("Preamble.\n# Uploads\nRead the remaining bytes.\n")
+    commit(root)
+    sync(real)
+    original=real.upsert
+    with monkeypatch.context() as patch:
+        patch.setattr(real,"upsert",lambda *args,**kwargs: (_ for _ in ()).throw(RuntimeError("injected")))
+        with pytest.raises(RuntimeError,match="injected"):
+            ingest_documents(real,["guide.md"])
+    assert real.revision()["syncing"] is True
+    assert Services(real).get_context("Uploads")["status"]=="unavailable"
+    assert real.upsert==original
+    ingest_documents(real,["guide.md"])
+    assert real.revision()["syncing"] is False
+    current=real.query("MATCH (d:Document {repo_id:$repo,current:true}) RETURN d.stable_id AS stable,d.text AS text",
+                       {"repo":real.cfg.repo_id})
+    assert next(row["stable"] for row in current if "remaining bytes" in row["text"])==original_stable
+    assert not Services(real).get_context(old_uid)["items"]
+    delete_documents(real,["guide.md"])
+    assert not real.query("MATCH (d:Document {repo_id:$repo,current:true}) RETURN d.uid", {"repo":real.cfg.repo_id})
 
 
 @live

@@ -11,6 +11,9 @@ dependencies = ["falkordb>=1.2,<2", "fastmcp>=2,<3", "pyyaml>=6,<7", "pathspec>=
 
 [project.optional-dependencies]
 lite = ["falkordblite==0.10.0; python_version >= '3.12' and sys_platform != 'win32'"]
+memory = [
+    "sentence-transformers>=5,<6",
+]
 
 [dependency-groups]
 dev = ["pytest>=8,<9", "pytest-asyncio>=0.24", "ruff>=0.11"]

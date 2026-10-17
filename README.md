@@ -1,5 +1,10 @@
 # Company Brain
 
+Current scope and next-phase status: [roadmap](docs/roadmap.md). The five-tool
+FalkorDB prototype remains the default. The opt-in [local memory extension](docs/memory-architecture.md)
+adds personal/team proposals, scoped hybrid retrieval and incremental ingestion;
+hosted identity, federation and production-scale retrieval remain planned.
+
 A local MCP server that connects a planned code change to incoming callers,
 source-backed constraints, and maintainer evidence in FalkorDB. Codex remains the
 code-editing agent. Source prose is untrusted evidence; remembering something

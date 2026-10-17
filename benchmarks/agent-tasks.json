@@ -1,0 +1,22 @@
+{
+  "format": "brain-agent-tasks/1",
+  "provenance": "Synthetic coding tasks, one trial per condition; not production performance evidence",
+  "tasks": [
+    {
+      "id": "ttl",
+      "task": "Fix cache_entry expiration to follow the repository policy for TTL boundaries, zero TTL and negative TTL. Preserve the function interface, add regression tests and run them.",
+      "code": "def cache_entry(value, created, now, ttl):\n    if now - created > ttl:\n        return None\n    return value\n",
+      "policy": "TTL is in seconds. An entry expires when its age is greater than or equal to its TTL. A zero TTL disables caching and always returns None. A negative TTL is invalid and must raise ValueError. A fresh positive-TTL entry returns its original value. Future created timestamps are fresh for positive TTL.",
+      "visible_test": "from app import cache_entry\n\ndef test_fresh():\n    assert cache_entry('v', 1, 2, 5) == 'v'\n",
+      "oracle": "from app import cache_entry\nimport pytest\n\ndef test_boundary():\n    assert cache_entry('v', 1, 6, 5) is None\ndef test_zero():\n    assert cache_entry('v', 3, 3, 0) is None\n    assert cache_entry('v', 4, 3, 0) is None\ndef test_negative():\n    with pytest.raises(ValueError): cache_entry('v', 1, 2, -1)\ndef test_fresh_future():\n    assert cache_entry('v', 4, 3, 5) == 'v'\n"
+    },
+    {
+      "id": "retry",
+      "task": "Fix parse_delay to follow the repository policy for HTTP Retry-After delta-seconds, malformed values and the cap. Preserve the function interface, add regression tests and run them.",
+      "code": "def parse_delay(value, default=1, cap=60):\n    try:\n        return min(int(value), cap)\n    except ValueError:\n        return default\n",
+      "policy": "Only a string of ASCII digits with optional surrounding whitespace is valid Retry-After delta-seconds. Missing values, signed integers, non-ASCII digits, floats and malformed values return default. Clamp a valid nonnegative delta to cap. HTTP dates are out of scope. Preserve default and cap parameters.",
+      "visible_test": "from app import parse_delay\n\ndef test_numeric():\n    assert parse_delay('12') == 12\n",
+      "oracle": "from app import parse_delay\n\ndef test_missing():\n    assert parse_delay(None, default=7) == 7\ndef test_invalid():\n    for value in ['-2', '+2', '2.5', '\\u0662', '', 2, False]:\n        assert parse_delay(value, default=7) == 7\ndef test_valid():\n    assert parse_delay(' 0 ') == 0\n    assert parse_delay('999', cap=12) == 12\ndef test_parameters():\n    assert parse_delay('bad', default=9, cap=2) == 9\n"
+    }
+  ]
+}

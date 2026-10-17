@@ -97,7 +97,18 @@ def sections(text):
     """RST/Markdown headings delimit sections; long sections split into bounded ranges."""
     lines = text.splitlines(keepends=True)
     starts = {0, len(lines)}
+    fence = ""
     for i, line in enumerate(lines):
+        marker = re.match(r"^\s{0,3}(`{3,}|~{3,})", line)
+        if marker:
+            value = marker[1]
+            if not fence:
+                fence = value
+            elif value[0] == fence[0] and len(value) >= len(fence):
+                fence = ""
+            continue
+        if fence:
+            continue
         if re.match(r"^#{1,6}\s+", line):
             starts.add(i)
         if i and re.fullmatch(r"[=~^\-`:#*+]{3,}\s*", line) and lines[i - 1].strip():
@@ -123,7 +134,7 @@ def sections(text):
 def ingest_documents(store, paths=None):
     cfg = store.cfg
     sha = revision(cfg.repo_root)
-    state = store.revision()
+    state = store.revision(code_only=True)
     if not clean(cfg.repo_root) or state != {"sha": sha, "syncing": False}:
         raise ValueError("Document ingestion requires clean checkout at completed indexed revision")
     paths = list(dict.fromkeys(DEFAULT_PATHS if paths is None else paths))
@@ -180,8 +191,17 @@ def ingest_documents(store, paths=None):
     by_number = defaultdict(list)
     for pr in prs:
         by_number[pr["number"]].append(pr["uid"])
-    if not clean(cfg.repo_root) or revision(cfg.repo_root) != sha or store.revision() != state:
+    if not clean(cfg.repo_root) or revision(cfg.repo_root) != sha or store.revision(code_only=True) != state:
         raise ValueError("Checkout or index changed during document preparation")
+    # Single-writer refresh fence. Failure leaves readers unavailable until this
+    # operation is rerun successfully, including retry at the same code revision.
+    store.query("MATCH (p:Project {uid:$repo}) SET p.documents_syncing=true", {"repo": cfg.repo_id})
+    from ..memory_ingest import document_sections
+
+    stable_ids = {}
+    for path in paths:
+        for section in document_sections(path, (cfg.repo_root / path).read_text(encoding="utf-8")):
+            stable_ids[(path, section["start"], section["end"])] = section["id"]
     symbol_links = pr_links = 0
     unresolved = set()
     for path, start, end, text in prepared:
@@ -195,6 +215,8 @@ def ingest_documents(store, paths=None):
             "line_end": end,
             "digest": hashlib.sha256(text.encode()).hexdigest(),
             "source_kind": "repository_document",
+            "stable_id": stable_ids[(path, start, end)],
+            "current": True,
         }
         store.upsert("Document", uid, {**props, "text": text})
         store.upsert(
@@ -239,8 +261,14 @@ def ingest_documents(store, paths=None):
             )
             pr_links += confidence == "exact_pr_number"
             symbol_links += confidence == "exact_reference"
-    if not clean(cfg.repo_root) or revision(cfg.repo_root) != sha or store.revision() != state:
+    if not clean(cfg.repo_root) or revision(cfg.repo_root) != sha or store.revision(code_only=True) != state:
         raise ValueError("Checkout or index changed; rerun before using document evidence")
+    store.query(
+        "MATCH (d:Document {repo_id:$repo, source_kind:'repository_document'}) "
+        "WHERE d.path IN $paths AND NOT d.uid IN $ids SET d.current=false",
+        {"repo": cfg.repo_id, "paths": paths,
+         "ids": [f"{cfg.repo_id}@{sha}:{path}:section:L{start}-L{end}" for path,start,end,_ in prepared]})
+    store.query("MATCH (p:Project {uid:$repo}) SET p.documents_syncing=false", {"repo": cfg.repo_id})
     return {
         "revision": sha,
         "files": len(paths),
@@ -251,3 +279,21 @@ def ingest_documents(store, paths=None):
         "binding": False,
         "symbol_link_status": "verified" if symbol_links else "no_verified_symbol_link",
     }
+
+
+def delete_documents(store, paths):
+    """Operator-selected retirement; immutable evidence already cited by decisions remains.
+
+    Native graph deletion is logical retirement. For erasure use the memory
+    catalog deletion command and the retention procedure in governance docs.
+    """
+    if not paths or len(paths) > MAX_FILES:
+        raise ValueError("Expected bounded document paths")
+    for path in paths:
+        store.cfg.path(path)
+    # Atomic retirement of sections and their mention edges, retaining Source history.
+    return store.query(
+        "MATCH (d:Document {repo_id:$repo, source_kind:'repository_document'}) "
+        "WHERE d.path IN $paths SET d.current=false "
+        "WITH d OPTIONAL MATCH (d)-[r:MENTIONS]->() DELETE r RETURN DISTINCT d.uid AS uid",
+        {"repo": store.cfg.repo_id, "paths": paths})

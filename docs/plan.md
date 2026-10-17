@@ -1,5 +1,9 @@
 # Company Brain — FINAL PLAN (v3.0)
 
+Historical event-era plan. The [current roadmap](roadmap.md) supersedes its scope
+and unfinished-task descriptions; dated experiment/security constraints still
+apply to their recorded artifacts. This document is retained for provenance.
+
 **Build window:** 15–18 October 2026 (IST)  
 **Submission cutoff:** 18 October 2026, **11:59 PM IST**  
 **Team:** up to four; four independent workstreams below  
