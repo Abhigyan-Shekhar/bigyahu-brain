@@ -105,8 +105,12 @@ def evaluate(port, model_dir, output, repeats=5):
             }
             # Warm model/tokenizer before timed query measurements.
             encoder.encode("warm retrieval")
+            originals = {
+                "urn:benchmark:document:" + d["id"]: d["text"] for d in corpus["documents"]
+            }
             for name, search in modes.items():
                 hits, reciprocal, grounded, total, latencies = 0, 0.0, 0, 0, []
+                verified = 0
                 for case in corpus["queries"]:
                     result = None
                     for _ in range(repeats):
@@ -118,6 +122,10 @@ def evaluate(port, model_dir, output, repeats=5):
                         found = [s["uri"].rsplit(":", 1)[-1] for s in sources if s.get("uri")]
                         grounded += sum(bool(s.get("uri") and s.get("source_uid")) for s in sources)
                         total += len(sources)
+                        verified += sum(
+                            source.get("text") == originals.get(source.get("uri"))
+                            for source in sources
+                        )
                     else:
                         found = []
                         for item in result["items"]:
@@ -126,6 +134,17 @@ def evaluate(port, model_dir, output, repeats=5):
                             ]
                             found.extend(uri.rsplit(":", 1)[-1] for uri in source_uris if uri)
                             grounded += bool(source_uris and all(source_uris))
+                            valid = bool(source_uris) and all(
+                                uri in originals for uri in source_uris
+                            )
+                            valid = valid and any(
+                                item.get("text") == originals[uri] for uri in source_uris
+                            )
+                            valid = valid and all(
+                                s["digest"] == digest(originals[s["uri"]])
+                                for s in item.get("sources", [])
+                            )
+                            verified += valid
                             total += 1
                     positions = [found.index(uid) + 1 for uid in case["relevant"] if uid in found]
                     hits += bool(positions)
@@ -143,6 +162,8 @@ def evaluate(port, model_dir, output, repeats=5):
                     "hit_at_3": hits / len(corpus["queries"]),
                     "mrr_at_3": reciprocal / len(corpus["queries"]),
                     "citation_coverage": grounded / total if total else None,
+                    "returned_source_integrity": verified / total if total else None,
+                    "returned_items_checked": total,
                     "latency_ms_p50": statistics.median(ordered),
                     "latency_ms_p95": ordered[min(len(ordered) - 1, int(len(ordered) * 0.95))],
                 }

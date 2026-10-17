@@ -131,7 +131,7 @@ def sync_github(store, output, api=None, reconcile=False):
                 raise ValueError("GitHub changed-file coverage incomplete; cursor unchanged")
         records.append(record)
     output = Path(output)
-    output.mkdir(parents=True, exist_ok=False)
+    output.mkdir(parents=True, exist_ok=False, mode=0o700)
     raw = (json.dumps(records, ensure_ascii=False, indent=2) + "\n").encode()
     (output / "work.json").write_bytes(raw)
     manifest = {

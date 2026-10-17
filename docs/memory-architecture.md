@@ -14,6 +14,8 @@ principal, tenant, arbitrary graph, arbitrary SQL or Cypher tool arguments.
 Org operations additionally require a current company grant. Private operations
 use the configured principal. Team membership is an operator-owned catalog row,
 not something inferred from repository prose, CODEOWNERS or an imported file.
+Legacy context/trace/impact reads also require company membership because they
+consult the configured code graph's revision; private catalog search does not.
 
 FalkorDB remains authoritative for code, historical relationships and applicable
 approved decisions. SQLite is a sidecar authority for memory ownership, proposals,

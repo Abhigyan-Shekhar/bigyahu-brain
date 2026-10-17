@@ -17,6 +17,10 @@ compare catalog lexical/hybrid separately before attributing a change to vectors
 Citation coverage means references were returned, not proof of every downstream
 natural-language claim. Unit/live tests additionally verify immutable hashes,
 scope filtering, stale updates, revocation, expiry, deletion and injection boundaries.
+The report also checks returned source integrity: each returned excerpt must
+equal its named fixture source and each supplied digest must match those bytes.
+All returned items passed this integrity check. This checks source delivery,
+not the factual truth of arbitrary future answers.
 
 ## Coding agents
 
@@ -27,6 +31,11 @@ tool invocation and coding success, not use of hybrid memory. No pilot run was
 overwritten or omitted. The corrected protocol fixes scope guidance in both the
 tool description and common instructions, before starting a new six-session set.
 It supplies no prior patches, oracle feedback or known solutions to fresh agents.
+The [corrected six-session report](memory-agent-evaluation.json) records two
+successful tasks per condition. Both hybrid sessions retrieved company memory
+before edits. All arms passed, so no correctness advantage is established.
+Invalid legacy scope arguments, empty keyword responses and their recoveries are
+retained in the call audit. Every session reread the local policy after editing.
 
 `benchmarks/agent-tasks.json` fixes two synthetic Python tasks, initial sources,
 visible tests, policies and an independent evaluator. Run one fresh session per

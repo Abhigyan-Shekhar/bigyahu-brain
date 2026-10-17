@@ -510,13 +510,14 @@ class Services:
             truncated.add("items")
         rows = rows[: limits["items"]]
         ids = [r["uid"] for r in rows]
-        params = {"ids": ids, "repo": self.cfg.repo_id, "chars": limits["excerpt_chars"]}
+        params = {"ids": ids, "repo": self.cfg.repo_id, "chars": limits["excerpt_chars"],"sha":sha}
         paths, sources, associations, coverage = [], [], [], []
         if ids:
             paths = self.store.query(
                 "MATCH p=(a)-[*1..2]-(b) WHERE a.uid IN $ids "
                 "AND all(n IN nodes(p) WHERE n.repo_id=$repo AND "
-                "(NOT n:Document OR coalesce(n.current,true))) "
+                "(NOT n:Document OR (coalesce(n.current,true) AND "
+                "(n.source_kind IS NULL OR n.revision=$sha)))) "
                 "RETURN [n IN nodes(p)|n.uid] AS path, "
                 "[r IN relationships(p)|type(r)] AS relationships, "
                 "[r IN relationships(p)|r.confidence] AS confidence, "

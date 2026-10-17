@@ -41,3 +41,24 @@ def test_review_audit_rollback_expiry_and_rejection(real, monkeypatch):
     monkeypatch.setattr("builtins.input", lambda prompt: "REJECT " + rejected)
     review_decision(real, rejected, "reject", "Evidence does not support this rule")
     assert Services(real).trace_decision(rejected)["items"][0]["status"] == "rejected"
+
+
+def test_approval_rechecks_refresh_fence_after_human_review(real, monkeypatch):
+    sync(real)
+    uid = propose_fixture(real)
+    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+    monkeypatch.setenv("BRAIN_OPERATOR_SESSION", "1")
+
+    def confirm(prompt):
+        real.query(
+            "MATCH (p:Project {uid:$repo}) SET p.documents_syncing=true", {"repo": real.cfg.repo_id}
+        )
+        return "APPROVE " + uid
+
+    monkeypatch.setattr("builtins.input", confirm)
+    with pytest.raises(ValueError, match="Approval conflict"):
+        approve(real, uid)
+    real.query(
+        "MATCH (p:Project {uid:$repo}) SET p.documents_syncing=false", {"repo": real.cfg.repo_id}
+    )
+    assert Services(real).trace_decision(uid)["items"][0]["status"] == "proposed"

@@ -61,6 +61,7 @@ def approve(store, decision_id, expires_at=""):
     # A single atomic query revalidates the reviewed text/evidence/subjects and sync marker.
     guard = (
         "MATCH (p:Project {uid:$repo, syncing:false, last_completed_sync_sha:$sha}) "
+        "WHERE NOT coalesce(p.documents_syncing,false) AND NOT coalesce(p.github_syncing,false) "
         "MATCH (d:Decision {uid:$id, repo_id:$repo, scope:'org', status:'proposed', kind:'constraint'}) "
         "WHERE d.text=$text AND coalesce(d.requested_supersedes,'')=$old "
         "MATCH (d)-[:SUPPORTED_BY]->(src:Source) "
@@ -81,7 +82,7 @@ def approve(store, decision_id, expires_at=""):
         guard + "SET d.status='active', d.approval='human_approved', "
         "d.approved_by=$by, d.approved_at=$at, d.approved_revision=$sha,d.expires_at=$expires "
         "CREATE (r:ReviewRecord {uid:$review,repo_id:$repo,actor:$by,at:$at,action:'approve',"
-        "reviewed_text:$text,source_uids:$sources,subject_uids:$subjects,revision:$sha}) "
+        "reviewed_text:$text,source_uids:$sources,subject_uids:$subjects,revision:$sha,expires_at:$expires}) "
         "CREATE (r)-[:REVIEWS]->(d) "
         "RETURN d.uid AS uid",
         params,

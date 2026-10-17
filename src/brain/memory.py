@@ -359,11 +359,13 @@ class Memory:
 
     def backup(self, target):
         target = Path(target)
-        if target.exists():
+        if target.exists() or target.is_symlink():
             raise ValueError("Backup target must not exist")
+        with target.open("xb"):
+            pass
+        target.chmod(0o600)
         with sqlite3.connect(target) as backup:
             self.db.backup(backup)
-        target.chmod(0o600)
 
 
 class LocalEncoder:

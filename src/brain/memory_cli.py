@@ -187,7 +187,7 @@ def main():
                 memory, args.brain, cfg.repo_root, args.paths, args.source_base
             )
         else:
-            lines = args.path.read_text(encoding="utf-8").splitlines(keepends=True)
+            lines = args.path.read_bytes().decode("utf-8").splitlines(keepends=True)
             if args.start < 1 or (args.end is not None and args.end < args.start):
                 raise ValueError("Invalid citation line range")
             raw = "".join(lines[args.start - 1 : args.end]).encode()

@@ -200,7 +200,7 @@ def ingest_documents(store, paths=None):
 
     stable_ids = {}
     for path in paths:
-        for section in document_sections(path, (cfg.repo_root / path).read_text(encoding="utf-8")):
+        for section in document_sections(path, (cfg.repo_root / path).read_bytes().decode("utf-8")):
             stable_ids[(path, section["start"], section["end"])] = section["id"]
     symbol_links = pr_links = 0
     unresolved = set()

@@ -10,29 +10,37 @@
       "hit_at_3": 0.0,
       "mrr_at_3": 0.0,
       "citation_coverage": null,
+      "returned_source_integrity": null,
+      "returned_items_checked": 0,
       "latency_ms_p50": 8.300003173644654e-05,
-      "latency_ms_p95": 0.00054199972510105
+      "latency_ms_p95": 0.00037500012695090845
     },
     "graph_only": {
       "hit_at_3": 0.1111111111111111,
       "mrr_at_3": 0.1111111111111111,
       "citation_coverage": 1.0,
-      "latency_ms_p50": 1.062374999946769,
-      "latency_ms_p95": 3.1726249999337597
+      "returned_source_integrity": 1.0,
+      "returned_items_checked": 1,
+      "latency_ms_p50": 1.0612080000100832,
+      "latency_ms_p95": 3.141791999951238
     },
     "exact_fulltext": {
       "hit_at_3": 0.6666666666666666,
       "mrr_at_3": 0.6111111111111112,
       "citation_coverage": 1.0,
-      "latency_ms_p50": 0.19337499998073326,
-      "latency_ms_p95": 0.2962079997814726
+      "returned_source_integrity": 1.0,
+      "returned_items_checked": 24,
+      "latency_ms_p50": 0.20033300006616628,
+      "latency_ms_p95": 0.35470900002110284
     },
     "hybrid": {
       "hit_at_3": 0.8888888888888888,
       "mrr_at_3": 0.7592592592592593,
       "citation_coverage": 1.0,
-      "latency_ms_p50": 5.42420800002219,
-      "latency_ms_p95": 7.4624580001909635
+      "returned_source_integrity": 1.0,
+      "returned_items_checked": 27,
+      "latency_ms_p50": 5.599125000117056,
+      "latency_ms_p95": 8.071125000242318
     }
   },
   "details": [

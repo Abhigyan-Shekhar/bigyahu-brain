@@ -113,6 +113,8 @@ def test_refresh_cas_rejection_expiry_deletion_and_backup(memory, tmp_path):
     assert tuple(row) == ("", "[]", "[]", "deleted")
     backup = tmp_path / "backup.db"
     memory.backup(backup)
+    with pytest.raises(ValueError, match="must not exist"):
+        memory.backup(backup)
     restored = Memory(backup, Identity("fixture", "alice"))
     try:
         assert restored.health()["integrity"] == "ok"
@@ -244,3 +246,16 @@ def test_catalog_failure_is_unavailable_without_graph_fallback(memory):
     assert tools.memory_search("private note")["status"] == "unavailable"
     assert tools.memory_propose("note", source("note"))["status"] == "unavailable"
     graph.get_context.assert_not_called()
+
+
+def test_exact_citations_and_future_schema_fail_closed(memory, tmp_path):
+    accepted(memory, "reviewed body", uid="exact-key")
+    assert memory.search("exact-key", mode="exact")["items"][0]["uid"] == "exact-key"
+    assert memory.search("urn:synthetic:source", mode="exact")["items"][0]["uid"] == "exact-key"
+    import sqlite3
+
+    path = tmp_path / "future.db"
+    with sqlite3.connect(path) as connection:
+        connection.execute("PRAGMA user_version=999")
+    with pytest.raises(ValueError, match="Unsupported memory schema"):
+        Memory(path, Identity("fixture", "alice"))

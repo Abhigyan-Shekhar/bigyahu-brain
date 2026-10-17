@@ -18,11 +18,14 @@ The approved rule reached graph-2/3 before edits. See the
 [complete results and limitations](docs/v5-evaluation.md).
 
 FalkorDBLite 0.10.0 runs on this Mac with Redis 8.6.2 and graph module 4.18.3.
-Combined v5/Browser validation: **144 passed, 0 failed, 0 skipped**, with real graph
+Preserved v5/Browser validation: **144 passed, 0 failed, 0 skipped**, with real graph
 and Lite lifecycle integration enabled. Ruff passes for `src`, `tests`, and
 `scripts`. Earlier merge checks and their overlapping STDIO/security selections
 are retained in [backend verification](docs/backend-verification.md). Both graph
 rebuilds also pass; see [combined merge verification](docs/merge-verification.md).
+The opt-in memory foundation now passes **169 tests** with live graph/lifecycle
+checks, including tenant isolation and deletion. The [new verification report](docs/memory-verification.md)
+separates retrieval measurements, coding outcomes and remaining production work.
 Codex has independently selected MCP tools, received historical graph evidence,
 and produced independently tested code changes. Some coding attempts failed;
 successful retrieval does not establish improved coding performance. The final
