@@ -12,19 +12,38 @@ rare-term overlap plus explicit changed-file associations, rather than simply
 returning the latest substring matches. Exact current symbol identities map hints
 to their declaring files. Results include matched terms/files, current symbols in
 those files, related indexed work, checked commit/issue/PR text and up to two
-checked Git patch excerpts per candidate. Ten candidates are returned; exceeding
+checked Git patch excerpts per work item. Source excerpts are ranked, then their
+matched-term union and file score are aggregated by work UID, without boosting
+repeated comments. Ten distinct work items are returned, with up to three checked
+support excerpts each and source UID/URI links to all matching sources in the
+bounded corpus. Exceeding
 the corpus bound fails closed rather than ranking an undisclosed partial sample.
 
 This is lexical similarity, not a trained semantic bug classifier. A changed-file
 association does not establish that every current function in that file changed.
 Patch evidence comes from an indexed, reachable commit and is rechecked against
-Git when cited. Excerpts stop at 12000 characters and report truncation. Merge
+Git when cited. Patch graphs include actual Commit → MODIFIES → current File →
+DECLARES → current Symbol paths where indexed, up to twenty symbols. Missing
+current-file links and truncated symbols are explicit; deleted files can still
+have verified patches without current graph associations. Excerpts stop at 12000 characters and report truncation. Merge
 commits or unavailable shallow history can lack patch evidence. A patch explains
 what changed; proving why a fix works still needs code reasoning and regression
 checks. No repository tests run during read-only investigation.
 
 New repository connections require successful bounded GitHub issue/PR acquisition
-by default. The connect dialog offers an explicit code/Git-only fallback by
+by default. Initial acquisition selects up to twenty most recently updated issues
+(including PRs), inspecting a twenty-first candidate only to indicate more history.
+The request budget is 100. Every imported item has fully paginated issue comments,
+PR reviews, review comments and changed files, with count checks where the API
+provides totals and parent metadata rechecked for changes during collection.
+Incomplete, unstable or over-budget items are skipped whole and counted; if all
+selected items fail, required-history onboarding fails. A genuinely empty list
+remains an accurately labeled empty sample. Coverage is always explicitly partial,
+with selected/imported/skipped counts in repository state, snapshot manifest and
+history tool output. Normal 100-item child pages are supported. Initial sampling
+does not advance the full-sync cursor; a subsequent CLI sync still acquires older
+items. Parent timestamps are not a transactional snapshot of GitHub; periodic full
+reconciliation remains necessary for child edits/deletions. The connect dialog offers an explicit code/Git-only fallback by
 clearing that requirement. Interrupted graph mutations still fail the job. Tool
 results report indexed counts and missing GitHub coverage. Successful acquisition
 is not a promise of complete historical GitHub coverage.
@@ -84,12 +103,18 @@ enterprise graph browser or a guarantee that every edge fits one page.
 
 Personal Brain → **Transfer selected memories from another repository** lists
 accepted private memories from another ready local managed repository. Select up
-to ten, inspect the exact preview including its original source snapshots, and
+to ten, inspect the exact preview containing selected memory text and minimal
+checked provenance (source kind, URI, source digest and selected-text digest), and
 confirm that preview digest. Import rechecks acceptance, version, source bytes and
 expiry before creating independent proposals in the destination private catalog.
 A separate destination review is required before retrieval. Exact replay preserves
 existing review; expiry is preserved. Modified preview/source or revoked original
 acceptance blocks a new import. Copied snapshots are bounded to 100 KB.
+Original source text is checked locally but is not copied into new transfer
+snapshots. In particular, selecting one conversation memory does not copy the
+rest of its source user turn. The source digest records the checked original;
+the destination independently verifies its own saved transfer snapshot, not the
+continued availability of the origin. Existing older transfers are not rewritten.
 
 These are independent point-in-time copies. Later source revocation does not
 revoke a previously accepted destination copy. The operator can revoke it there.
@@ -130,8 +155,8 @@ The [sanitized report](application-investigation-verification.json) records the
 completed run and limitations. Raw fixtures, traces, snapshots and local state
 remain ignored. Browser acceptance was initially blocked by a Work browser-access
 setting/runtime mismatch. After the desktop app restarted, scoped computer-use
-acceptance passed as recorded below. A new public GitHub history demonstration
-remains unverified. Previous public-ingestion and coding reports retain their
+acceptance passed as recorded below. Public GitHub history acquisition was unverified at that recording; the
+subsequent correction pass below verifies it. Previous public-ingestion and coding reports retain their
 own scope.
 
 ### Browser acceptance follow-up
@@ -155,3 +180,27 @@ No company grants were changed during this browser pass. Permission/revocation
 boundaries and multi-page neighbor results retain their backend regression
 coverage; the browser fixture exercised an already-connected company projection
 and two ordinary expansion steps. No production source or test suite was edited.
+
+
+### PR #8 correction verification
+
+The subsequent isolated live suite passes **376 tests**, zero failed/skipped.
+Regression coverage includes selecting twenty of twenty-one candidates; a PR with
+125 entries in each child collection; skipping incomplete items whole; exhausting
+the request budget without partial publication; preserving the reader fence on
+write failure; ten distinct historical results despite hundreds of PR comments;
+reopening a patch with native MODIFIES and DECLARES edges; and transferring one
+extracted memory without unrelated source-turn text in the preview or saved copy.
+Ruff and the React production build pass. See the separate
+[correction report](pr8-correction-verification.json) for public onboarding results.
+The older synthetic agent run above retains its original implementation hashes;
+it does not validate later changes or establish real-world bug-fixing improvement.
+
+
+Fresh browser onboarding of public `pallets/itsdangerous` succeeded with the default
+history requirement enabled. The API selection returned twenty-one candidates;
+twelve complete work items were imported from twenty selected, with eight skipped
+under the hundred-request budget. The conversation workspace visibly displayed
+those counts and the older-history exclusion, alongside the existing document
+coverage bound. This verifies public onboarding and partial-history publication,
+not a real-world historical-bug diagnosis benchmark.

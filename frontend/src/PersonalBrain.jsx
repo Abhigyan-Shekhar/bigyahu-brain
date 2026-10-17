@@ -295,9 +295,9 @@ export default function PersonalBrain({
         <summary>Transfer selected memories from another repository</summary>
         <p>
           Copies selected accepted private memories into this repository as
-          proposals. Original snapshots are included in the exact preview.
-          Copies are independent; later source revocation does not revoke an
-          accepted destination copy.
+          proposals. Only the selected memory and minimal checked provenance are
+          included in the exact preview. Copies are independent; later source
+          revocation does not revoke an accepted destination copy.
         </p>
         <label>
           Source repository

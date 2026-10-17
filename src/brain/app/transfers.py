@@ -25,7 +25,16 @@ def preview(state, target, origin, uids):
                     "origin_hash": r["hash"],
                     "text": r["text"],
                     "expires": r["expires"],
-                    "source_snapshots": personal.source_details(cfg, memory, r),
+                    "source_provenance": [
+                        {
+                            "kind": source["kind"],
+                            "uri": source["uri"],
+                            "digest": source["digest"],
+                            "selected_text_digest": digest(r["text"]),
+                            "verification": "origin_source_checked_at_transfer",
+                        }
+                        for source in personal.source_details(cfg, memory, r)
+                    ],
                 }
             )
     if len(canonical(records)) > 100000:

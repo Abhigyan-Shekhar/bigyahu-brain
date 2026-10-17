@@ -14,7 +14,8 @@ from ..ingest.documents import (
     sections,
 )
 from ..ingest.git_parser import git
-from ..ingest.github_sync import GitHub, sync_github
+from ..ingest.github_initial import sync_initial
+from ..ingest.github_sync import GitHub
 from ..ingest.sync import sync
 from ..memory import digest
 
@@ -93,22 +94,6 @@ def clone_public(url, target):
     )
 
 
-class BoundedGitHub(GitHub):
-    """Small onboarding batch; never claim partial history as complete."""
-
-    def __init__(self):
-        self.requests = 0
-
-    def get(self, path, params=None):
-        self.requests += 1
-        if self.requests > 100:
-            raise ValueError("GitHub onboarding request limit reached")
-        result = super().get(path, params)
-        if isinstance(result, list) and len(result) > 20:
-            raise ValueError("GitHub onboarding accepts at most 20 items per collection")
-        return result
-
-
 def onboard(state, project, history=True, history_required=True):
     try:
         state.update(project, status="running", stage="Cloning public repository")
@@ -120,11 +105,17 @@ def onboard(state, project, history=True, history_required=True):
         state.update(project, stage="Indexing code and Git history")
         result = sync(store)
         warnings = []
+        github_coverage = {"mode": "not_requested"}
         if history:
             state.update(project, stage="Acquiring GitHub issues and pull requests")
             try:
-                sync_github(store, folder / "github-snapshot", api=BoundedGitHub())
+                acquired = sync_initial(store, folder / "github-snapshot")
+                github_coverage = acquired["coverage"]
+                warnings.append(
+                    f"GitHub history is a partial initial sample: {github_coverage['imported']} complete work items imported from {github_coverage['selected']} selected; {len(github_coverage['skipped'])} skipped. Older history is not covered."
+                )
             except (ValueError, RuntimeError, OSError, subprocess.SubprocessError):
+                github_coverage = {"mode": "unavailable"}
                 if store.revision()["syncing"]:
                     raise ValueError(
                         "GitHub graph refresh interrupted; reconnect this source"
@@ -167,6 +158,7 @@ def onboard(state, project, history=True, history_required=True):
             indexing=result,
             revision=store.revision()["sha"],
             warnings=warnings,
+            github_coverage=github_coverage,
         )
     except Exception as exc:  # noqa: BLE001 - background jobs must persist failure states
         # No subprocess output or credentials are exposed in the UI.

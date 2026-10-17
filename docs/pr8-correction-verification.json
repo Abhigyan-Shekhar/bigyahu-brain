@@ -1,0 +1,106 @@
+{
+  "date": "2026-10-17",
+  "scope": "PR #8 onboarding and investigation corrections",
+  "prior_implementation_commit": "e428a8afbaf15c8abecb9d578d12cfa3c9d65c51",
+  "verification": {
+    "full_isolated_live_suite": {
+      "passed": 376,
+      "failed": 0,
+      "skipped": 0,
+      "upstream_deprecation_warnings": 3
+    },
+    "ruff": "passed",
+    "changed_python_formatting": "passed",
+    "frontend_formatting": "passed",
+    "react_production_build": "passed_with_existing_react_flow_directive_warning"
+  },
+  "regressions": [
+    "21 work candidates select 20 with explicit partial coverage; full-sync cursor unchanged",
+    "125 entries in each imported PR child collection survive complete pagination",
+    "incomplete work skipped whole; all selected failures stop before publication",
+    "normal 100-item pages accepted; request budget prevents next network call",
+    "failed graph publication retains reader fence",
+    "ten distinct historical work results despite 375 matching PR children; all matching source links preserved",
+    "historical patch reopens with native MODIFIES and DECLARES edges and verified file path",
+    "selected conversation memory transfer excludes unrelated source-turn text from preview and saved destination artifacts"
+  ],
+  "public_browser_acceptance": {
+    "status": "passed",
+    "interaction": "Codex in-app browser computer use",
+    "repository": "https://github.com/pallets/itsdangerous",
+    "project": "f5860ebdea78427e9dcc722f7c62f1b5",
+    "history_required": true,
+    "ready": true,
+    "coverage": {
+      "mode": "bounded_initial_sample",
+      "complete_repository_history": false,
+      "selection": "most_recently_updated_issues_including_pull_requests",
+      "work_limit": 20,
+      "selected": 20,
+      "imported": 12,
+      "skipped": [
+        {
+          "number": 430,
+          "reason": "item_not_complete_or_stable_within_budget"
+        },
+        {
+          "number": 420,
+          "reason": "item_not_complete_or_stable_within_budget"
+        },
+        {
+          "number": 421,
+          "reason": "item_not_complete_or_stable_within_budget"
+        },
+        {
+          "number": 427,
+          "reason": "item_not_complete_or_stable_within_budget"
+        },
+        {
+          "number": 426,
+          "reason": "item_not_complete_or_stable_within_budget"
+        },
+        {
+          "number": 425,
+          "reason": "item_not_complete_or_stable_within_budget"
+        },
+        {
+          "number": 424,
+          "reason": "item_not_complete_or_stable_within_budget"
+        },
+        {
+          "number": 422,
+          "reason": "item_not_complete_or_stable_within_budget"
+        }
+      ],
+      "observed_candidates": 21,
+      "more_candidates": true,
+      "imported_children_complete": true,
+      "collection_page_size": 100,
+      "request_limit": 100,
+      "requests_used": 100,
+      "collected_at": "2026-10-17T15:56:52.570512+00:00"
+    },
+    "displayed_warnings": [
+      "GitHub history is a partial initial sample: 12 complete work items imported from 20 selected; 8 skipped. Older history is not covered.",
+      "Repository document coverage was bounded to 12 files, 256 KB/file and 1 MB total."
+    ],
+    "proof_screenshot": "local ignored data/validation/pr8-corrections/public-onboarding.png"
+  },
+  "limits": [
+    "Initial GitHub sample is explicitly partial; skipped children/items are not published",
+    "GitHub parent metadata is not a transactional guarantee; full reconciliation remains necessary",
+    "History ranking remains lexical and candidate-bounded",
+    "Current file/symbol paths are associations, not proof every current function changed",
+    "New transfer minimization does not rewrite existing older copies",
+    "No new real-world bug-retrieval or bug-fixing benchmark",
+    "Previous agent and browser investigation reports retain implementation-specific hashes; not rerun for these corrections"
+  ],
+  "implementation_sha256": {
+    "src/brain/ingest/github_initial.py": "569051b91dcd1a0a219ddbdf504ecf0097bc79420b54ae4f2d18572f33a1e4f4",
+    "src/brain/app/history.py": "dfca3a7f644428d2b33cce1084dacdb521034f799495b591794633c747c651d5",
+    "src/brain/app/sources.py": "b896afee63fcd2c0aa412f2c64fb1c643441a0c9a487cb296a6f5a42525d3c8f",
+    "src/brain/app/transfers.py": "eab434c2c98afa8548830d349b447e0bb6a0df2dc10247522c08f9a16f33cd43",
+    "frontend/src/main.jsx": "a782b3a8e84fe5bd1544eb7cd32929a47f6d0975f837a343621eb3b1594468cf",
+    "frontend/src/PersonalBrain.jsx": "91720468cde037b2dbe802d7dd44f12bacfecd633c626964dcfa6ed2f7166817"
+  }
+}

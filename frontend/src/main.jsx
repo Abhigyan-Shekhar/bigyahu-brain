@@ -998,11 +998,14 @@ function App() {
                 checked={historyRequired}
                 onChange={(e) => setHistoryRequired(e.target.checked)}
               />{" "}
-              Require GitHub issue/PR history; stop indexing if acquisition
-              fails
+              Require a partial GitHub issue/PR sample; stop indexing if
+              acquisition fails
             </label>
             <div className="modal-note">
               Python symbol indexing · Markdown & RST documents
+              <br />
+              Up to 20 recently updated work items, with complete children for
+              each imported item. Older history is not covered.
               <br />
               Public repositories only. GitHub CLI authentication is required.
             </div>

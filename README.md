@@ -189,6 +189,12 @@ baseline-failing regression, and make citation graph comparison order-independen
 The [historical investigation and connected-memory guide](docs/application-investigation.md)
 describes ranked history with checked patches, explicit native company links,
 model-reviewed citation relevance, neighbor expansion and selected repository transfers.
+New connections acquire an explicitly partial sample of up to twenty recently
+updated GitHub issues/PRs. Each imported item retains complete child collections;
+incomplete items are skipped whole and coverage counts are shown. History returns
+distinct work items with checked support and native patch/file links. New memory
+transfers copy only selected text and minimal checked provenance. The
+[PR #8 correction report](docs/pr8-correction-verification.json) records validation.
 
 ## Graphify, semantic extraction and graph viewing
 

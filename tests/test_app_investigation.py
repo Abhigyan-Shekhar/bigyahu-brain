@@ -135,7 +135,7 @@ def test_required_history_acquisition_cannot_silently_fall_back(tmp_path, monkey
     monkeypatch.setattr(sources, "GraphStore", Store)
     monkeypatch.setattr(
         sources,
-        "sync_github",
+        "sync_initial",
         lambda *_args, **_kw: (_ for _ in ()).throw(ValueError("rate limit")),
     )
     monkeypatch.setattr(sources, "git", lambda *_: "")
@@ -193,7 +193,11 @@ def test_history_ranks_old_relevant_patch_over_new_noise_and_rechecks_git(real, 
     assert "github_issue_pr_coverage_unverified" in result["warnings"]
     patches = [e for e in result["checked_evidence"] if e["kind"] == "history_diff"]
     assert patches and "+    return min(2 ** 4, 8)" in patches[0]["text"]
-    assert resolve(store, patches[0])["digest"] == patches[0]["digest"]
+    reopened = resolve(store, patches[0])
+    assert reopened["digest"] == patches[0]["digest"]
+    assert {"MODIFIES", "DECLARES"} <= {e["relation"] for e in reopened["graph"]["edges"]}
+    assert any(n["label"] == "x.py" for n in reopened["graph"]["nodes"])
+    assert reopened["association_status"] == "current_file_link"
     with pytest.raises(ValueError):
         history.patch_evidence(store, "HEAD~1", "x.py")
     with pytest.raises(ValueError):
@@ -391,3 +395,93 @@ def test_neighbor_expansion_pages_and_rejects_other_repository(real, tmp_path):
             }
     finally:
         app.state.workers.shutdown()
+
+
+@pytest.mark.integration
+@live
+def test_history_returns_distinct_work_and_checked_comment_support(real, tmp_path):
+    import json
+
+    from test_github_initial import API
+
+    from brain.ingest.github_initial import sync_initial
+
+    _state, _project, cfg = managed(real, tmp_path)
+    store = GraphStore(cfg)
+    # Real graph publication with 21 selected candidates; the first PR has 375 children.
+    api = API()
+    original = api.get
+    slug = cfg.repo_url.removeprefix("https://github.com/").rstrip("/")
+
+    def get(path, params=None):
+        if path == "repos/" + slug:
+            return {"id": 1, "full_name": slug, "private": False}
+        value = original(path.replace("repos/" + slug, "repos/test/repo"), params)
+        return json.loads(json.dumps(value).replace("https://github.com/test/repo", cfg.repo_url))
+
+    api.get = get
+    acquired = sync_initial(store, tmp_path / "github", api)
+    assert acquired["coverage"]["imported"] == 20
+    result = history.search(store, tmp_path / "proofs", "retry overflow cap")
+    assert len(result["items"]) == 10
+    assert len({r["uid"] for r in result["items"]}) == 10
+    first = next(r for r in result["items"] if r["uid"].endswith(":pr:1"))
+    assert len(first["support_sources"]) == 376
+    assert len(first["support_evidence_ids"]) == 3
+    assert "github_history_partial_initial_sample" in result["warnings"]
+    assert result["acquisition_coverage"] == acquired["coverage"]
+    assert not result["acquisition_coverage"]["complete_repository_history"]
+    for proof in result["checked_evidence"]:
+        assert resolve(store, proof)["digest"] == proof["digest"]
+    assert "github_cursor" not in json.dumps(acquired)
+
+
+@pytest.mark.integration
+@live
+def test_conversation_transfer_excludes_unselected_user_text(real, tmp_path):
+    import subprocess
+
+    from brain.memory import canonical
+
+    state, origin, cfg = managed(real, tmp_path)
+    target = state.create("repository", status="ready", url=cfg.repo_url)["id"]
+    folder = state.folder(target)
+    folder.mkdir()
+    subprocess.run(["git", "clone", "-q", str(cfg.repo_root), str(folder / "checkout")], check=True)
+    target_cfg = state.configure(target, cfg.repo_url)
+    sync(GraphStore(target_cfg))
+    selected = "Preserve integer retry caps in regression tests."
+    unrelated = "Unrelated private conversation detail: PRIVATE_EXTRA_68291"
+    chat = state.create("session", project=origin)
+    turn = state.create("turn", chat["id"], question=selected + "\n" + unrelated, status="complete")
+    consent = personal.conversation_preview(state, origin, chat["id"], [turn["id"]])
+    job = state.create(
+        "memory_import",
+        origin,
+        project=origin,
+        session=chat["id"],
+        turns=[turn["id"]],
+        semantic=False,
+        consent_digest=consent["consent_digest"],
+        status="queued",
+    )
+    personal.import_selected(state, job["id"])
+    assert state.get(job["id"])["status"] == "complete"
+    with personal.catalog(cfg) as (memory, _):
+        rows, _ = personal.rows(memory)
+        note = next(r for r in rows if r["text"] == selected)
+        assert unrelated in canonical(
+            personal.source_details(cfg, memory, personal.row(memory, note["uid"]))
+        )
+    personal.review(cfg, note["uid"], note["hash"], "proposed", "accept", "Selected only")
+    preview = transfers.preview(state, target, origin, [note["uid"]])
+    assert selected in canonical(preview) and unrelated not in canonical(preview)
+    assert "source_snapshots" not in canonical(preview)
+    copied = transfers.import_selected(
+        state, target, origin, [note["uid"]], preview["consent_digest"]
+    )["items"][0]
+    with personal.catalog(target_cfg) as (memory, _):
+        sources = personal.source_details(target_cfg, memory, personal.row(memory, copied["uid"]))
+    assert selected in canonical(sources) and unrelated not in canonical(sources)
+    for artifact in (target_cfg.repo_root.parent / "memory-sources").iterdir():
+        assert unrelated not in artifact.read_text()
