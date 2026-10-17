@@ -6,7 +6,7 @@ implemented/planned scope; this report records checks actually executed.
 
 ## Current backend checks
 
-- **169 passed, zero failures/skips**, with real FalkorDB and Lite lifecycle
+- **177 passed, zero failures/skips**, with real FalkorDB and Lite lifecycle
   flags enabled against a fresh disposable engine. Tests include SQL and physical
   graph tenant isolation, membership revocation, private proposals, MCP STDIO,
   atomic imports, CAS conflicts, session consent, document retirement/deletion,
@@ -16,7 +16,7 @@ implemented/planned scope; this report records checks actually executed.
   remain; they do not fail the suite.
 - A fresh locked Python 3.12 environment installed both Lite and memory extras
   and passed its offline selection (126 passed/35 live skips at `26cd6ab`). Later
-  hardening adds tests and is covered by the final 169-test live run.
+  hardening adds tests and is covered by the final 177-test live run.
 - Both old Browser and v5 reconstruction workflows passed on new empty engines.
   All eleven Browser database queries passed; all new demo rules remained
   proposed. No real approval phase or saved approved database was used.

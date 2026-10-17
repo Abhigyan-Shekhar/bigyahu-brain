@@ -108,7 +108,7 @@ class Memory:
             "SELECT role FROM grants WHERE tenant=? AND principal=? AND brain=?",
             (self.identity.tenant, self.identity.principal, brain),
         ).fetchone()
-        if not row:
+        if not row or row[0] not in {"reader", "writer", "reviewer"}:
             raise PermissionError("Memory scope unavailable")
         return row[0]
 

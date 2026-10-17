@@ -25,7 +25,9 @@ Every envelope and record has exactly the fields shown below; unknown fields
 ```
 
 Tenant/team/collection identifiers use 1–64 ASCII alphanumeric, `_` or `-`;
-record IDs form bounded `abhi:<collection>:<id>` keys. There are at most 512
+record IDs use 1–128 ASCII alphanumeric, `_`, `.`, `:`, or `-` characters and form
+bounded `abhi:<collection>:<id>` keys. Metadata types are strict: null/boolean
+expiry or expected-hash values are rejected atomically. There are at most 512
 records and 1–20 credential-free HTTPS/URN citations per record, each with a
 lowercase SHA-256 digest. Text is 1–12,000 characters. Expiry is empty or a future
 timezone-aware ISO-8601 timestamp, normalized to UTC.

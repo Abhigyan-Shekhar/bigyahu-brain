@@ -63,6 +63,15 @@ def import_abhi(memory, payload):
                 "expires",
             }:
                 raise ValueError("Invalid .abhi record; ACL and approval fields are forbidden")
+            if (
+                not all(
+                    isinstance(record[key], str)
+                    for key in ("id", "text", "expected_hash", "expires")
+                )
+                or not re.fullmatch(r"[A-Za-z0-9_.:-]{1,128}", record["id"])
+                or not re.fullmatch(r"(?:[0-9a-f]{64})?", record["expected_hash"])
+            ):
+                raise ValueError("Invalid .abhi record types, identifier or expected hash")
             uid = "abhi:" + collection + ":" + record["id"]
             if uid in seen:
                 raise ValueError("Duplicate .abhi record")

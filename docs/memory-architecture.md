@@ -16,6 +16,8 @@ use the configured principal. Team membership is an operator-owned catalog row,
 not something inferred from repository prose, CODEOWNERS or an imported file.
 Legacy context/trace/impact reads also require company membership because they
 consult the configured code graph's revision; private catalog search does not.
+Tenant MCP startup refuses a missing catalog or a graph/catalog identity mismatch.
+Tenant-only configuration remains available to operator ingestion commands.
 
 FalkorDB remains authoritative for code, historical relationships and applicable
 approved decisions. SQLite is a sidecar authority for memory ownership, proposals,

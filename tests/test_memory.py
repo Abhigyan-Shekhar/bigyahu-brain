@@ -215,6 +215,10 @@ async def test_default_five_tools_and_optin_server_identity(memory):
     services = Services(store)
     async with Client(create_server(services)) as client:
         assert len(await client.list_tools()) == 5
+    from dataclasses import replace
+
+    store.cfg = replace(store.cfg, tenant_id="fixture", principal="alice")
+    services = Services(store)
     async with Client(create_server(services, memory)) as client:
         tools = await client.list_tools()
         assert len(tools) == 7
@@ -259,3 +263,42 @@ def test_exact_citations_and_future_schema_fail_closed(memory, tmp_path):
         connection.execute("PRAGMA user_version=999")
     with pytest.raises(ValueError, match="Unsupported memory schema"):
         Memory(path, Identity("fixture", "alice"))
+
+
+def test_unknown_membership_role_fails_closed(memory):
+    grant(memory, "alice", "team:backend", "invalid-role")
+    with pytest.raises(PermissionError):
+        memory.propose("proposal", source("proposal"), "team:backend")
+    with pytest.raises(PermissionError):
+        memory.search("query", ["team:backend"])
+
+
+@pytest.mark.parametrize("field,value", [("expires", None), ("expected_hash", False), ("id", [])])
+def test_abhi_rejects_malformed_record_metadata_atomically(memory, field, value):
+    grant(memory, "alice", "team:backend", "writer")
+    bad = record("two")
+    bad[field] = value
+    with pytest.raises(ValueError, match="record types"):
+        import_abhi(memory, envelope([record("one"), bad]))
+    assert memory.db.execute("SELECT count(*) FROM records").fetchone()[0] == 0
+
+
+@pytest.mark.parametrize(
+    "tenant,principal", [("", "alice"), ("other", "alice"), ("fixture", "bob")]
+)
+def test_server_rejects_mismatched_catalog_identity(memory, tmp_path, tenant, principal):
+    from brain.config import Config
+    from brain.services import Services
+
+    graph = Mock(cfg=Config(tmp_path, "fixture", tenant_id=tenant, principal=principal))
+    with pytest.raises(ValueError, match="identities must match"):
+        create_server(Services(graph), memory)
+
+
+def test_tenant_server_cannot_bypass_catalog_authorization(tmp_path):
+    from brain.config import Config
+    from brain.services import Services
+
+    graph = Mock(cfg=Config(tmp_path, "fixture", tenant_id="fixture"))
+    with pytest.raises(ValueError, match="authorization catalog"):
+        create_server(Services(graph))
