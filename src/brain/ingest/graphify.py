@@ -132,7 +132,13 @@ def ingest_graphify(store, paths=None):
         total += len(raw)
         if len(raw) > 1_000_000 or total > 10_000_000 or b"\0" in raw:
             raise ValueError("Graphify input bound exceeded")
-        texts[path] = raw.decode("utf-8")
+        try:
+            texts[path] = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            raise ValueError(
+                "Graphify requires UTF-8 source files; declared alternative Python encodings "
+                "are not supported. Existing graph unchanged"
+            ) from None
     with tempfile.TemporaryDirectory(prefix="brain-graphify-") as temp:
         root = Path(temp) / "input"
         root.mkdir()

@@ -74,7 +74,7 @@ associations with checked source spans; no identity or policy authority is infer
 
 ## Validation and measured results
 
-The current full isolated memory/graph suite passed **281 tests**, including real
+The current full isolated memory/graph suite passed **287 tests**, including real
 FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
 pass. The portability workflow includes live Docker graph/memory regression
 checks and installs the optional Graphify extractor there. CI for these new changes
@@ -163,6 +163,12 @@ uv run --extra graphify python -m brain ingest-graphify src/example.py
 # Configure memory_graph_enabled and the trusted viewer principal first:
 uv run python -m brain.memory_viewer --config /ABSOLUTE/PATH/memory.local.yaml
 ```
+
+Graphify accepts UTF-8 source bytes; alternative declared Python encodings are
+outside this adapter's supported inputs. Its relationships remain advisory company
+evidence, rather than automatic cross-language memory links. For a live demo,
+[prepare and validate concept annotations ahead of time](docs/company-concepts.md#prepare-before-presenting)
+and reuse the sealed fixture without extraction calls during presentation.
 
 The viewer prints a local session URL. It binds to loopback, requires a bearer
 session token and retrieves every graph slice through current catalog permissions.

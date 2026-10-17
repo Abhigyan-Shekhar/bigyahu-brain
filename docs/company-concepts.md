@@ -100,6 +100,48 @@ The successful run is a guided synthetic acceptance demonstration after that
 prompt change, not a general extraction-accuracy or coding-improvement benchmark.
 Source/runner hashes in the report identify the implementation used for that run.
 
+## Prepare before presenting
+
+Literal-span validation checks the evidence for returned mentions; it cannot
+guarantee selection recall. For the hackathon, prepare and inspect the synthetic
+fixture ahead of time, then present using those validated annotations:
+
+```sh
+PYTHONPATH=src .venv/bin/python scripts/demo_company_concepts.py \
+  --prepare-only --model gpt-6.1-sol \
+  --output data/validation/prepared-concept-demo.json
+# Use the prepared_run directory printed above/in the JSON report:
+PYTHONPATH=src .venv/bin/python scripts/demo_company_concepts.py \
+  --prepared-run /ABSOLUTE/PATH/TO/PREPARED/RUN --model gpt-6.1-sol \
+  --output data/validation/presented-concept-demo.json
+```
+
+Preparation performs real document/conversation extraction and the synthetic-only
+reviews/sharing, requires the policy label and a valid company mention path, then
+stops the disposable engine with SAVE. It seals the checkout, SQLite catalog,
+FalkorDB RDB and append-only files, config and annotation/preflight records with
+SHA-256 hashes.
+Inspect `selected-document-concepts.json` and `operator-preflight.json` before the
+presentation. These hashes detect changes; they are not origin authentication.
+
+Presentation validates the seal, copies the prepared fixture into a fresh local
+run, starts a separate engine from the saved snapshot, and rereads the authorized
+graph through current source/span/permission checks. The result must match the
+preparation's graph before the coding agent starts. It performs no ingestion,
+semantic extraction or reviews, and does not modify the original preparation.
+The selected model is still used for the live coding agent. Repeat presentation
+runs start from the original buggy fixture; a changed preparation fails closed.
+All snapshots and raw records remain ignored under `data/validation`.
+
+The [prepared presentation verification](prepared-concept-agent-verification.json)
+records a real agent run using saved annotations: 15 independent oracle cases and
+6 agent tests passed, the source was consumed before edits, and the private canary
+was excluded. The first restore attempt omitted Lite's append-only files and was
+rejected as incomplete before starting the agent. Including and sealing those
+files fixed restoration; the original preparation remained unchanged during the
+successful presentation. This demonstrates the prepared workflow, not semantic
+extraction completeness or universal Graphify/memory relationship integration.
+
 Reproduce the full model/agent fixture, or recheck a retained run without model calls:
 
 ```sh
@@ -110,11 +152,13 @@ PYTHONPATH=src .venv/bin/python scripts/demo_company_concepts.py \
   --output /ABSOLUTE/PATH/rechecked-verification.json
 ```
 
-The full disposable Lite suite now passes **281 tests**. New coverage includes
+The full disposable Lite suite now passes **287 tests**. New coverage includes
 literal span validation, no model egress for missing documents, native source
 edge/byte/span rechecking, retirement, interrupted-write recovery, independent
 team retrieval after selected sharing, UTF-8 structured output and existing
-permission boundaries. Ruff and publication checks are run before committing.
+permission boundaries, explicit rejection of non-UTF-8 Graphify input, and sealed
+fixture tamper checks for catalog, RDB, append-only and checkout files. Ruff and
+publication checks are run before committing.
 
 This Company Brain model annotation path is distinct from Graphify's structural
 adapter. Graphify's own semantic backend, PDF/FalkorDB GraphRAG SDK ingestion,

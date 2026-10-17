@@ -22,6 +22,12 @@ semantic/model pass. See the upstream [extraction API and output schema](https:/
 The earlier comparison-only result remains historical; this command is a new
 runtime adapter using the extractor package itself.
 
+Inputs must contain valid UTF-8 bytes, including Python files. Python source with
+another declared encoding is outside this adapter's supported inputs, even when
+the normal Python ingestion pipeline accepts it. Non-UTF-8 input produces an
+explicit error before the worker runs or the graph changes. The adapter does not
+transcode repository files, preserving its original-byte citation contract.
+
 All output is validated before graph writes: tracked input paths, unique IDs,
 bounded line ranges, source bytes, endpoint references and confidence categories.
 The adapter stores current revision-pinned `Document` evidence with
@@ -38,6 +44,12 @@ review. No Graphify semantic pass, arbitrary document-concept resolver, FalkorDB
 GraphRAG SDK pipeline or PDF integration is claimed. Current bounds are 500 input
 files, 10 MB total input, 10,000 nodes and 20,000 relationships; no large-repository
 performance claim follows.
+
+Graphify relationships remain advisory company evidence. They do not automatically
+become cross-language relationships in the three-brain memory graph. That bridge
+currently uses verified source citations, literal named-concept associations and
+Python AST-backed symbol identities; presenting Graphify as a universal memory
+relationship extractor would overstate this integration.
 
 ## Opt-in semantic conversation extraction
 

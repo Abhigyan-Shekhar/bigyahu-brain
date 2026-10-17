@@ -12,6 +12,29 @@ from brain.ingest.sync import sync
 from brain.services import Services
 
 
+def test_non_utf8_python_rejected_before_extraction_or_mutation(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from brain.ingest import graphify
+
+    raw = b"# coding: latin-1\ndef cafe(): return 'caf\xe9'\n"
+    compile(raw, "latin.py", "exec")  # Valid Python, outside this adapter's explicit constraint.
+    (tmp_path / "latin.py").write_bytes(raw)
+    monkeypatch.setattr(graphify, "revision", lambda root: "sha")
+    monkeypatch.setattr(graphify, "clean", lambda root: True)
+    monkeypatch.setattr(graphify, "git", lambda *args: "latin.py\0")
+    cfg = SimpleNamespace(
+        repo_root=tmp_path, repo_url="https://github.com/example/test", path=lambda p: p
+    )
+    store = SimpleNamespace(cfg=cfg, revision=lambda **kwargs: {"sha": "sha", "syncing": False})
+    monkeypatch.setattr(
+        graphify.subprocess, "run", lambda *a, **kw: pytest.fail("Extractor invoked")
+    )
+    with pytest.raises(ValueError, match="Graphify requires UTF-8 source files"):
+        ingest_graphify(store, ["latin.py"])
+    assert (tmp_path / "latin.py").read_bytes() == raw
+
+
 def sample():
     return {
         "nodes": [{"id": "x", "label": "a()", "source_file": "x.py", "source_location": "L1"}],
