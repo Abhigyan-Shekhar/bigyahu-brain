@@ -42,6 +42,7 @@ jobs:
           Path(os.environ["BRAIN_TEST_CONFIG"]).write_text(yaml.safe_dump({
               "repo_root": str(Path.cwd()),
               "repo_id": "fixture:ci",
+              "repo_url": "https://github.com/example/fixture",
               "principal": "fixture",
           }))
           PY
