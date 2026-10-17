@@ -22,3 +22,7 @@ data/runtime/
 **/*-trace.jsonl
 **/stderr.txt
 **/*-stderr.txt
+
+# Application build and package caches
+frontend/node_modules/
+/src/brain/web/app/

@@ -74,7 +74,7 @@ associations with checked source spans; no identity or policy authority is infer
 
 ## Validation and measured results
 
-The current full isolated memory/graph suite passed **287 tests**, including real
+The current full isolated memory/graph/application suite passed **299 tests**, including real
 FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
 pass. The portability workflow includes live Docker graph/memory regression
 checks and installs the optional Graphify extractor there. CI for these new changes
@@ -152,6 +152,18 @@ Replace `alice` with the configured principal. Launch MCP with the same
 paths require current company access and `sync-graph --include-company`, followed
 by search with `--include-graph`. See [portable exchange](docs/abhi-format.md) for
 selected `.abhi/2` export/import.
+
+## Company Brain application
+
+The new local React/FastAPI application connects public GitHub onboarding, bounded
+indexing status, Markdown/RST upload, conversational Codex investigation, a native
+graph explorer and clickable source inspection. Chat uses real read-only tools;
+the server checks citation IDs, source bytes, quotations and graph paths.
+
+See [the application run guide](docs/company-brain-app.md) for installation,
+launch commands, limits and verification. The first milestone is repository →
+graph → cited answer → source. Approved coding actions and personal/team controls
+are the next milestones; this is not yet the complete ten-step product workflow.
 
 ## Graphify, semantic extraction and graph viewing
 

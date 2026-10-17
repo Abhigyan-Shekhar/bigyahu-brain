@@ -261,6 +261,10 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+app = [
+    { name = "fastapi" },
+    { name = "uvicorn" },
+]
 graphify = [
     { name = "graphifyy" },
 ]
@@ -282,13 +286,15 @@ dev = [
 requires-dist = [
     { name = "falkordb", specifier = ">=1.2,<2" },
     { name = "falkordblite", marker = "python_full_version >= '3.12' and sys_platform != 'win32' and extra == 'lite'", specifier = "==0.10.0" },
+    { name = "fastapi", marker = "extra == 'app'", specifier = ">=0.115,<1" },
     { name = "fastmcp", specifier = ">=2,<3" },
     { name = "graphifyy", marker = "extra == 'graphify'", specifier = "==0.9.92" },
     { name = "pathspec", specifier = ">=0.12,<1" },
     { name = "pyyaml", specifier = ">=6,<7" },
     { name = "sentence-transformers", marker = "extra == 'memory'", specifier = ">=5,<6" },
+    { name = "uvicorn", marker = "extra == 'app'", specifier = ">=0.34,<1" },
 ]
-provides-extras = ["lite", "memory", "graphify"]
+provides-extras = ["app", "lite", "memory", "graphify"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -574,6 +580,23 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ab/57/eb2ac5824f7831fcb550468cc504a944adfee1b0c5a09b4bc684b0217976/falkordblite-0.10.0-cp314-cp314-macosx_10_15_x86_64.macosx_15_0_arm64.whl", hash = "sha256:5eff806e09902b36f34a7c058de0dcf237f0ae047d2b39c0423a5d6a52193341", size = 17752257, upload-time = "2026-05-02T13:12:18.896Z" },
     { url = "https://files.pythonhosted.org/packages/61/13/76932987b43286443088be9d1ebdbc6999ac084d5c40dbfe4a4704aa264b/falkordblite-0.10.0-cp314-cp314-manylinux_2_39_aarch64.whl", hash = "sha256:6cd10bb1b0e35946e0e4c06bd0c16298fe6df70e8e18bc055db0d60359c7271c", size = 34579275, upload-time = "2026-05-02T13:12:22.181Z" },
     { url = "https://files.pythonhosted.org/packages/3f/a6/6eba83964a0633aeee698a1fbd23b954ce39ee4cfd7eced73f52d95ca89a/falkordblite-0.10.0-cp314-cp314-manylinux_2_39_x86_64.whl", hash = "sha256:b36665ebd9e2d5e38b401b34f7ba6f0b22e5b88cbc817971c8c1d71a8ad305f7", size = 36154066, upload-time = "2026-05-02T13:12:26.001Z" },
+]
+
+[[package]]
+name = "fastapi"
+version = "0.143.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "annotated-doc" },
+    { name = "opentelemetry-api" },
+    { name = "pydantic" },
+    { name = "starlette" },
+    { name = "typing-extensions" },
+    { name = "typing-inspection" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/38/d5/b0aeb0b303650ac87b0411de4aaf3f901b06042dcc3fb00f30b97b7ff585/fastapi-0.143.3.tar.gz", hash = "sha256:b9ab567ee57afb4454004ce04c889f8f0160ac47946b99795887cd6e88484848", size = 469834, upload-time = "2026-10-16T14:14:13.31Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2c/1a/03d246befcf307219bb2161c97d8c5d314f84125bf7dd245730a28589828/fastapi-0.143.3-py3-none-any.whl", hash = "sha256:75e8bd68e2f52f77d29b2879749c257d64de2d85282d25270caf2bfccce5efe5", size = 144849, upload-time = "2026-10-16T14:14:11.763Z" },
 ]
 
 [[package]]
