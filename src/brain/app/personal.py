@@ -78,7 +78,7 @@ def source_details(cfg, memory, record):
     result = []
     for source in json.loads(record["sources"]):
         uri = source["uri"]
-        match = re.fullmatch(r"urn:company-brain:(note|lesson):([a-f0-9]{64})", uri)
+        match = re.fullmatch(r"urn:company-brain:(note|lesson|transfer):([a-f0-9]{64})", uri)
         if match:
             text = (cfg.repo_root.parent / "memory-sources" / match[2]).read_text(encoding="utf-8")
             if digest(text) != source["digest"] or match[2] != source["digest"]:
@@ -130,9 +130,43 @@ def source_details(cfg, memory, record):
     return result
 
 
+def company_enabled(memory):
+    try:
+        memory.authorize("company")
+        return True
+    except PermissionError:
+        return False
+
+
+def connect_company(cfg, enabled):
+    """Explicit local operator grant; agent tools cannot create catalog permissions."""
+    if cfg.principal != "app_operator":
+        raise PermissionError("Only the managed local operator can connect company evidence")
+    from . import team
+
+    with catalog(cfg) as (memory, projection):
+        with memory.db:
+            if enabled:
+                memory.db.execute(
+                    "INSERT OR REPLACE INTO grants VALUES(?,?,?,?)",
+                    (memory.identity.tenant, memory.identity.principal, "company", "reader"),
+                )
+            else:
+                memory.db.execute(
+                    "DELETE FROM grants WHERE tenant=? AND principal=? AND brain='company'",
+                    (memory.identity.tenant, memory.identity.principal),
+                )
+            memory._event(brain(memory), "company", "app_company_bridge", str(enabled))
+        results = {brain(memory): refresh(memory, projection)}
+        for scope in team.retrieval_scopes(memory):
+            if scope.startswith("team:") and memory._role(scope) == "reviewer":
+                results[scope] = team.refresh(memory, projection, scope[5:])
+        return {"company_enabled": enabled, "projections": results}
+
+
 def refresh(memory, projection):
     try:
-        projection.sync(brain(memory))
+        projection.sync(brain(memory), include_company=company_enabled(memory))
         return {"status": "ok"}
     except (GraphUnavailable, ValueError):
         return {
@@ -234,7 +268,17 @@ def graph_view(view):
         {
             "id": n["uid"],
             "labels": [n["kind"]],
-            "label": n.get("name") or n.get("text", "")[:80] or n.get("uri") or n["kind"],
+            "label": n.get("name")
+            or n.get("qualname")
+            or n.get("path")
+            or n.get("text", "")[:80]
+            or n.get("uri")
+            or n["kind"],
+            **{
+                k: n[k]
+                for k in ("company_uid", "company_repo", "graph_revision", "path", "qualname")
+                if k in n
+            },
         }
         for n in view["nodes"][:150]
     ]
@@ -251,6 +295,27 @@ def graph_view(view):
     }
 
 
+def evidence_slice(view, root):
+    """A selected record's sources and explicit company identity paths, bounded to three hops."""
+    ids, frontier = {root}, {root}
+    allowed = {n["uid"] for n in view["nodes"] if n["kind"] != "Memory" or n["uid"] == root}
+    for _ in range(3):
+        neighbors = set()
+        for edge in view["edges"]:
+            if edge["source"] in frontier and edge["target"] in allowed:
+                neighbors.add(edge["target"])
+            if edge["target"] in frontier and edge["source"] in allowed:
+                neighbors.add(edge["source"])
+        frontier = neighbors - ids
+        ids.update(frontier)
+    return graph_view(
+        {
+            "nodes": [n for n in view["nodes"] if n["uid"] in ids],
+            "edges": [e for e in view["edges"] if e["source"] in ids and e["target"] in ids],
+        }
+    )
+
+
 def memory_evidence(cfg, uid, expected_hash):
     if not Path(config(cfg).memory_db).is_file():
         raise ValueError("Personal Brain is not initialized")
@@ -263,7 +328,7 @@ def memory_evidence(cfg, uid, expected_hash):
         ):
             raise ValueError("Memory was changed, revoked or is not accepted")
         source_details(cfg, memory, record)
-        view = projection.read([brain(memory)])
+        view = projection.read([brain(memory)], include_company=company_enabled(memory))
         if view["status"] != "ok":
             raise ValueError("Personal graph is stale or unavailable; refresh before retrieval")
         selected = [
@@ -273,17 +338,7 @@ def memory_evidence(cfg, uid, expected_hash):
         ]
         if len(selected) != 1:
             raise ValueError("Accepted memory is absent from the native graph")
-        ids = {selected[0]["uid"]}
-        root_ids = set(ids)
-        for e in view["edges"]:
-            if e["source"] in root_ids or e["target"] in root_ids:
-                ids.update([e["source"], e["target"]])
-        graph = graph_view(
-            {
-                "nodes": [n for n in view["nodes"] if n["uid"] in ids],
-                "edges": [e for e in view["edges"] if e["source"] in ids and e["target"] in ids],
-            }
-        )
+        graph = evidence_slice(view, selected[0]["uid"])
         return {
             "kind": "memory",
             "ref": {"uid": uid, "expected_hash": expected_hash},

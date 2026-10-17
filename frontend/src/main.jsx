@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { ReactFlow, Background, Controls, MarkerType } from "@xyflow/react";
 import {
@@ -31,8 +31,9 @@ if (fragment) {
   sessionStorage.setItem("company-brain-token", fragment);
   history.replaceState(null, "", location.pathname);
 }
-function Graph({ graph, compact = false }) {
+function Graph({ graph, compact = false, onExpand }) {
   const [selectedEdge, setSelectedEdge] = useState(null);
+  const [expandTarget, setExpandTarget] = useState("");
   useEffect(() => setSelectedEdge(null), [graph]);
   const groups = {};
   const nodes = (graph?.nodes || []).map((n) => {
@@ -83,12 +84,73 @@ function Graph({ graph, compact = false }) {
     }));
   return (
     <div className={"graph " + (compact ? "compact" : "")}>
-      {edges.length > 0 && <select className="graph-edge-picker" aria-label="Inspect relationship" value={edges.find(e => e.data === selectedEdge)?.id ?? ""} onChange={event => setSelectedEdge(edges.find(e => e.id === event.target.value)?.data ?? null)}><option value="">Inspect a relationship…</option>{edges.map(edge => <option key={edge.id} value={edge.id}>{nodes.find(n => n.id === edge.source)?.displayLabel} → {edge.label} → {nodes.find(n => n.id === edge.target)?.displayLabel}</option>)}</select>}
-      {selectedEdge && <aside className="graph-edge-detail"><button onClick={() => setSelectedEdge(null)} aria-label="Close relationship details">×</button><strong>{selectedEdge.relation}</strong><p>Stored type: {selectedEdge.edge_type || selectedEdge.relation}{selectedEdge.confidence ? ` · ${selectedEdge.confidence}` : ""}</p>{selectedEdge.quote && <blockquote>{selectedEdge.quote}</blockquote>}{selectedEdge.source_uid && <small>Source: {selectedEdge.source_uid}</small>}</aside>}
+      {onExpand && (
+        <div className="graph-node-picker">
+          <select
+            aria-label="Node to expand"
+            value={expandTarget}
+            onChange={(e) => setExpandTarget(e.target.value)}
+          >
+            <option value="">Choose a node…</option>
+            {nodes.map((n) => (
+              <option key={n.id} value={n.id}>
+                {n.displayLabel}
+              </option>
+            ))}
+          </select>
+          <button
+            disabled={!expandTarget}
+            onClick={() => onExpand(expandTarget)}
+          >
+            Expand neighbors
+          </button>
+        </div>
+      )}
+      {edges.length > 0 && (
+        <select
+          className="graph-edge-picker"
+          aria-label="Inspect relationship"
+          value={edges.find((e) => e.data === selectedEdge)?.id ?? ""}
+          onChange={(event) =>
+            setSelectedEdge(
+              edges.find((e) => e.id === event.target.value)?.data ?? null,
+            )
+          }
+        >
+          <option value="">Inspect a relationship…</option>
+          {edges.map((edge) => (
+            <option key={edge.id} value={edge.id}>
+              {nodes.find((n) => n.id === edge.source)?.displayLabel} →{" "}
+              {edge.label} →{" "}
+              {nodes.find((n) => n.id === edge.target)?.displayLabel}
+            </option>
+          ))}
+        </select>
+      )}
+      {selectedEdge && (
+        <aside className="graph-edge-detail">
+          <button
+            onClick={() => setSelectedEdge(null)}
+            aria-label="Close relationship details"
+          >
+            ×
+          </button>
+          <strong>{selectedEdge.relation}</strong>
+          <p>
+            Stored type: {selectedEdge.edge_type || selectedEdge.relation}
+            {selectedEdge.confidence ? ` · ${selectedEdge.confidence}` : ""}
+          </p>
+          {selectedEdge.quote && <blockquote>{selectedEdge.quote}</blockquote>}
+          {selectedEdge.source_uid && (
+            <small>Source: {selectedEdge.source_uid}</small>
+          )}
+        </aside>
+      )}
       <ReactFlow
         key={nodes.map((n) => n.id).join("|")}
         nodes={nodes}
         edges={edges}
+        onNodeDoubleClick={(_, node) => onExpand?.(node.id)}
         onEdgeClick={(_, edge) => setSelectedEdge(edge.data)}
         nodesDraggable={false}
         nodesConnectable={false}
@@ -124,7 +186,9 @@ function App() {
     [loadingEvidence, setLoadingEvidence] = useState(false),
     [model, setModel] = useState(""),
     [uploading, setUploading] = useState(false),
-    [uploadNotice, setUploadNotice] = useState("");
+    [uploadNotice, setUploadNotice] = useState(""),
+    [historyRequired, setHistoryRequired] = useState(true),
+    [expansion, setExpansion] = useState(null);
   const repo = repos.find((r) => r.id === project),
     busy = turns.some((t) => ["running", "queued"].includes(t.status));
   async function refresh() {
@@ -173,15 +237,53 @@ function App() {
       clearInterval(id);
     };
   }, [session]);
-  async function loadGraph(q = filter) {
+  const graphRequest = useRef(0);
+  const activeProject = useRef(project);
+  activeProject.current = project;
+  async function expandNode(uid, offset = 0) {
+    const request = ++graphRequest.current;
     try {
-      setGraph(
-        await api(
-          `/repositories/${project}/graph?query=${encodeURIComponent(q)}`,
-        ),
+      const extra = await api(
+        `/repositories/${project}/graph/neighbors?uid=${encodeURIComponent(uid)}&offset=${offset}`,
       );
+      if (request !== graphRequest.current || project !== activeProject.current)
+        return;
+      const nodes = [
+        ...new Map(
+          [...(graph?.nodes || []), ...extra.nodes].map((n) => [n.id, n]),
+        ).values(),
+      ];
+      const edges = [
+        ...new Map(
+          [...(graph?.edges || []), ...extra.edges].map((e) => [
+            JSON.stringify(e),
+            e,
+          ]),
+        ).values(),
+      ];
+      if (nodes.length > 300 || edges.length > 600)
+        throw new Error(
+          "View limit reached; filter to start another investigation.",
+        );
+      setGraph({ ...extra, nodes, edges });
+      setExpansion(extra);
     } catch (e) {
-      setError(e.message);
+      if (request === graphRequest.current && project === activeProject.current)
+        setError(e.message);
+    }
+  }
+  async function loadGraph(q = filter) {
+    const request = ++graphRequest.current;
+    try {
+      setExpansion(null);
+      const next = await api(
+        `/repositories/${project}/graph?query=${encodeURIComponent(q)}`,
+      );
+      if (request === graphRequest.current && project === activeProject.current)
+        setGraph(next);
+    } catch (e) {
+      if (request === graphRequest.current && project === activeProject.current)
+        setError(e.message);
     }
   }
   useEffect(() => {
@@ -192,7 +294,11 @@ function App() {
     setConnecting(true);
     setError("");
     try {
-      const value = await send("/repositories", { url, history: true });
+      const value = await send("/repositories", {
+        url,
+        history: true,
+        history_required: historyRequired,
+      });
       setRepos((v) => [...v, value]);
       setProject(value.id);
       setAdding(false);
@@ -248,14 +354,23 @@ function App() {
     setError("");
     try {
       const binary = /\.(pdf|docx)$/i.test(file.name);
-      if (file.size > (binary ? 1400000 : 500000)) throw Error(binary ? "Choose a PDF/DOCX under 1.4 MB" : "Choose a text document under 500 KB");
+      if (file.size > (binary ? 1400000 : 500000))
+        throw Error(
+          binary
+            ? "Choose a PDF/DOCX under 1.4 MB"
+            : "Choose a text document under 500 KB",
+        );
       const bytes = new Uint8Array(await file.arrayBuffer());
       let payload;
       if (binary) {
         let encoded = "";
-        for (let i = 0; i < bytes.length; i += 8192) encoded += String.fromCharCode(...bytes.subarray(i, i + 8192));
-        payload = {data_base64: btoa(encoded)};
-      } else payload = {text: new TextDecoder("utf-8", { fatal: true }).decode(bytes)};
+        for (let i = 0; i < bytes.length; i += 8192)
+          encoded += String.fromCharCode(...bytes.subarray(i, i + 8192));
+        payload = { data_base64: btoa(encoded) };
+      } else
+        payload = {
+          text: new TextDecoder("utf-8", { fatal: true }).decode(bytes),
+        };
       const result = await send(`/repositories/${project}/documents`, {
         filename: file.name,
         ...payload,
@@ -298,10 +413,18 @@ function App() {
           <Network size={17} /> Company graph
           {graph && <span className="count">{graph.nodes.length}</span>}
         </button>
-        <button className={"nav " + (mode === "memory" ? "active" : "")} onClick={() => setMode("memory")}>
+        <button
+          className={"nav " + (mode === "memory" ? "active" : "")}
+          onClick={() => setMode("memory")}
+        >
           <BrainCircuit size={17} /> Personal Brain
         </button>
-        <button className={"nav " + (mode === "team" ? "active" : "")} onClick={() => setMode("team")}><Network size={17} /> Team Brain</button>
+        <button
+          className={"nav " + (mode === "team" ? "active" : "")}
+          onClick={() => setMode("team")}
+        >
+          <Network size={17} /> Team Brain
+        </button>
         <div className="section-label">
           CONNECTED SOURCES
           <button
@@ -458,9 +581,19 @@ function App() {
             )}
           </div>
         ) : mode === "team" ? (
-          <TeamBrain key={project} project={project} renderGraph={(g) => <Graph graph={g} />} />
+          <TeamBrain
+            key={project}
+            project={project}
+            renderGraph={(g) => <Graph graph={g} />}
+          />
         ) : mode === "memory" ? (
-          <PersonalBrain key={project} project={project} turns={turns} session={session} renderGraph={(g) => <Graph graph={g} />} />
+          <PersonalBrain
+            key={project}
+            project={project}
+            turns={turns}
+            session={session}
+            renderGraph={(g) => <Graph graph={g} />}
+          />
         ) : (
           <div className="work-area">
             <section className="conversation">
@@ -476,7 +609,17 @@ function App() {
                       ? "Understand the why."
                       : "The company graph"}
                   </h2>
-                  {mode === "chat" && <button className="new-chat-inline" disabled={busy} onClick={() => newChat().catch(e => setError(e.message))}>New conversation</button>}
+                  {mode === "chat" && (
+                    <button
+                      className="new-chat-inline"
+                      disabled={busy}
+                      onClick={() =>
+                        newChat().catch((e) => setError(e.message))
+                      }
+                    >
+                      New conversation
+                    </button>
+                  )}
                 </div>
                 <label className="upload-button">
                   {uploading ? (
@@ -493,7 +636,12 @@ function App() {
                   />
                 </label>
               </div>
-              <IngestionPanel key={project} project={project} refresh={uploadNotice} onComplete={loadGraph} />
+              <IngestionPanel
+                key={project}
+                project={project}
+                refresh={uploadNotice}
+                onComplete={loadGraph}
+              />
               {uploadNotice && (
                 <div className="coverage" role="status">
                   {uploadNotice}
@@ -528,7 +676,20 @@ function App() {
                       ? " · Bounded slice; filter to explore more"
                       : ""}
                   </div>
-                  <Graph graph={graph} />
+                  <p>
+                    Double-click a node to explore its callers, changes and
+                    supporting evidence.
+                  </p>
+                  {expansion?.next_offset != null && (
+                    <button
+                      onClick={() =>
+                        expandNode(expansion.root, expansion.next_offset)
+                      }
+                    >
+                      More neighbors
+                    </button>
+                  )}
+                  <Graph key={project} graph={graph} onExpand={expandNode} />
                 </>
               ) : (
                 <>
@@ -630,6 +791,8 @@ function App() {
                                   <div className="tools">
                                     {t.tools?.length || 0} tool calls ·{" "}
                                     {t.model} · Source provenance checked
+                                    {t.relevance_review &&
+                                      " · Citation relevance model-reviewed"}
                                   </div>
                                   <ActionPanel
                                     turn={t}
@@ -721,15 +884,19 @@ function App() {
                       {selected.verification ===
                       "recorded_snapshot_and_native_graph"
                         ? "Recorded historical snapshot"
-                        : selected.verification === "accepted_imported_memory_and_native_graph"
+                        : selected.verification ===
+                            "accepted_imported_memory_and_native_graph"
                           ? "Reviewed import · file integrity and graph checked · origin unauthenticated"
-                        : selected.verification === "accepted_team_memory_and_native_graph"
-                          ? "Accepted team memory · source and access checked"
-                        : selected.verification === "accepted_private_memory_and_native_graph"
-                          ? "Accepted private memory · source and graph checked"
-                        : selected.verification === "original_file_digest_and_extraction_snapshot"
-                          ? "Original file and extracted text verified"
-                          : "Original bytes match index"}
+                          : selected.verification ===
+                              "accepted_team_memory_and_native_graph"
+                            ? "Accepted team memory · source and access checked"
+                            : selected.verification ===
+                                "accepted_private_memory_and_native_graph"
+                              ? "Accepted private memory · source and graph checked"
+                              : selected.verification ===
+                                  "original_file_digest_and_extraction_snapshot"
+                                ? "Original file and extracted text verified"
+                                : "Original bytes match index"}
                     </span>
                   </div>
                   <div className="source-text">
@@ -825,8 +992,20 @@ function App() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
             />
+            <label>
+              <input
+                type="checkbox"
+                checked={historyRequired}
+                onChange={(e) => setHistoryRequired(e.target.checked)}
+              />{" "}
+              Require a partial GitHub issue/PR sample; stop indexing if
+              acquisition fails
+            </label>
             <div className="modal-note">
               Python symbol indexing · Markdown & RST documents
+              <br />
+              Up to 20 recently updated work items, with complete children for
+              each imported item. Older history is not covered.
               <br />
               Public repositories only. GitHub CLI authentication is required.
             </div>

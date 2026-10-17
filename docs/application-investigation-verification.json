@@ -1,0 +1,276 @@
+{
+  "date": "2026-10-17",
+  "base_commit": "6de623c",
+  "model": "gpt-6.1-sol",
+  "fixture": "synthetic_local_historical_retry_repository",
+  "project": "32fe1258456245cfbe4b5a8ecd8067e3",
+  "turn": "10f01a85dc7d4ba3a8d13f4de628a39f",
+  "agent_status": "complete",
+  "published_claims": 4,
+  "tool_calls": [
+    {
+      "status": "completed",
+      "tool": "search_code"
+    },
+    {
+      "status": "completed",
+      "tool": "get_context"
+    },
+    {
+      "status": "completed",
+      "tool": "search_history"
+    },
+    {
+      "status": "completed",
+      "tool": "memory_search"
+    },
+    {
+      "status": "completed",
+      "tool": "memory_search"
+    },
+    {
+      "status": "completed",
+      "tool": "read_code"
+    },
+    {
+      "status": "completed",
+      "tool": "search_history"
+    },
+    {
+      "status": "failed",
+      "tool": "memory_graph"
+    },
+    {
+      "status": "completed",
+      "tool": "memory_graph"
+    },
+    {
+      "status": "completed",
+      "tool": "get_context"
+    },
+    {
+      "status": "completed",
+      "tool": "check_change"
+    }
+  ],
+  "relevance_assessments": [
+    {
+      "claim": 0,
+      "reason": "The current function directly computes 10 \u00d7 2\u2078 = 2560 and contains neither protection. The policy explicitly requires the 800 ms cap and ValueError for either negative input.",
+      "verdict": "supported"
+    },
+    {
+      "claim": 1,
+      "reason": "The historical patch directly adds the negative-input guard and min(..., 800). Substituting (8, 10) yields 800 by inspection, without relying on a commit message or test execution.",
+      "verdict": "supported"
+    },
+    {
+      "claim": 2,
+      "reason": "The current revision's patch explicitly removes both protections and restores the earlier expression, explaining the uncapped result. Restoring them is supported by the policy and historical patch.",
+      "verdict": "supported"
+    },
+    {
+      "claim": 3,
+      "reason": "The advisory lesson and exact Memory \u2192 MENTIONS \u2192 Entity \u2192 RESOLVES_TO \u2192 current company-symbol path are documented and consistent with the patches. However, these sources do not establish the claimed personal action of following that reference and checking source.",
+      "verdict": "uncertain"
+    },
+    {
+      "claim": 4,
+      "reason": "The graphs show separate private and team memory paths with SUPPORTED_BY links to the same note citation. Those source associations differ from the explicit company-symbol resolution, whose repository, revision and path match the supplied current code.",
+      "verdict": "supported"
+    }
+  ],
+  "independent_synthetic_oracle": [
+    {
+      "independent_synthetic_checks": [
+        true,
+        true,
+        true
+      ],
+      "kind": "fixed",
+      "revision": "8f5b8ee8f80ec9b05569c04d6b0058db94d14ffc"
+    },
+    {
+      "independent_synthetic_checks": [
+        false,
+        false,
+        true
+      ],
+      "kind": "regressed",
+      "revision": "839e02383083b9de9e3b1ef92ed428f73e4d214c"
+    }
+  ],
+  "adversarial_relevance": {
+    "assessments": [
+      {
+        "claim": 0,
+        "reason": "The cited cache-eviction statement is unrelated to retry attempts and provides no evidence of integer overflow.",
+        "verdict": "unsupported"
+      },
+      {
+        "claim": 1,
+        "reason": "The function returns base_ms directly and never uses attempt.",
+        "verdict": "supported"
+      },
+      {
+        "claim": 2,
+        "reason": "The historical fix message identifies neither a missing cap nor a causal mechanism in delay_ms; it does not prove the asserted root cause.",
+        "verdict": "unsupported"
+      },
+      {
+        "claim": 3,
+        "reason": "The diff replaces return base_ms with exponential scaling capped at 800. It supplies no regression-test results, as the claim explicitly acknowledges.",
+        "verdict": "supported"
+      }
+    ],
+    "expected": [
+      "unsupported",
+      "supported",
+      "unsupported",
+      "supported"
+    ],
+    "kind": "synthetic_adversarial_citation_review",
+    "model": "gpt-6.1-sol"
+  },
+  "live_api_citation_checks": {
+    "count": 8,
+    "kinds": [
+      "code",
+      "history_diff",
+      "memory_path",
+      "source"
+    ]
+  },
+  "backend_source_sha256": {
+    "brain/__init__.py": "e095198960e46c973f7d07f3647c5e80e8df50a605feca7f7e30ccc806312e2b",
+    "brain/__main__.py": "a93b95d998ee81053338f1af8f8a8f5d939fb6602a964f2395f71342fcbcaabf",
+    "brain/abhi_graph.py": "cf0a1000ac9b35ec4131ef0d67b4a7424c7cb0b9be5254f94b40fde164d3bf9f",
+    "brain/admin.py": "2cdb241c98cab0587acdb831fce4883f0cab12eb761c5d0fb1286223c4bc9e06",
+    "brain/app/__init__.py": "714f6d15ff6f7c61932e3981fd58a8b3ec36d83ab2e37b94a9a608cee1c6b353",
+    "brain/app/action_mcp.py": "900c8ddcf857f1dffc01c2dbe4daf7357f2517d8d1c1dbabcd0b648355867fbe",
+    "brain/app/actions.py": "329703d689acec0d15e942da7cbcd0b091fc91cfacc1bb493c3ed850d280b12e",
+    "brain/app/agent.py": "74cc0dd2707f16b73b99553d31a08b041b9f7a4cdaa589f8bb537984b9898d4d",
+    "brain/app/enrichment.py": "d5c72b4a2226409f427f4a6530c8e235c5947c24687cf9c63cd884e1e6b78503",
+    "brain/app/evidence.py": "df9a92df1b9b21d4df817e7c5aea1e29fe364e8850997822de5599222409709e",
+    "brain/app/exchange.py": "6da5f599b85f12126ef1a57649476fedcc7a20b91862adb241679de78aaa48d0",
+    "brain/app/history.py": "2b2a74ed214509a2e4791cd945edfb7284d0b627c240b0a3bc4b5dce3093b1ca",
+    "brain/app/mcp.py": "2c7046e4ad6ed768956c92d4ec9894819e852ea35656046425030134d391c0ea",
+    "brain/app/memory_paths.py": "c2e95eee0d2b2cd5d47e61b549d1b71aa40f252f961533bc9cafa9551e86080f",
+    "brain/app/personal.py": "f7ad60c866e191e14a72eed117a009282ded1ca2fe9ea374a3530d1072f0bc0e",
+    "brain/app/relevance.py": "ca0ae2806090e4217324ed036d331fa3358e5f3569fdea6b069b13421a90ab4c",
+    "brain/app/server.py": "a04b2a96d0576ce79d6be5d2ee96212975e170fd0cf548056379bd473e65c9cc",
+    "brain/app/sources.py": "212448b4c4a2ed48038aacd34712d8d4ca25c50fec911e9d8574c2ed0857d7d9",
+    "brain/app/state.py": "5fa09884e266609adacf327b6639145174f176d077d15491f021d3ef036068b1",
+    "brain/app/team.py": "d4eb2a11985a728e3723646ecc28c34fb7906acb06b0f12ecd0cf9264393c8d6",
+    "brain/app/test_sandbox.py": "d0e8802375fc4f06268c3f423550f2a3d973b9d133c4b61158d99168184e91fd",
+    "brain/app/transfers.py": "17940c072de3b1ba807c8245bcb1882da62d7f77a09c57fc0f837972ee580ccf",
+    "brain/company_concepts.py": "943d0afb9784f043f1053e7b2e3a911e97948a0eba48859e167b2249815c64c7",
+    "brain/config.py": "635410b1ff33009f72c94698abdc66c59f525f0e0ed31a852e56cb213f99410f",
+    "brain/conversation.py": "e641997c17ea102ef849a2f8b20173ec68a1ef762adf67bc79b4d27e4a09f634",
+    "brain/conversation_semantics.py": "a8d40b0807f8ee2aae14940db1e7ee55c01310c5e62183dd639b2ffff933f276",
+    "brain/graph.py": "b780e7a35b151f3690d944d0fac121865e4c554d885632f847cf68a6ef1801b1",
+    "brain/ingest/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "brain/ingest/ast_parser.py": "ca354b5771434d3343be2155783a15a2e8e49d296dd0e4d43324277b9c78bd08",
+    "brain/ingest/binary_document.py": "bfc7ced04c75ad45409e2f2398edb8aa8fc273dc33d33ebbe559b5aad3da2e83",
+    "brain/ingest/bindings.py": "91a87e756a40737678c541818d963431e4a8a3290a2313f301c5469ca525c1e0",
+    "brain/ingest/codeowners.py": "cc3dc37020508115c2f9d5572a9d0959a512c5ac956625c9dee15bef7695583e",
+    "brain/ingest/concepts.py": "3ab958b5d71166124e7747720d0de51baec9b27cf7f9150d9585dda4312aa7e5",
+    "brain/ingest/documents.py": "5ba709ab9f59840a2f5a10f67b5cf7f2f42d2d190ec5bcb9b2b4458e0e4ea3a8",
+    "brain/ingest/git_parser.py": "7663d52950bd2e1b118321f4c94d98b39e4226f2b79c0ca70f630ed76f859b50",
+    "brain/ingest/github_sync.py": "068ae4300517199c82dea69577e46e306b98d8a1b7746ec87c63ecc1185e24f7",
+    "brain/ingest/graphify.py": "f23c232cbfc33453ce5835de8bd5b66b22aa206d71edb7c1c858cc491045a82a",
+    "brain/ingest/graphify_worker.py": "3e6410aff6106bbf8fe225337b35466b6f6eb8f1f8195c01706323b5538f46f1",
+    "brain/ingest/identity.py": "2a6ab3a5b13f20e9054da9aad2ffd5a5a33b76d285fbae5405cb6822f122952a",
+    "brain/ingest/imports.py": "baadd2a994a0df325a39ba789823d3d9b2f7cd4c576ff86aeddefd831b926e2d",
+    "brain/ingest/references.py": "a05713d14e774a3c4d79da99823cc88831e6f0ffb782002cf1ea986c5d95d8bc",
+    "brain/ingest/semantic_worker.py": "5388d5fe30632a5bf1da4ae066950e463ce11cec79bebe46991e706bdd76b79c",
+    "brain/ingest/snapshots.py": "e2b78543f1eadbbc7ec18e08844de65ce78b6b66a52f5c2ab232f062cf987816",
+    "brain/ingest/sync.py": "c53be5a0c90bafe852a50f90baa15fb5c69badc8b97cc26432d026a7937b42d0",
+    "brain/mcp_server.py": "62b373ddbb89634e8e08bff6f24bcdfa102a515da65917c86840bade57003702",
+    "brain/memory.py": "1e37a7a6625161592488d74649ce0889effbfdaf613bfda1cd4522b0122c75c9",
+    "brain/memory_cli.py": "1d20a0780ef7cfa23025a58389d03b9bb6230747b20cddb4af0a277e2a1dd16c",
+    "brain/memory_company.py": "32bc89d558cbcb0c97a49974a203f0d351ff826894e441161572280068003642",
+    "brain/memory_graph.py": "f5d8b806379b16d801d3b7d89ac623172f9059829685f04c6c6a3cea1091f165",
+    "brain/memory_ingest.py": "0cef947a5a545598e1ac17ee20c703f4cb5e1ecbf543fd20f99fa9b77ac0d36e",
+    "brain/memory_links.py": "ca83c7b8960f540cb6d63fc40531056bbf5897f61b99218571d6f32879694d5b",
+    "brain/memory_search.py": "8a9c6b219f2612b42f70d48a2258705df21cf908045f1a78442cf7af2abe2be3",
+    "brain/memory_tools.py": "dd4a4fde140a9f1842833afa281a8c603d1e37c3688ea49afdef6e1b729a90b0",
+    "brain/memory_viewer.py": "9b2ba4c37fab1a711558528266175567656c622d63c29bde76835c8d9aa1f656",
+    "brain/memory_walk.py": "391c58154a9f983d06f819d81e13ad430edcc146d9014d2e78b8a6f8dde5120f",
+    "brain/semantic_model.py": "e9b4aa581f5113a164185b2aee6aaf5d8a0d4bfc947db974781768505fe1d496",
+    "brain/services/__init__.py": "270426e2630456c0d525bb28e9de41f78800b18a8dd7780bbc6a01c33fe480f4",
+    "brain/services/core.py": "909b840c5eaf0890c004f03165bc092ce3faf3e05e93f263d530f3016f8da055",
+    "brain/services/evidence.py": "2300c2550dbd53fd06efce8e305debcb3500831db5f8a1a803cc544bc414bc22"
+  },
+  "implementation_hashes_match": true,
+  "full_isolated_live_suite": {
+    "passed": 369,
+    "failed": 0,
+    "skipped": 0
+  },
+  "limitations": [
+    "Synthetic fixture; no new public GitHub issue/PR acquisition demonstration.",
+    "Lexical history ranking; no general semantic bug similarity benchmark.",
+    "One earlier agent attempt failed closed after quoting graph metadata as memory prose; dedicated native path evidence added before this run.",
+    "One tool call supplied unsupported arguments; a subsequent memory_graph call recovered.",
+    "One procedural claim was withheld as uncertain by the relevance reviewer; model review is conservative and fallible.",
+    "Independent oracle tested authored synthetic fixed/regressed functions, not a newly approved app patch execution.",
+    "Explicit memory transfer is a reviewed independent copy, not organization federation."
+  ],
+  "browser_acceptance_at_initial_recording": "blocked_local_browser_use_disabled_in_Work_settings",
+  "browser_acceptance": {
+    "date": "2026-10-17",
+    "method": "Codex built-in browser through CUA computer use",
+    "implementation_commit": "5db484b",
+    "status": "passed_scoped_synthetic_acceptance",
+    "settings_recovery": "Local browser use was On in settings; access became available after restarting the desktop app. App HTTP server was restarted using the existing Redis owner.",
+    "checks": [
+      "Historical fix patch citation opens with original Git diff.",
+      "Native team-memory path citation opens with MENTIONS, RESOLVES_TO and native DECLARES relationships to the current company symbol.",
+      "Filtering delay_ms returns one symbol; expanding the symbol yields 3 nodes/2 relationships, then expanding retry.py yields 7 nodes/6 relationships including historical MODIFIES edges.",
+      "Personal Brain shows company evidence already connected in the historical fixture; no grants were changed during browser acceptance.",
+      "Selected accepted private memory transfer shows exact origin, target, record version and source snapshot preview.",
+      "Confirmed transfer creates a destination proposal; source acceptance does not carry over.",
+      "Destination source inspection requires a separate review reason before acceptance.",
+      "After destination acceptance, a fresh browser-submitted agent question recalls and cites the transferred memory with advisory status.",
+      "Transferred-memory citation opens with accepted state, checked source and native graph.",
+      "Connect repository dialog defaults to requiring GitHub issue/PR history."
+    ],
+    "source_project": "32fe1258456245cfbe4b5a8ecd8067e3",
+    "destination_project": "51e16f57db6b4538be015c6f11abee2c",
+    "recall_turn": "7844761c3174429588fdf7c15b61c6ce",
+    "recall_claims": 3,
+    "recall_tools": [
+      {
+        "tool": "memory_search",
+        "status": "completed"
+      },
+      {
+        "tool": "memory_search",
+        "status": "completed"
+      }
+    ],
+    "relevance_assessments": [
+      {
+        "claim": 0,
+        "reason": "Source cf02416144952eff3003bfc9 explicitly recommends inspecting historical cap removal in retry.delay_ms and preserving negative-input regression checks; its metadata identifies an accepted transferred memory.",
+        "verdict": "supported"
+      },
+      {
+        "claim": 1,
+        "reason": "Source 014ac9d22cb69f4c498e8089 explicitly recommends validating negative retry inputs before delay calculation and regression tests for exponential growth, cap boundaries, and integer zero cases. Its metadata records accepted status.",
+        "verdict": "supported"
+      },
+      {
+        "claim": 2,
+        "reason": "Source cf02416144952eff3003bfc9 explicitly calls the guidance advisory and requires verifying current code and policy; its binding field is false.",
+        "verdict": "supported"
+      }
+    ],
+    "limits": [
+      "Synthetic fixtures; no new public GitHub acquisition or causal bug benchmark.",
+      "Multi-page More neighbors was covered by backend tests, not this browser fixture.",
+      "Company grant/revocation boundaries were covered by backend tests; the browser observed an already-connected fixture."
+    ]
+  }
+}

@@ -52,7 +52,9 @@ remain untrusted advisory evidence; they cannot grant permissions, approve an
 execution or replace explicit user instructions and current code checks.
 
 Each managed repository currently has a separate private catalog. This screen
-does not federate personal brains across repositories. `.abhi` exchange is
+supports explicit selected-memory transfers with exact preview consent and separate
+destination review; these are independent copies, not federation. See the
+[investigation guide](application-investigation.md). `.abhi` exchange is
 available through the separate [Team Brain controls](abhi-app.md).
 Team membership and selected sharing now live in the separate Team Brain screen. Semantic correction/link proposals can
 be inspected here, but their separate relationship review remains a backend
@@ -90,3 +92,8 @@ The revocation file records the separate observation made while acceptance was
 revoked; the verifier checks current accepted state, audit lifecycle, graph search,
 source citations, actual model tool calls and backend source hashes. One synthetic
 workflow does not establish general recall quality or a coding advantage.
+
+**Connect company evidence** explicitly enables verified company links for the
+local operator. Current company permissions and projection readiness remain
+required; this does not grant access to team readers. Disconnecting removes
+company paths from subsequent retrieval.

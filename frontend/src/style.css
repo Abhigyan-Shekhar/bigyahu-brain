@@ -1284,3 +1284,6 @@ h2 {
 .graph .react-flow__edge-textwrapper { pointer-events: all; cursor: pointer; }
 
 .graph-edge-picker { position: absolute; z-index: 6; top: 12px; left: 12px; max-width: calc(100% - 24px); width: 340px; }
+
+.graph-node-picker { position: absolute; z-index: 6; left: 12px; top: 48px; max-width: calc(100% - 24px); display: flex; gap: 6px; }
+.graph-node-picker select { min-width: 0; width: 200px; }
