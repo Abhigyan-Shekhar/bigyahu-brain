@@ -20,7 +20,9 @@ def sample():
     }
 
 
-@pytest.mark.parametrize("change", ["escape", "range", "duplicate", "dangling", "failure"])
+@pytest.mark.parametrize(
+    "change", ["escape", "range", "duplicate", "dangling", "confidence", "failure"]
+)
 def test_invalid_extraction_rejected(change):
     result = deepcopy(sample())
     if change == "escape":
@@ -33,6 +35,8 @@ def test_invalid_extraction_rejected(change):
         result["edges"] = [
             {"source": "x", "target": "missing", "relation": "calls", "confidence": "EXTRACTED"}
         ]
+    elif change == "confidence":
+        result["edges"] = [{"source": "x", "target": "x", "relation": "calls", "confidence": []}]
     else:
         result["failed_sources"] = ["x.py"]
     with pytest.raises(ValueError):

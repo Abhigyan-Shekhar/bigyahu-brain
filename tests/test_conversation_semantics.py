@@ -88,3 +88,34 @@ def test_semantic_entities_and_explicit_correction_stay_proposals(memory, monkey
         ).fetchone()[0]
     )
     assert metadata["model"] == "example" and metadata["kind"] == "correction"
+
+
+def test_selected_sharing_preserves_only_literal_record_entities(memory, monkeypatch):
+    from test_memory import grant
+
+    from brain.memory_ingest import share_memory
+
+    payload = conversation(text="Decision: preserve café payloads.")
+    entry = candidate(payload, entities=["café payloads"])
+    monkeypatch.setattr("brain.conversation_semantics.analyze", lambda *_: [entry])
+    item = ingest_conversation(
+        memory, payload, digest(canonical(payload)), semantic_model="fixture"
+    )["items"][0]
+    memory.review("private:alice", item["uid"], "accept", item["hash"], "Synthetic fixture only")
+    grant(memory, "alice", "team:runtime", "reviewer")
+    shared = share_memory(memory, item["uid"], item["hash"], "team:runtime")
+    assert shared["state"] == "proposed"
+    metadata = json.loads(
+        memory.db.execute(
+            "SELECT detail FROM events WHERE brain='team:runtime' AND action='conversation_analysis'"
+        ).fetchone()[0]
+    )
+    assert metadata["entities"] == ["café payloads"] and metadata["hash"] == shared["hash"]
+    assert metadata["model"] == "fixture"
+    assert share_memory(memory, item["uid"], item["hash"], "team:runtime") == shared
+    assert (
+        memory.db.execute(
+            "SELECT count(*) FROM events WHERE brain='team:runtime' AND action='conversation_analysis'"
+        ).fetchone()[0]
+        == 1
+    )

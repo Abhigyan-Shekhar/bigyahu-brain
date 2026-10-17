@@ -43,7 +43,7 @@ operator; stale or unavailable native retrieval is reported without silent fallb
 | Native memory graph | Brain, person, team, memory, source, entity and version nodes; authorized cross-scope citation paths |
 | Graphify extractor | Pinned optional structural ingestion into revision-pinned advisory evidence; separate from authoritative Python calls |
 | Graph viewer | Local fixed-principal API and clickable authorized shared-memory slices |
-| Company bridge | Exact verified citations and unambiguous lexical code identifiers connected to existing company evidence |
+| Company bridge | Verified citations, lexical code identities and source-grounded named concept mentions connected to current company evidence |
 | Native retrieval | Exact/full-text seeds, scope-safe ranking, up to four graph hops, citations and supporting paths |
 
 See [memory architecture](docs/memory-architecture.md),
@@ -60,19 +60,25 @@ write/administration tools remain excluded.
 
 **Still planned:** Graphify's semantic model pass, the FalkorDB GraphRAG SDK/PDF
 pipeline, full-history graph portability, a hosted multi-user graph experience,
-and broader agent evaluation. Arbitrary semantic company-concept resolution is
+and broader agent evaluation. [Named company concepts](docs/company-concepts.md)
+now have source-grounded mention paths; arbitrary semantic identity resolution is
 still unbuilt; automatic correction proposals require an explicit correction and
 an unambiguous code identifier. Hosted identity, application encryption,
 distributed synchronization and production-scale retrieval remain outstanding.
 See the [roadmap](docs/roadmap.md).
 
+The [named-concept extension](docs/company-concepts.md) connects model-selected
+conversation entities to current company document mentions without requiring an
+explicit code identifier or shared company citation. Labels remain advisory
+associations with checked source spans; no identity or policy authority is inferred.
+
 ## Validation and measured results
 
-The current full isolated memory/graph suite passed **267 tests**, including real
+The current full isolated memory/graph suite passed **281 tests**, including real
 FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
 pass. The portability workflow includes live Docker graph/memory regression
 checks and installs the optional Graphify extractor there. CI for these new changes
-has not run yet.
+is checked separately from the local result.
 
 A small synthetic retrieval comparison separates natural-language queries from
 three deliberately authored graph-path acceptance cases:

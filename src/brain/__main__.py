@@ -12,6 +12,9 @@ def main():
     sub.add_parser("health")
     sub.add_parser("ingest-snapshots").add_argument("directory")
     sub.add_parser("ingest-graphify").add_argument("paths", nargs="*")
+    concepts = sub.add_parser("annotate-concepts")
+    concepts.add_argument("--document", action="append", required=True)
+    concepts.add_argument("--model", required=True)
     sub.add_parser("ingest-docs").add_argument("paths", nargs="*")
     sub.add_parser("retire-docs").add_argument("paths", nargs="+")
     github = sub.add_parser("sync-github")
@@ -49,6 +52,10 @@ def main():
         from .ingest.graphify import ingest_graphify
 
         result = ingest_graphify(store, args.paths or None)
+    elif args.command == "annotate-concepts":
+        from .ingest.concepts import annotate_concepts
+
+        result = annotate_concepts(store, args.document, args.model)
     elif args.command == "ingest-docs":
         from .ingest.documents import ingest_documents
 

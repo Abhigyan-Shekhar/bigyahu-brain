@@ -92,6 +92,7 @@ def normalize(result, texts, repo, sha, url):
             or b not in ids
             or not isinstance(relation, str)
             or not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,63}", relation)
+            or not isinstance(confidence, str)
             or confidence not in {"EXTRACTED", "INFERRED", "AMBIGUOUS"}
         ):
             raise ValueError("Invalid Graphify relationship")

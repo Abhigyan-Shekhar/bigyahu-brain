@@ -90,3 +90,14 @@ local viewer fixes identity in configuration and routes authenticated graph read
 through `MemoryTools.memory_graph`. It adds no hosted identity or MCP tools.
 The experimental runner's `--memory-graph` enables both read-only memory tools.
 See [integration contracts and reproduction](docs/graphify-three-brain-integration.md).
+
+## Source-grounded named concept extension
+
+`annotate-concepts --document UID [--document UID ...] --model MODEL` explicitly
+sends selected current company document sections to the named model. Output is
+validated as literal spans before any mutation. Native `ConceptMention` evidence
+is advisory and guarded by a separate readiness flag. The memory bridge adds
+`MATCHES_MENTION`/`MENTIONS_CONCEPT` paths only after company access and current
+source/annotation/span/revision checks; these are label associations, not identity
+resolution. They add no MCP tools or approval authority. See [contracts, bounds
+and evaluation](docs/company-concepts.md).

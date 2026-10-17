@@ -155,7 +155,7 @@ ranking invariance, expiry, revocation, stale content, index repair, literal-que
 safety, text limits, MCP/company paths and absence of embedding/catalog search
 calls in the native backend.
 
-Local verification on October 17, 2026: **267 tests passed** in the complete
+Local verification on October 17, 2026: **281 tests passed** in the complete
 disposable FalkorDB/Lite suite. Engine owners stopped with SAVE. Both benchmark
 reports were reproduced against the final implementation, and all recorded
 implementation hashes match. Earlier benchmark attempts remain in ignored local
@@ -164,3 +164,7 @@ The existing third-party Authlib deprecation warning remains. No approved demo
 graph or frozen coding-trial artifact was modified, and no new coding-agent
 comparison was executed. A separate [guided integration demonstration](three-brain-agent-verification.json)
 now exercises the three-brain architecture; it is not a comparison.
+
+Native company expansion also supports [source-grounded named concept mentions](company-concepts.md).
+This adds label associations with checked document spans and native source paths;
+no semantic identity, synonym inference or policy authority is implied.

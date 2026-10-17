@@ -480,7 +480,7 @@ class Services:
         number = re.fullmatch(r"#([0-9]{1,10})", query)
         params["number"] = int(number[1]) if number else -1
         rows = self.store.query(
-            "MATCH (n {repo_id:$repo}) WHERE (NOT n:Document OR "
+            "MATCH (n {repo_id:$repo}) WHERE NOT n:ConceptMention AND (NOT n:Document OR "
             "(coalesce(n.current,true) AND (n.source_kind IS NULL OR n.revision=$sha))) AND (n.uid=$query OR "
             "(n:Symbol AND n.current=true AND n.qualname=$query) OR "
             "((n:Issue OR n:PR) AND (n.url=$query OR n.number=$number))) "
@@ -521,7 +521,7 @@ class Services:
             paths = self.store.query(
                 "MATCH p=(a)-[*1..2]-(b) WHERE a.uid IN $ids "
                 "AND all(n IN nodes(p) WHERE n.repo_id=$repo AND "
-                "(NOT n:Document OR (coalesce(n.current,true) AND "
+                "NOT n:ConceptMention AND (NOT n:Document OR (coalesce(n.current,true) AND "
                 "(n.source_kind IS NULL OR n.revision=$sha)))) "
                 "RETURN [n IN nodes(p)|n.uid] AS path, "
                 "[r IN relationships(p)|type(r)] AS relationships, "

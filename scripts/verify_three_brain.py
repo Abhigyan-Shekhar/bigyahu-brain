@@ -12,7 +12,7 @@ from pathlib import Path
 from demo_three_brain import POLICY
 
 
-def verify(run):
+def verify(run, policy=POLICY, company_relation="VERIFIED_SOURCE"):
     events = [json.loads(line) for line in (run / "agent/trace.jsonl").read_text().splitlines()]
     calls = [
         (i, e["item"])
@@ -44,11 +44,11 @@ def verify(run):
         if r.get("status") == "ok"
         and {"private:alice", "team:runtime", "company"}
         <= {n.get("brain") for n in r.get("nodes", [])}
-        and {"SAME_CITATION", "VERIFIED_SOURCE"} <= {e["relation"] for e in r.get("edges", [])}
+        and {"SAME_CITATION", company_relation} <= {e["relation"] for e in r.get("edges", [])}
         and any(
             n["kind"] == "CompanySource"
-            and n.get("digest") == hashlib.sha256(POLICY.encode()).hexdigest()
-            and n.get("text") == POLICY
+            and n.get("digest") == hashlib.sha256(policy.encode()).hexdigest()
+            and n.get("text") == policy
             for n in r.get("nodes", [])
         )
     ]
@@ -60,7 +60,7 @@ def verify(run):
     ]
     assert edits and max(private[0][0], joined[0][0]) < min(edits), "Evidence must precede edits"
     assert "HIDDEN_THREE_BRAIN_CANARY" not in json.dumps([payload(item) for _, item in calls])
-    assert (run / "checkout/policy.md").read_text() == POLICY
+    assert (run / "checkout/policy.md").read_text() == policy
     oracle = """
 from retry import delay_ms
 cases = [(0,10,10),(1,10,20),(2,10,40),(6,10,640),(7,10,800),(20,10,800),
@@ -104,12 +104,13 @@ print('15 independent oracle cases passed')
     source_uris = [
         n["uri"]
         for n in joined[0][1]["nodes"]
-        if n["kind"] == "CompanySource" and n.get("text") == POLICY
+        if n["kind"] == "CompanySource" and n.get("text") == policy
     ]
     assert any(uri in final for uri in source_uris), "Final response must cite verified source"
     manifest = json.loads((run / "agent/invocation.json").read_text())
     return {
         "scope": "guided_synthetic_three_brain_agent_demonstration",
+        "company_relation": company_relation,
         "model_requested": manifest["model"],
         "reasoning_requested": manifest["reasoning"],
         "codex_version": manifest["codex_version"],

@@ -149,3 +149,12 @@ semantic provenance/consent/correction proposals, dense-cycle frontier behavior,
 viewer bearer/origin/scope boundaries and the existing privacy regressions.
 The Docker regression job installs the Graphify extra so these live extractor
 checks run in CI. New CI results are not implied by local verification.
+
+## Follow-up: named company concepts
+
+The [source-grounded concept extension](company-concepts.md) now adds model-selected
+literal document mentions and named-label paths from conversation entities to
+current company sources. A separate live model/agent demonstration verifies this
+without a shared company citation or explicit code identifier in personal memory.
+The initial reports above remain evidence for the original structural milestone;
+the new report records the follow-up implementation's own source hashes.

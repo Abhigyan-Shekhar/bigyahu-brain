@@ -149,3 +149,13 @@ ambiguous modules, wildcard/conditional imports and rebound symbols remain
 unresolved; self/cls edges remain heuristic. No absent edge proves absence of
 dependencies. Graphify's broader structural coverage is a comparison target,
 not justification to silently convert speculative edges into approved facts.
+
+## Named document concept mentions
+
+The [source-grounded concept extension](company-concepts.md) adds explicit
+operator-selected model annotation of current documents and named-mention paths
+from eligible conversation entity labels to current company sources. Every read
+rechecks native source relationships, bytes, span and revision. These associations
+do not resolve semantic identity, create reviewed facts or approve constraints.
+Selected sharing preserves the selected record's literal entity labels locally;
+portable semantic annotations in `.abhi/2` remain future work.

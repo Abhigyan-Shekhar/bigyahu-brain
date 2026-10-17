@@ -33,7 +33,7 @@ function show(node, graph) {
 function render(graph) {
   svg.replaceChildren(); details.replaceChildren();
   const brains = [...new Set(graph.nodes.map(n=>n.brain))].sort();
-  const order = ['Brain','Team','Person','Memory','Entity','Source','CompanyDocument','CompanySymbol','CompanyFile','CompanySource','Version'];
+  const order = ['Brain','Team','Person','Memory','Entity','Source','CompanyDocument','CompanyConceptMention','CompanySymbol','CompanyFile','CompanySource','Version'];
   const positions = new Map();
   for (const [col,brain] of brains.entries()) {
     const x = 35 + col*1060/Math.max(1,brains.length);

@@ -161,3 +161,10 @@ a hosted multi-user service. Member selection shows authored shared memories in
 the currently selected scopes, without access to another private brain.
 See [the integration guide](graphify-three-brain-integration.md) for Graphify
 ingestion, model boundaries and the guided demonstration commands.
+
+Named company document concepts can be explicitly annotated with
+`python -m brain annotate-concepts --document UID --model MODEL`. This sends only
+the selected current document text to that model. Refresh affected memory graph
+projections afterward. Interrupted annotation remains fenced until successful
+retry; model-selected mentions are never approved code constraints. See the
+[named-concept runbook](company-concepts.md) for bounds and evidence checks.

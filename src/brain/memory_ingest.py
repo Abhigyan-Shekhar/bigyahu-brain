@@ -30,10 +30,45 @@ def share_memory(memory, uid, expected_hash, target, expected_target=""):
         if not row:
             raise ValueError("Share requires the exact current accepted private record")
         shared = memory.put(
-            target, row["text"], json.loads(row["sources"]),
+            target,
+            row["text"],
+            json.loads(row["sources"]),
             uid="share:" + digest(canonical([memory.identity.principal, uid, target])),
-            expected=expected_target, expires=row["expires"],
+            expected=expected_target,
+            expires=row["expires"],
         )
+        # Literal entity salience belongs to this selected record. Preserve it
+        # through sharing so another team member can follow the same named path.
+        annotation = memory.db.execute(
+            "SELECT detail FROM events WHERE tenant=? AND brain=? AND uid=? "
+            "AND action='conversation_analysis' ORDER BY rowid DESC LIMIT 1",
+            (memory.identity.tenant, brain, uid),
+        ).fetchone()
+        if annotation and annotation[0]:
+            metadata = json.loads(annotation[0])
+            if metadata.get("hash") == expected_hash:
+                if (
+                    not isinstance(metadata.get("entities"), list)
+                    or len(metadata["entities"]) > 20
+                    or any(
+                        not isinstance(name, str)
+                        or not 1 <= len(name) <= 160
+                        or name not in row["text"]
+                        for name in metadata["entities"]
+                    )
+                ):
+                    raise ValueError(
+                        "Shared semantic entities must be literal selected-record spans"
+                    )
+                metadata["hash"] = shared["hash"]
+                body = canonical(metadata)
+                previous = memory.db.execute(
+                    "SELECT detail FROM events WHERE tenant=? AND brain=? AND uid=? "
+                    "AND action='conversation_analysis' ORDER BY rowid DESC LIMIT 1",
+                    (memory.identity.tenant, target, shared["uid"]),
+                ).fetchone()
+                if not previous or previous[0] != body:
+                    memory._event(target, shared["uid"], "conversation_analysis", body)
         memory._event(brain, uid, "share", canonical({"target": target, "hash": expected_hash}))
         return {**shared, "brain": target, "binding": False}
 

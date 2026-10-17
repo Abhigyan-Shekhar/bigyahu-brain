@@ -16,6 +16,8 @@ EXPAND = {
     "EXTENDS",
     "RELATES_TO",
     "MENTIONS",
+    "MENTIONS_CONCEPT",
+    "MATCHES_MENTION",
     "SUPPORTED_BY",
     "SAME_CITATION",
     "VERIFIED_SOURCE",
@@ -29,6 +31,7 @@ SEED_KINDS = {
     "Source",
     "CompanySource",
     "CompanyDocument",
+    "CompanyConceptMention",
     "CompanySymbol",
     "CompanyFile",
 }
