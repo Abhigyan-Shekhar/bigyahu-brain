@@ -18,7 +18,7 @@ from . import exchange, personal, team
 from .actions import active_actions, approve, checked_action, execute, prepare_plan
 from .agent import run_turn
 from .enrichment import active_ingestions, run_enrichment
-from .evidence import native_graph, ready, resolve
+from .evidence import canonical_graph, native_graph, ready, resolve
 from .sources import onboard, repository_url, upload_binary, upload_document
 from .state import State
 
@@ -537,18 +537,24 @@ def create_app(state, token, origin, assets=None):
         sha = ready(store)
         nodes = store.query(
             "MATCH (n {repo_id:$repo}) WHERE coalesce(n.current,true) AND NOT n:Source "
-            "AND ($q='' OR toLower(coalesce(n.path,n.qualname,n.title,n.uid)) CONTAINS toLower($q)) "
-            "RETURN n.uid AS uid ORDER BY uid LIMIT 151",
+            "AND ($q='' OR any(value IN [n.path,n.qualname,n.title,n.name,n.uid] WHERE toLower(coalesce(value,'')) CONTAINS toLower($q))) "
+            "RETURN n.uid AS uid ORDER BY uid LIMIT 101",
             {"repo": store.cfg.repo_id, "q": query},
         )
-        result = native_graph(store, [n["uid"] for n in nodes[:150]])
-        truncated = len(nodes) > 150 or len(result["edges"]) > 300
+        roots = [n["uid"] for n in nodes[:100]]
+        sources = store.query(
+            "MATCH (d:Document {repo_id:$repo})-[:SUPPORTS]->(s:Source {repo_id:$repo}) "
+            "WHERE d.uid IN $roots RETURN DISTINCT s.uid AS uid ORDER BY uid LIMIT 51",
+            {"repo": store.cfg.repo_id, "roots": roots},
+        )
+        result = native_graph(store, [*roots, *[n["uid"] for n in sources[:50]]])
+        truncated = len(nodes) > 100 or len(sources) > 50 or len(result["edges"]) > 300
         result["edges"] = result["edges"][:300]
         return {
             **result,
             "revision": sha,
             "truncated": truncated,
-            "limits": {"nodes": 150, "edges": 300},
+            "limits": {"nodes": 150, "edges": 300, "roots": 100, "source_neighbors": 50},
         }
 
     @app.post("/api/repositories/{project}/documents")
@@ -696,7 +702,9 @@ def create_app(state, token, origin, assets=None):
         )
         saved = json.loads(path.read_text(encoding="utf-8"))
         checked = resolve(GraphStore(state.config(value["project"])), saved)
-        if checked["digest"] != saved["digest"] or checked["graph"] != saved["graph"]:
+        if checked["digest"] != saved["digest"] or canonical_graph(
+            checked["graph"]
+        ) != canonical_graph(saved["graph"]):
             raise HTTPException(409, "Cited evidence changed; ask again")
         return {"id": evidence_id, **checked}
 
@@ -744,7 +752,10 @@ def create_app(state, token, origin, assets=None):
 
     @app.get("/api/actions/{action_id}")
     def action_detail(action_id: str):
-        return state.get(action_id, "action")
+        value = state.get(action_id, "action")
+        from .actions import verification_result
+
+        return {**value, **verification_result(value)}
 
     @app.post("/api/actions/{action_id}/approve", status_code=202)
     def approve_action(action_id: str, body: ApprovalInput):
@@ -772,7 +783,10 @@ def create_app(state, token, origin, assets=None):
             stage="Plan rejected; no execution",
         ):
             raise HTTPException(409, "Only a plan awaiting review can be rejected")
-        return state.get(action_id, "action")
+        value = state.get(action_id, "action")
+        from .actions import verification_result
+
+        return {**value, **verification_result(value)}
 
     @app.get("/api/actions/{action_id}/evidence/{evidence_id}")
     def action_citation(action_id: str, evidence_id: str):

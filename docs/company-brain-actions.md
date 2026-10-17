@@ -23,7 +23,7 @@ merge or memory-acceptance endpoint.
 6. Inspect baseline/patched output and the final diff; download the patch. The
    implementation handoff is generated before backend test validation. The test
    report carries the execution result. Draft lessons remain proposals until separately accepted in
-   [Personal Brain](personal-brain-app.md). The report can send a passing lesson
+   [Personal Brain](personal-brain-app.md). The report can send a regression-backed lesson
    directly to that review screen.
 
 Concurrent approval retries consume one lifecycle transition. A failed execution
@@ -120,3 +120,18 @@ path and command injection rejection, ignored-file scope violations, actual macO
 filesystem/network sandbox probes, timeout/output caps and zero-test rejection.
 Run `scripts/validate_memory_foundation.py` with the documented app/lite/graphify
 extras for the full disposable graph suite.
+
+## Passing tests and regression evidence
+
+`tests_passed` requires successful exits and positive reported test counts for
+every approved patched command. `regression_demonstrated` additionally requires
+proposed tests on the baseline, matching command selections and reported case
+counts, and at least one original-code assertion failure resolved by the patch.
+Timeouts, runner errors, collection errors and a baseline that already passes do
+not provide this signal. The API exposes `fix_verification` and the report labels
+a passing run without this signal **Tests passed · fix remains unverified**.
+
+Only a demonstrated regression can propose a new coding lesson. Explicit notes
+and existing accepted memories retain their normal review workflow. This checks
+test-run evidence; it cannot establish that agent-written tests cover the reported
+bug. Review coverage and independent acceptance evidence separately.

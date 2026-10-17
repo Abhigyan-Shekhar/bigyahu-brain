@@ -159,7 +159,7 @@ def propose_note(cfg, text):
 
 
 def propose_lesson(state, action_id):
-    from .actions import checked_action
+    from .actions import checked_action, verification_result
 
     action = state.get(action_id, "action")
     if (
@@ -176,6 +176,10 @@ def propose_lesson(state, action_id):
         for t in action["tests"]
     ):
         raise ValueError("Verified passing test outcomes are required for lesson review")
+    if not verification_result(action)["regression_demonstrated"]:
+        raise ValueError(
+            "Tests passed, but a baseline-failing regression has not been demonstrated"
+        )
     checked_action(state, action)
     cfg = state.config(action["project"])
     report = {

@@ -16,16 +16,31 @@ def native_graph(store, uids):
     params = {"repo": store.cfg.repo_id, "ids": uids}
     nodes = store.query(
         "MATCH (n {repo_id:$repo}) WHERE n.uid IN $ids "
-        "RETURN n.uid AS id, labels(n) AS labels, coalesce(n.qualname,n.path,n.title,n.name,n.uid) AS label",
+        "RETURN n.uid AS id, labels(n) AS labels, coalesce(n.qualname,n.path,n.title,n.name,n.uid) AS label ORDER BY id",
         params,
     )
     edges = store.query(
         "MATCH (a {repo_id:$repo})-[r]->(b {repo_id:$repo}) "
         "WHERE a.uid IN $ids AND b.uid IN $ids "
-        "RETURN a.uid AS source,b.uid AS target,type(r) AS relation ORDER BY source,relation,target LIMIT 301",
+        "RETURN a.uid AS source,b.uid AS target,type(r) AS edge_type,coalesce(r.relation,type(r)) AS relation, "
+        "r.quote AS quote,r.confidence AS confidence,r.source_uid AS source_uid "
+        "ORDER BY source,relation,target,edge_type,quote,confidence,source_uid LIMIT 301",
         params,
     )
-    return {"nodes": nodes, "edges": edges}
+    return canonical_graph({"nodes": nodes, "edges": edges})
+
+
+def canonical_graph(graph):
+    """Stable topology and metadata, including legacy edges without edge_type."""
+    edges = []
+    for original in graph["edges"]:
+        edge = {k: v for k, v in original.items() if v is not None}
+        edge.setdefault("edge_type", edge["relation"])
+        edges.append(edge)
+    return {
+        "nodes": sorted(graph["nodes"], key=lambda n: n["id"]),
+        "edges": sorted(edges, key=canonical),
+    }
 
 
 def ready(store):
@@ -206,7 +221,8 @@ def verified_claims(store, folder, output):
             current = resolve(store, saved)
             if (
                 current["digest"] != saved["digest"]
-                or canonical(current["graph"]) != canonical(saved["graph"])
+                or canonical(canonical_graph(current["graph"]))
+                != canonical(canonical_graph(saved["graph"]))
                 or not isinstance(quoted, str)
                 or not quoted.strip()
                 or quoted not in current["text"]

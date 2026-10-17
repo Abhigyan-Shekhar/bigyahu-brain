@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -16,6 +17,58 @@ from .action_mcp import target
 from .agent import SCHEMA, command
 from .evidence import ready, verified_claims
 from .test_sandbox import run_tests
+
+
+def verification_result(action):
+    """A matched approved-command regression signal, not universal bug correctness."""
+    tests, baseline = action.get("tests", []), action.get("baseline_tests", [])
+    passed = bool(tests) and all(
+        t.get("passed")
+        and t.get("exit_code") == 0
+        and t.get("outcome") == "exited"
+        and t.get("tests_reported", 0) > 0
+        for t in tests
+    )
+    demonstrated = False
+    if passed and action.get("baseline_includes_proposed_tests") and len(tests) == len(baseline):
+        for before, after in zip(baseline, tests):
+            argv = after.get("argv", [])
+            if (
+                before.get("argv") != argv
+                or before.get("outcome") != "exited"
+                or before.get("exit_code") != 1
+            ):
+                continue
+            output = before.get("output", "")
+            pytest = len(argv) > 2 and argv[2] == "pytest"
+            failed = (
+                re.findall(r"(\d+) failed", output)
+                if pytest
+                else re.findall(r"failures=(\d+)", output)
+            )
+            errors = (
+                re.findall(r"(\d+) errors?", output)
+                if pytest
+                else re.findall(r"errors=(\d+)", output)
+            )
+            count = int(failed[-1]) if failed else 0
+            reported = before.get("tests_reported", 0) + (count if pytest else 0)
+            if (
+                count > 0
+                and not any(int(n) for n in errors)
+                and reported == after.get("tests_reported")
+            ):
+                demonstrated = True
+    return {
+        "tests_passed": passed,
+        "regression_demonstrated": demonstrated,
+        "fix_verification": "baseline_failures_resolved"
+        if demonstrated
+        else "tests_passed_fix_unverified"
+        if passed
+        else "tests_not_passed",
+    }
+
 
 PLAN_SCHEMA = {
     "type": "object",
@@ -430,7 +483,13 @@ def execute(state, uid):
             tests=tests,
             baseline_tests=baseline_tests,
             baseline_includes_proposed_tests=bool(regression_files),
-            tests_passed=all(t["passed"] for t in tests),
+            **verification_result(
+                {
+                    "tests": tests,
+                    "baseline_tests": baseline_tests,
+                    "baseline_includes_proposed_tests": bool(regression_files),
+                }
+            ),
             summary=str(output.get("summary", ""))[:3000],
             lesson_proposal={
                 "text": str(output.get("lesson", ""))[:3000],

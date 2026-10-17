@@ -1,6 +1,6 @@
 # Personal Brain and reviewed lessons
 
-The local application now closes the coding lesson loop: a passing coding action
+The local application now closes the coding lesson loop: a coding action with passing tests and a demonstrated baseline-failing regression
 can propose a private lesson, the operator can inspect its pinned report and
 accept it, and a fresh conversation can retrieve and cite that accepted memory
 through native FalkorDB search. No embedding model is required.
@@ -16,7 +16,7 @@ through native FalkorDB search. No embedding model is required.
 3. Select a proposal, inspect its original source, enter a review reason and
    accept or reject it. Only acceptance makes a memory eligible for chat.
 4. For coding lessons, finish an approved coding action with passing, positive
-   test counts. In its report, choose **Send to Personal Brain review**, then
+   test counts and a matching baseline assertion failure resolved by the patch. In its report, choose **Send to Personal Brain review**, then
    **Open Personal Brain**. The source includes the objective, base revision,
    patch digest, changed files, test command and reported results.
 5. Start a **New conversation** and ask about relevant reviewed lessons. Open a

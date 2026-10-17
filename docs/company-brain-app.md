@@ -126,7 +126,7 @@ application does not collect model credentials.
   model is required. See [semantic ingestion](semantic-document-ingestion.md).
 - [Personal Brain](personal-brain-app.md) supports private notes, exact-consent
   selected-turn proposals and source review with acceptance/rejection/revocation.
-  Passing coding actions can propose lessons for review; accepted lessons are
+  Coding actions with passing tests and a demonstrated baseline-failing regression can propose lessons for review; accepted lessons are
   retrieved and cited through native FalkorDB tools in fresh conversations. Team
   [sharing/navigation](team-brain-app.md) now supports selected proposals, separate
   review, catalog membership and permitted member views. [Portable `.abhi` controls](abhi-app.md)
@@ -155,7 +155,7 @@ uv run --frozen --extra app --extra lite --extra graphify --extra ingestion pyth
 The application tests exercise URL rejection, authentication/Origin/Host checks,
 read-only runner configuration, restart recovery, readiness gates, native code and
 uploaded-document evidence, invented quotes/IDs, citation access and stale source
-rejection. Live suite: **350 passed**. Browser acceptance uses a real public
+rejection. Live suite: **361 passed**. Browser acceptance uses a real public
 repository and actual Codex tool calls; see the [milestone report](application-milestone-verification.json).
 
 The [coding action report](application-action-verification.json) records a separate
@@ -178,3 +178,12 @@ and fresh real-agent recall with a checked team citation.
 The [exchange/integrated report](application-exchange-verification.json) records
 actual browser round-trip files, a new policy-and-import-backed coding run,
 15 held-out patch replay cases and fresh recall of the newly reviewed lesson.
+
+## Explorer review fixes
+
+Filtering independently searches path, qualified name, title, name and UID.
+The explorer includes up to 100 matching roots plus 50 supporting Source neighbors
+for selected Documents, with at most 300 relationships and explicit truncation.
+Semantic edges display their extracted relation. Click an edge or use **Inspect
+relationship** to see its stored type, confidence, literal quote and source UID.
+See [PR #7 review fixes](pr7-review-fixes.md) for validation and remaining limits.

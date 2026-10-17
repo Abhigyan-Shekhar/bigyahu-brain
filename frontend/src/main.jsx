@@ -32,6 +32,8 @@ if (fragment) {
   history.replaceState(null, "", location.pathname);
 }
 function Graph({ graph, compact = false }) {
+  const [selectedEdge, setSelectedEdge] = useState(null);
+  useEffect(() => setSelectedEdge(null), [graph]);
   const groups = {};
   const nodes = (graph?.nodes || []).map((n) => {
     const kind = n.labels?.[0] || "Node";
@@ -52,6 +54,7 @@ function Graph({ graph, compact = false }) {
     groups[key] = i + 1;
     return {
       id: n.id,
+      displayLabel: n.label,
       sourcePosition: "right",
       targetPosition: "left",
       position: { x: key * 260, y: i * 95 },
@@ -73,16 +76,20 @@ function Graph({ graph, compact = false }) {
       ...e,
       id: String(i),
       label: e.relation,
+      data: e,
       markerEnd: { type: MarkerType.ArrowClosed },
       style: { stroke: "#8b80bd" },
       labelStyle: { fontSize: 10 },
     }));
   return (
     <div className={"graph " + (compact ? "compact" : "")}>
+      {edges.length > 0 && <select className="graph-edge-picker" aria-label="Inspect relationship" value={edges.find(e => e.data === selectedEdge)?.id ?? ""} onChange={event => setSelectedEdge(edges.find(e => e.id === event.target.value)?.data ?? null)}><option value="">Inspect a relationship…</option>{edges.map(edge => <option key={edge.id} value={edge.id}>{nodes.find(n => n.id === edge.source)?.displayLabel} → {edge.label} → {nodes.find(n => n.id === edge.target)?.displayLabel}</option>)}</select>}
+      {selectedEdge && <aside className="graph-edge-detail"><button onClick={() => setSelectedEdge(null)} aria-label="Close relationship details">×</button><strong>{selectedEdge.relation}</strong><p>Stored type: {selectedEdge.edge_type || selectedEdge.relation}{selectedEdge.confidence ? ` · ${selectedEdge.confidence}` : ""}</p>{selectedEdge.quote && <blockquote>{selectedEdge.quote}</blockquote>}{selectedEdge.source_uid && <small>Source: {selectedEdge.source_uid}</small>}</aside>}
       <ReactFlow
         key={nodes.map((n) => n.id).join("|")}
         nodes={nodes}
         edges={edges}
+        onEdgeClick={(_, edge) => setSelectedEdge(edge.data)}
         nodesDraggable={false}
         nodesConnectable={false}
         elementsSelectable

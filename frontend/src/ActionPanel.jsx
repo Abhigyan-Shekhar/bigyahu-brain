@@ -233,9 +233,10 @@ export default function ActionPanel({ turn, project, onEvidence, onReviewMemory 
               </details>
               <strong className={action.tests_passed ? "test-pass" : "failure"}>
                 {action.tests_passed
-                  ? "Approved tests passed"
+                  ? (action.regression_demonstrated ? "Approved tests passed · baseline failures resolved" : "Tests passed · fix remains unverified")
                   : "Tests did not pass — inspect the report"}
               </strong>
+              <p className="action-note">{action.regression_demonstrated ? "The same approved test command failed on the original and passed on the patch. Review its coverage; this signal does not independently prove the reported bug is fixed." : "No matched baseline regression has been demonstrated. Passing tests alone do not verify the fix; a coding lesson cannot be proposed from this report."}</p>
               <p className="action-note">
                 Original checkout unchanged. This patch has not been applied,
                 committed, or pushed.
@@ -294,7 +295,7 @@ export default function ActionPanel({ turn, project, onEvidence, onReviewMemory 
                   <small>
                     This is the model’s draft. Personal Brain tracks its separate proposal and review status.
                   </small>
-                  <div className="lesson-controls"><button disabled={submitting || !action.tests_passed} onClick={async () => {
+                  <div className="lesson-controls"><button disabled={submitting || !action.regression_demonstrated} onClick={async () => {
                     setSubmitting(true);setError("");
                     try {const r = await send(`/repositories/${project}/actions/${action.id}/lesson`,{});setLessonNotice(`Private memory ${r.state}. Open Personal Brain to inspect its source and review.`);} catch(e){setError(e.message);} finally {setSubmitting(false);}
                   }}>Send to Personal Brain review</button><button onClick={onReviewMemory}>Open Personal Brain</button></div>

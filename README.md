@@ -78,7 +78,7 @@ associations with checked source spans; no identity or policy authority is infer
 
 ## Validation and measured results
 
-The current full isolated memory/graph/application suite passed **350 tests**, including real
+The current full isolated memory/graph/application suite passed **361 tests**, including real
 FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
 pass. The portability workflow includes live Docker graph/memory regression
 checks and installs the optional Graphify extractor there. CI for these new changes
@@ -181,6 +181,10 @@ combines a reviewed import with company policy, approves and tests an isolated
 fix, then reviews its new lesson and recalls it in a fresh chat. Five regression
 tests and 15 held-out replay cases pass. Public onboarding and PDF/Word semantic
 ingestion retain their separate verification reports.
+
+The [PR #7 review fixes](docs/pr7-review-fixes.md) improve symbol search, semantic
+relationship inspection and source paths, distinguish passing tests from a
+baseline-failing regression, and make citation graph comparison order-independent.
 
 ## Graphify, semantic extraction and graph viewing
 

@@ -1276,3 +1276,11 @@ h2 {
 .abhi-link-option { display: block; overflow-wrap: anywhere; }
 .abhi-relationships article { margin: 12px 0; padding: 14px; border: 1px solid #ded6e5; border-radius: 5px; overflow-wrap: anywhere; }
 .abhi-panel button { margin: 6px 8px 6px 0; }
+.graph { position: relative; }
+.graph-edge-detail { position: absolute; z-index: 6; right: 12px; bottom: 12px; max-width: min(360px,80%); max-height: 220px; overflow: auto; padding: 14px; background: #fff; border: 1px solid #d8cfe0; border-radius: 6px; font-size: 12px; overflow-wrap: anywhere; box-shadow: 0 3px 14px #0001; }
+.graph-edge-detail > button { float: right; padding: 0 5px; }
+.graph-edge-detail blockquote { margin: 8px 0; padding-left: 10px; border-left: 2px solid #a184b7; line-height: 1.6; }
+
+.graph .react-flow__edge-textwrapper { pointer-events: all; cursor: pointer; }
+
+.graph-edge-picker { position: absolute; z-index: 6; top: 12px; left: 12px; max-width: calc(100% - 24px); width: 340px; }

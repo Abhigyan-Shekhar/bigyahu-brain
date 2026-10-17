@@ -256,6 +256,16 @@ def test_lesson_snapshot_review_and_repeated_send_do_not_reset_acceptance(
         base_revision="fixture-sha",
         objective="Fix retry",
         plan_digest="f" * 64,
+        baseline_includes_proposed_tests=True,
+        baseline_tests=[
+            {
+                "argv": ["python", "-m", "unittest", "test_retry.py"],
+                "exit_code": 1,
+                "outcome": "exited",
+                "tests_reported": 6,
+                "output": "FAILED (failures=1)",
+            }
+        ],
         changed_files=["retry.py"],
         patch="fixture patch",
         tests=[
