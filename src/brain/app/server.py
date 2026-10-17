@@ -16,8 +16,9 @@ from ..config import load_config
 from ..graph import GraphStore, GraphUnavailable
 from .actions import active_actions, approve, checked_action, execute, prepare_plan
 from .agent import run_turn
+from .enrichment import active_ingestions, run_enrichment
 from .evidence import native_graph, ready, resolve
-from .sources import onboard, repository_url, upload_document
+from .sources import onboard, repository_url, upload_binary, upload_document
 from .state import State
 
 
@@ -36,7 +37,13 @@ class ApprovalInput(BaseModel):
 
 class DocumentInput(BaseModel):
     filename: str = Field(min_length=1, max_length=110)
-    text: str = Field(min_length=1, max_length=500000)
+    text: str | None = Field(default=None, min_length=1, max_length=500000)
+    data_base64: str | None = Field(default=None, min_length=1, max_length=1866670)
+
+
+class EnrichmentInput(BaseModel):
+    engine: str
+    sources: list[str] = Field(min_length=1, max_length=8)
 
 
 def create_app(state, token, origin, assets=None):
@@ -102,12 +109,14 @@ def create_app(state, token, origin, assets=None):
             "mode": "read_only_investigation",
             "capabilities": [
                 "repository_onboarding",
-                "markdown_rst_upload",
+                "markdown_rst_pdf_docx_upload",
+                "graphify_semantic_ingestion",
+                "falkordb_graphrag_sdk_ingestion",
                 "company_chat",
                 "source_inspection",
                 "approved_isolated_patch_tests",
             ],
-            "deferred": ["personal_team_controls", "pdf"],
+            "deferred": ["personal_team_controls"],
         }
 
     @app.get("/api/repositories")
@@ -164,15 +173,82 @@ def create_app(state, token, origin, assets=None):
     def upload(project: str, body: DocumentInput):
         project_ready(project)
         with lock:
-            if active_actions(state, project) or any(
-                t["status"] in {"queued", "running"}
-                for s in state.list("session", project)
-                for t in state.list("turn", s["id"])
+            if (
+                active_ingestions(state, project)
+                or active_actions(state, project)
+                or any(
+                    t["status"] in {"queued", "running"}
+                    for s in state.list("session", project)
+                    for t in state.list("turn", s["id"])
+                )
             ):
                 raise HTTPException(
                     409, "Wait for the current investigation before changing sources"
                 )
+            if (body.text is None) == (body.data_base64 is None):
+                raise ValueError("Supply either text or base64 file bytes")
+            if body.data_base64 is not None:
+                import base64
+                import binascii
+
+                try:
+                    raw = base64.b64decode(body.data_base64, validate=True)
+                except (ValueError, binascii.Error):
+                    raise ValueError("Invalid base64 file data") from None
+                return upload_binary(state, project, body.filename, raw)
             return upload_document(state, project, body.filename, body.text)
+
+    @app.get("/api/repositories/{project}/documents")
+    def documents(project: str):
+        project_ready(project)
+        store = GraphStore(state.config(project))
+        sha = ready(store)
+        return store.query(
+            "MATCH (d:Document {repo_id:$repo,revision:$sha,current:true})-[:SUPPORTS]->(s:Source) "
+            "WHERE d.source_kind IN ['repository_document','app_upload','app_binary_upload'] "
+            "RETURN s.uid AS id,d.path AS path,d.line_start AS start,d.line_end AS end "
+            "ORDER BY path,start LIMIT 201",
+            {"repo": store.cfg.repo_id, "sha": sha},
+        )
+
+    @app.get("/api/repositories/{project}/enrichments")
+    def enrichments(project: str):
+        state.get(project, "repository")
+        return state.list("enrichment", project)
+
+    @app.post("/api/repositories/{project}/enrichments", status_code=202)
+    def enrich(project: str, body: EnrichmentInput):
+        project_ready(project)
+        if body.engine not in {"graphify", "sdk"} or len(set(body.sources)) != len(body.sources):
+            raise ValueError("Choose Graphify or FalkorDB SDK and unique source sections")
+        available = {d["id"] for d in documents(project)}
+        if not set(body.sources) <= available:
+            raise ValueError("Select current document source sections")
+        with lock:
+            if (
+                active_ingestions(state, project)
+                or active_actions(state, project)
+                or any(
+                    t["status"] in {"queued", "running"}
+                    for s in state.list("session", project)
+                    for t in state.list("turn", s["id"])
+                )
+            ):
+                raise HTTPException(409, "Finish the active investigation, plan or ingestion first")
+            if len(state.list("enrichment", project)) >= 40:
+                raise HTTPException(409, "Local semantic ingestion history limit reached")
+            job = state.create(
+                "enrichment",
+                project,
+                project=project,
+                engine=body.engine,
+                sources=body.sources,
+                model=state.model,
+                status="queued",
+                stage="Semantic extraction queued",
+            )
+            workers.submit(run_enrichment, state, job["id"])
+        return job
 
     @app.get("/api/repositories/{project}/sessions")
     def sessions(project: str):
@@ -196,12 +272,17 @@ def create_app(state, token, origin, assets=None):
         if not body.question.strip():
             raise ValueError("Enter a question")
         with lock:
-            if any(
-                a["status"] in {"queued", "running"} for a in active_actions(state, chat["project"])
-            ) or any(
-                t["status"] in {"queued", "running"}
-                for s in state.list("session", chat["project"])
-                for t in state.list("turn", s["id"])
+            if (
+                active_ingestions(state, chat["project"])
+                or any(
+                    a["status"] in {"queued", "running"}
+                    for a in active_actions(state, chat["project"])
+                )
+                or any(
+                    t["status"] in {"queued", "running"}
+                    for s in state.list("session", chat["project"])
+                    for t in state.list("turn", s["id"])
+                )
             ):
                 raise HTTPException(409, "Wait for the current investigation")
             turn = state.create(
@@ -254,10 +335,14 @@ def create_app(state, token, origin, assets=None):
         if value["status"] != "complete" or not body.question.strip():
             raise HTTPException(409, "Complete the investigation before requesting a plan")
         with lock:
-            if active_actions(state, project) or any(
-                t["status"] in {"queued", "running"}
-                for chat in state.list("session", project)
-                for t in state.list("turn", chat["id"])
+            if (
+                active_ingestions(state, project)
+                or active_actions(state, project)
+                or any(
+                    t["status"] in {"queued", "running"}
+                    for chat in state.list("session", project)
+                    for t in state.list("turn", chat["id"])
+                )
             ):
                 raise HTTPException(409, "Finish or reject the active plan/investigation first")
             if len(state.list("action", project)) >= 20:
@@ -284,6 +369,8 @@ def create_app(state, token, origin, assets=None):
         with lock:
             action = state.get(action_id, "action")
             project_ready(action["project"])
+            if active_ingestions(state, action["project"]):
+                raise HTTPException(409, "Wait for semantic ingestion before approving execution")
             if any(
                 t["status"] in {"queued", "running"}
                 for chat in state.list("session", action["project"])

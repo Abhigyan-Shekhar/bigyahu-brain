@@ -1,0 +1,73 @@
+{
+  "status": "passed",
+  "document_chat": {
+    "status": "passed",
+    "checked_claims": 3,
+    "source_titles": [
+      "policy.docx",
+      "policy.pdf"
+    ],
+    "model": "gpt-6.1-sol"
+  },
+  "scope": "Small synthetic PDF/Word browser acceptance, not extraction accuracy or enterprise scale evaluation",
+  "engines": {
+    "sdk": {
+      "nodes": 5,
+      "relationships": 5,
+      "engine": "graphrag-sdk/1.4.0",
+      "pipeline": "IngestionPipeline:load-text/chunk/lexical/extract/prune/resolve/staged-write/mentions",
+      "vectors": false,
+      "binding": false,
+      "model": "gpt-6.1-sol",
+      "revision": "43c355b14cc3d65852987b4dce30916286837af9",
+      "native_nodes_checked": 5,
+      "native_relationships_checked": 5,
+      "source_citations_reverified": 5,
+      "retrieval_contains_native_paths": true,
+      "source_titles": [
+        "policy.pdf"
+      ],
+      "source_digests": [
+        "93eaf69e989dfe594c8ea1ce5b18f542373b5c8afeed012af068b102e4a88272"
+      ],
+      "extraction_sha256": "766c06537dbacbd9c7fd5539aa5db673c297823c862a3eef1712d6dca99d0049",
+      "implementation_sha256": {
+        "brain/app/enrichment.py": "d5c72b4a2226409f427f4a6530c8e235c5947c24687cf9c63cd884e1e6b78503",
+        "brain/ingest/semantic_worker.py": "5388d5fe30632a5bf1da4ae066950e463ce11cec79bebe46991e706bdd76b79c",
+        "brain/semantic_model.py": "e9b4aa581f5113a164185b2aee6aaf5d8a0d4bfc947db974781768505fe1d496"
+      }
+    },
+    "graphify": {
+      "nodes": 4,
+      "relationships": 3,
+      "engine": "graphifyy/0.9.92",
+      "pipeline": "extract_files_direct",
+      "vectors": false,
+      "binding": false,
+      "model": "gpt-6.1-sol",
+      "revision": "43c355b14cc3d65852987b4dce30916286837af9",
+      "native_nodes_checked": 4,
+      "native_relationships_checked": 3,
+      "source_citations_reverified": 4,
+      "retrieval_contains_native_paths": true,
+      "source_titles": [
+        "policy.docx"
+      ],
+      "source_digests": [
+        "3e48fd68a5835fe7f92850385e7b7da6c05676df3f99c0ec6ebc5cec019e1c08"
+      ],
+      "extraction_sha256": "50939587beeec967cc9446921fe4dc6d2bb102c701e5473620a3d4667a857d3b",
+      "implementation_sha256": {
+        "brain/app/enrichment.py": "d5c72b4a2226409f427f4a6530c8e235c5947c24687cf9c63cd884e1e6b78503",
+        "brain/ingest/semantic_worker.py": "5388d5fe30632a5bf1da4ae066950e463ce11cec79bebe46991e706bdd76b79c",
+        "brain/semantic_model.py": "e9b4aa581f5113a164185b2aee6aaf5d8a0d4bfc947db974781768505fe1d496"
+      }
+    }
+  },
+  "limits": [
+    "No OCR, legacy .doc, images or layout-fidelity guarantee",
+    "SDK uses its real ingestion pipeline with staged storage adapter and explicit graph-only indexing; no SDK vector retrieval/completion is claimed",
+    "Semantic source spans establish provenance, not semantic entailment or identity",
+    "Selected sections only; no automatic whole-repository semantic pass or multi-user hosting"
+  ]
+}

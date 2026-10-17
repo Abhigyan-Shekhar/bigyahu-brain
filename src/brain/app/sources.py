@@ -224,3 +224,98 @@ def upload_document(state, project, filename, text):
         "format": "text",
         "binding": False,
     }
+
+
+def upload_binary(state, project, filename, raw):
+    """Parse in a bounded child process and preserve an immutable extraction snapshot."""
+    import hashlib
+    import json
+    import sys
+    import tempfile
+
+    from ..memory import canonical
+
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_. -]{0,99}\.(?:pdf|docx)", filename, re.IGNORECASE):
+        raise ValueError("Upload a PDF or DOCX with a simple filename")
+    if not raw or len(raw) > 1_400_000:
+        raise ValueError("Binary upload exceeds 1.4 MB")
+    with tempfile.TemporaryDirectory(prefix="brain-document-") as temp:
+        root = Path(temp)
+        source, output = root / "input", root / "result.json"
+        source.write_bytes(raw)
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "brain.ingest.binary_document",
+                str(source),
+                Path(filename).suffix.lower(),
+                str(output),
+            ],
+            capture_output=True,
+            timeout=30,
+            check=False,
+        )
+        if result.returncode or not output.exists() or output.stat().st_size > 2_100_000:
+            raise ValueError(
+                "Document extraction failed: use a valid text-based PDF (no OCR/encryption) or DOCX within documented bounds"
+            )
+        extracted = json.loads(output.read_text())
+    text = extracted["text"]
+    prepared = list(sections(text))
+    if not prepared or len(prepared) > 100:
+        raise ValueError("Extracted document exceeds 100 sections")
+    cfg = state.config(project)
+    store = GraphStore(cfg)
+    from .evidence import ready
+
+    sha = ready(store)
+    content = hashlib.sha256(raw).hexdigest()
+    snapshot = {**extracted, "raw_digest": content, "text_digest": digest(text), "version": 1}
+    serialized = canonical(snapshot)
+    folder = state.folder(project) / "uploads"
+    folder.mkdir(exist_ok=True)
+    snapshot_digest = digest(serialized)
+    # Content-address BOTH original bytes and parser output; runtime changes cannot rewrite old citations.
+    (folder / content).write_bytes(raw)
+    (folder / snapshot_digest).write_text(serialized, encoding="utf-8")
+    sources, docs = [], []
+    for start, end, body in prepared:
+        uid = f"{cfg.repo_id}@{sha}:binary:{content}:{snapshot_digest}:L{start}-L{end}"
+        props = {
+            "repo_id": cfg.repo_id,
+            "revision": sha,
+            "current": True,
+            "source_kind": "app_binary_upload",
+            "path": filename,
+            "line_start": start,
+            "line_end": end,
+            "digest": digest(body),
+            "upload_digest": content,
+            "snapshot_digest": snapshot_digest,
+            "text_digest": digest(text),
+            "format": extracted["format"],
+        }
+        sources.append(
+            {
+                "uid": uid + ":source",
+                "props": {
+                    **props,
+                    "excerpt": body,
+                    "uri": f"urn:company-brain:upload:{content}:extracted:L{start}-L{end}",
+                },
+            }
+        )
+        docs.append({"uid": uid, "props": {**props, "text": body}, "source": uid + ":source"})
+    store.query(
+        "UNWIND $sources AS item MERGE (s:Source {uid:item.uid}) SET s += item.props WITH count(s) AS loaded UNWIND $docs AS item MERGE (d:Document {uid:item.uid}) SET d += item.props WITH d,item MATCH (s:Source {uid:item.source}) MERGE (d)-[:SUPPORTS]->(s)",
+        {"sources": sources, "docs": docs},
+    )
+    return {
+        "filename": filename,
+        "digest": content,
+        "sections": len(prepared),
+        "format": extracted["format"],
+        "binding": False,
+        "extraction": {k: v for k, v in extracted.items() if k != "text"},
+    }

@@ -1231,3 +1231,10 @@ h2 {
 .plan-evidence .citations button {
   font-size: 9px;
 }
+
+.ingestion-panel { margin: 0 28px 16px; padding: 14px; border: 1px solid var(--line, #ded8e8); border-radius: 8px; font-size: 13px; }
+.ingestion-panel summary { cursor: pointer; font-weight: 600; }
+.ingestion-panel p { line-height: 1.6; color: var(--muted, #777); }
+.ingestion-panel select { margin: 8px; padding: 6px; }
+.source-selections { max-height: 200px; overflow: auto; display: grid; gap: 8px; margin: 12px 0; }
+.source-selections label { display: flex; align-items: baseline; gap: 8px; overflow-wrap: anywhere; }

@@ -16,7 +16,7 @@ and memory graphs are not reused. Do not start a second owner on an existing Lit
 database.
 
 ```sh
-uv sync --frozen --extra app --extra lite --python 3.12
+uv sync --frozen --extra app --extra lite --extra graphify --extra ingestion --python 3.12
 npm ci --prefix frontend
 npm run --prefix frontend build
 # Terminal 1: own a NEW disposable/persistent application database.
@@ -115,10 +115,13 @@ application does not collect model credentials.
   Python indexing has its own stricter code-size/parser bounds. Full history is
   not promised: Git is shallow at 100 commits; GitHub acquisition is at most 100
   requests and 20 items per collection. Graph views cap at 150 nodes/300 edges.
-- Uploads: one Markdown/RST file up to 500 KB and 100 sections. No PDF/semantic
-  extraction runs. Uploads join the selected company graph through their source
-  relationships; automatic cross-brain or document-to-symbol inference is not
-  claimed. Repeating identical bytes is idempotent.
+- Uploads: Markdown/RST up to 500 KB; PDF/DOCX up to 1.4 MB, with bounded text
+  extraction and immutable original-file/extraction-snapshot citations. No OCR or
+  legacy `.doc`. Select sections in **Document sources & semantic ingestion** to
+  run the actual Graphify semantic API or FalkorDB GraphRAG SDK ingestion pipeline.
+  Validated advisory relationships enter the same company FalkorDB graph and
+  evidence retrieval. Extraction uses the app's selected Codex model; no embedding
+  model is required. See [semantic ingestion](semantic-document-ingestion.md).
 - Personal/team brain controls, consented conversation review/sharing, `.abhi`
   controls and accepting reviewed lesson proposals remain future UI work. Coding
   actions currently return an unaccepted draft lesson. The full ten-step product
@@ -137,17 +140,21 @@ uv run --extra app pytest -q tests/test_application.py
 npm ci --prefix frontend
 npm run --prefix frontend build
 # Full disposable live graph suite, including existing memory and Graphify tests:
-uv sync --frozen --extra app --extra lite --extra graphify --python 3.12
-uv run --frozen --extra app --extra lite --extra graphify python scripts/validate_memory_foundation.py
+uv sync --frozen --extra app --extra lite --extra graphify --extra ingestion --python 3.12
+uv run --frozen --extra app --extra lite --extra graphify --extra ingestion python scripts/validate_memory_foundation.py
 ```
 
 The application tests exercise URL rejection, authentication/Origin/Host checks,
 read-only runner configuration, restart recovery, readiness gates, native code and
 uploaded-document evidence, invented quotes/IDs, citation access and stale source
-rejection. Live suite: **320 passed**. Browser acceptance uses a real public
+rejection. Live suite: **331 passed**. Browser acceptance uses a real public
 repository and actual Codex tool calls; see the [milestone report](application-milestone-verification.json).
 
 The [coding action report](application-action-verification.json) records a separate
 synthetic fixture run: six agent-written tests fail on the original code and pass
 on the patch; a fresh clone with the downloaded patch passes 15 held-out oracle
 cases. This does not establish coding effectiveness on production repositories.
+
+The [semantic ingestion report](application-ingestion-verification.json) verifies
+real model-backed Graphify and SDK runs, native relationship retrieval, and
+PDF/Word original-file and extraction-snapshot citations.

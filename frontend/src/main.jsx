@@ -22,6 +22,7 @@ import "@xyflow/react/dist/style.css";
 import "./style.css";
 import { api, send } from "./api";
 import ActionPanel from "./ActionPanel";
+import IngestionPanel from "./IngestionPanel";
 
 const fragment = location.hash.slice(1);
 if (fragment) {
@@ -237,13 +238,18 @@ function App() {
     setUploading(true);
     setError("");
     try {
-      if (file.size > 500000) throw Error("Choose a document under 500 KB");
-      const text = new TextDecoder("utf-8", { fatal: true }).decode(
-        await file.arrayBuffer(),
-      );
+      const binary = /\.(pdf|docx)$/i.test(file.name);
+      if (file.size > (binary ? 1400000 : 500000)) throw Error(binary ? "Choose a PDF/DOCX under 1.4 MB" : "Choose a text document under 500 KB");
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      let payload;
+      if (binary) {
+        let encoded = "";
+        for (let i = 0; i < bytes.length; i += 8192) encoded += String.fromCharCode(...bytes.subarray(i, i + 8192));
+        payload = {data_base64: btoa(encoded)};
+      } else payload = {text: new TextDecoder("utf-8", { fatal: true }).decode(bytes)};
       const result = await send(`/repositories/${project}/documents`, {
         filename: file.name,
-        text,
+        ...payload,
       });
       setSelected(null);
       await loadGraph();
@@ -463,12 +469,13 @@ function App() {
                   Add document
                   <input
                     type="file"
-                    accept=".md,.rst"
+                    accept=".md,.rst,.pdf,.docx"
                     disabled={uploading || busy}
                     onChange={upload}
                   />
                 </label>
               </div>
+              <IngestionPanel key={project} project={project} refresh={uploadNotice} onComplete={loadGraph} />
               {uploadNotice && (
                 <div className="coverage" role="status">
                   {uploadNotice}
@@ -694,7 +701,9 @@ function App() {
                       {selected.verification ===
                       "recorded_snapshot_and_native_graph"
                         ? "Recorded historical snapshot"
-                        : "Original bytes match index"}
+                        : selected.verification === "original_file_digest_and_extraction_snapshot"
+                          ? "Original file and extracted text verified"
+                          : "Original bytes match index"}
                     </span>
                   </div>
                   <div className="source-text">

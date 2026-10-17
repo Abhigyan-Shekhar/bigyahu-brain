@@ -94,7 +94,7 @@ def source_evidence(store, source_uid):
         "WHERE NOT p:Document OR coalesce(p.current,true) "
         "RETURN DISTINCT p.uid AS parent,s.uri AS uri,s.excerpt AS text,s.digest AS digest, "
         "s.path AS path,s.line_start AS start,s.line_end AS end,s.source_kind AS kind, "
-        "s.upload_digest AS upload_digest,s.revision AS revision LIMIT 11",
+        "s.upload_digest AS upload_digest,s.snapshot_digest AS snapshot_digest,s.text_digest AS text_digest,s.revision AS revision LIMIT 11",
         {"repo": store.cfg.repo_id, "uid": source_uid},
     )
     if not rows or len(rows) > 10:
@@ -118,6 +118,27 @@ def source_evidence(store, source_uid):
             != text
         ):
             raise ValueError("Uploaded source bytes changed")
+    elif row["kind"] == "app_binary_upload":
+        upload, snapshot_id = row["upload_digest"], row["snapshot_digest"]
+        if not all(
+            isinstance(v, str) and re.fullmatch("[a-f0-9]{64}", v) for v in (upload, snapshot_id)
+        ):
+            raise ValueError("Invalid extracted document identity")
+        folder = store.cfg.repo_root.parent / "uploads"
+        raw, saved = (
+            (folder / upload).read_bytes(),
+            (folder / snapshot_id).read_text(encoding="utf-8"),
+        )
+        if hashlib.sha256(raw).hexdigest() != upload or digest(saved) != snapshot_id:
+            raise ValueError("Original document or extraction snapshot changed")
+        snapshot = json.loads(saved)
+        extracted = snapshot["text"]
+        if (
+            snapshot["raw_digest"] != upload
+            or digest(extracted) != row["text_digest"]
+            or "".join(extracted.splitlines(keepends=True)[row["start"] - 1 : row["end"]]) != text
+        ):
+            raise ValueError("Extracted document text differs from saved evidence")
     else:
         # Historical GitHub sources are immutable recorded snapshots, not proof of current web content.
         url = urlsplit(row["uri"] or "")
@@ -137,8 +158,10 @@ def source_evidence(store, source_uid):
         "uri": row["uri"],
         "revision": row["revision"],
         "graph": native_graph(store, ids),
-        "verification": "source_bytes_and_native_graph"
-        if row["kind"] in {"repository_document", "app_upload"}
+        "verification": "original_file_digest_and_extraction_snapshot"
+        if row["kind"] == "app_binary_upload"
+        else "source_bytes_and_native_graph"
+        if row["kind"] in {"repository_document", "app_upload", "app_binary_upload"}
         else "recorded_snapshot_and_native_graph",
         "binding": False,
     }

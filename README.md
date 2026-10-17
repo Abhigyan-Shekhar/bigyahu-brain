@@ -58,8 +58,12 @@ frontier traversal, a permission-aware local viewer and a freshly verified guide
 Codex run. The runner's `--memory-graph` option enables search and inspection;
 write/administration tools remain excluded.
 
-**Still planned:** Graphify's semantic model pass, the FalkorDB GraphRAG SDK/PDF
-pipeline, full-history graph portability, a hosted multi-user graph experience,
+**Document semantic ingestion is now integrated:** PDF/Word uploads, Graphify’s
+semantic API and FalkorDB GraphRAG SDK ingestion, with native source-backed
+relationships. See [the ingestion guide](docs/semantic-document-ingestion.md).
+
+**Still planned:** whole-repository semantic automation, SDK vector retrieval,
+full-history graph portability, a hosted multi-user graph experience,
 and broader agent evaluation. [Named company concepts](docs/company-concepts.md)
 now have source-grounded mention paths; arbitrary semantic identity resolution is
 still unbuilt; automatic correction proposals require an explicit correction and
@@ -74,7 +78,7 @@ associations with checked source spans; no identity or policy authority is infer
 
 ## Validation and measured results
 
-The current full isolated memory/graph/application suite passed **320 tests**, including real
+The current full isolated memory/graph/application suite passed **331 tests**, including real
 FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
 pass. The portability workflow includes live Docker graph/memory regression
 checks and installs the optional Graphify extractor there. CI for these new changes
@@ -156,7 +160,7 @@ selected `.abhi/2` export/import.
 ## Company Brain application
 
 The new local React/FastAPI application connects public GitHub onboarding, bounded
-indexing status, Markdown/RST upload, conversational Codex investigation, a native
+indexing status, Markdown/RST/PDF/Word upload, conversational Codex investigation, a native
 graph explorer and clickable source inspection. Chat uses real read-only tools;
 the server checks citation IDs, source bytes, quotations and graph paths.
 
