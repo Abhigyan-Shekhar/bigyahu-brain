@@ -73,8 +73,12 @@ part of this implementation.
 Python, FalkorDB/FalkorDBLite, the FalkorDB Python client, FastMCP, Python AST,
 Git, PyYAML and pathspec; pytest and Ruff for verification. OpenAI Codex is the
 coding agent harness. The local runtime verified here uses FalkorDBLite 0.10.0
-with Redis 8.6.2 and graph module 4.18.3. FalkorDB Browser visual verification
-remains pending; Docker compatibility has not been live-verified on this machine.
+with Redis 8.6.2 and graph module 4.18.3. A separate reconstructed Browser demo
+has recorded Lite traversal and human-approved supersession; a macOS-hosted
+Docker 4.14.7 rebuild and limited Browser smoke check are also documented in the
+[Browser runbook](browser-demo/README.md). These do not visually verify the frozen
+v5 graph. Cross-platform offline and Ubuntu Docker database CI passed on the
+Browser branch; final combined-commit validation is recorded separately.
 
 **AI assistance and external sources:**
 
@@ -138,8 +142,8 @@ use the checked-in older failed `docs/demo/demo.mp4` as the successful final dem
   actual submission confirmation or receipt; a prepared draft is not submission.
 
 Do not infer these form requirements from the published rules alone. Public
-visibility, Browser visualization, the final video, live-form inspection and
-submission confirmation are still outstanding.
+visibility, visualization of the original v5 paths, the final video, live-form
+inspection and submission confirmation are still outstanding.
 
 Published requirements checked on 16 October 2026:
 [official event rules](https://www.wemakedevs.org/hackathons/falkordb/rules).

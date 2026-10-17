@@ -1,6 +1,7 @@
 """Offline transport/security contracts; these do not establish Cloud compatibility."""
 
 import json
+import os
 from unittest.mock import Mock
 
 import pytest
@@ -21,6 +22,8 @@ def test_driver_receives_verified_tls_and_file_secret(tmp_path, monkeypatch):
     secret.write_text("synthetic-secret\n")
     secret.chmod(0o600)
     cfg = remote(tmp_path, port=16379, username="test-user", password_file=str(secret))
+    # Windows chmod cannot establish POSIX 0600; isolate the driver wiring contract.
+    monkeypatch.setattr("brain.config.os.fstat", lambda _: Mock(st_mode=0o100600))
     driver = Mock()
     driver.return_value.select_graph.return_value.query.return_value = Mock(
         header=[[1, "value"]], result_set=[[1]]
@@ -135,3 +138,11 @@ async def test_all_five_mcp_tools_fail_closed_without_remote_db(tmp_path, monkey
             result = await client.call_tool(name, args)
             assert result.data["status"] == "unavailable"
             assert "synthetic-secret" not in json.dumps(result.data)
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX modes are not Windows ACLs")
+def test_posix_private_password_file_is_accepted(tmp_path):
+    secret = tmp_path / "password"
+    secret.write_text("synthetic-secret\n")
+    secret.chmod(0o600)
+    assert remote(tmp_path, password_file=str(secret)).connection_options()["password"] == "synthetic-secret"

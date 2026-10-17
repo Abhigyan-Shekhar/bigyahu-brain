@@ -1,5 +1,11 @@
 # v5 release preflight — Friday 16 October 2026 (IST)
 
+Integration update, 17 October: the [combined merge verification](merge-verification.md)
+records fresh live tests and rebuilds after combining v5 and the Browser branch.
+The reconstructed Browser demo has separate visual and approval receipts; the
+original v5 paths and final narrated video remain separate gates. The preflight
+and checklist below retain their historical scope and do not certify publication.
+
 Reviewed commit `90c20855c6195b555a3684f95ab533048556c807` and its complete
 HEAD ancestry. This is a Friday preflight, not completion of the required
 Saturday publication review. No visibility change, approval, graph mutation or

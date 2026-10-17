@@ -8,15 +8,20 @@ from .identity import identity_uid
 from .references import issue_mentions
 
 
-def ingest_snapshots(store, directory):
+def read_snapshot(directory):
+    """Verify the canonical UTF-8/LF snapshot; tolerate Git CRLF checkout conversion only."""
     directory = Path(directory)
-    manifest = json.loads((directory / "manifest.json").read_text())
-    raw = (directory / "work.json").read_bytes()
-    if manifest["repo_id"] != store.cfg.repo_id or manifest["visibility"] != "public":
-        raise ValueError("Snapshot scope does not match configured public repository")
+    manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
+    raw = (directory / "work.json").read_bytes().replace(b"\r\n", b"\n")
     if hashlib.sha256(raw).hexdigest() != manifest["work_sha256"]:
         raise ValueError("Snapshot content differs from manifest")
-    records = json.loads(raw)
+    return manifest, json.loads(raw)
+
+
+def ingest_snapshots(store, directory):
+    manifest, records = read_snapshot(directory)
+    if manifest["repo_id"] != store.cfg.repo_id or manifest["visibility"] != "public":
+        raise ValueError("Snapshot scope does not match configured public repository")
     references = []
     source_urls = {}
     for record in records:

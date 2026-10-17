@@ -1,0 +1,61 @@
+{
+  "date": "2026-10-16",
+  "reconstructed_demo": true,
+  "repo_id": "demo:urllib3:browser:eligible",
+  "revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+  "engine": {
+    "lite": "0.10.0",
+    "redis": "8.6.2",
+    "graph_module": 41803
+  },
+  "checks": {
+    "query_files": 11,
+    "nodes": 2525,
+    "edges": 3543,
+    "document_path": true,
+    "direct_caller_line": 772,
+    "reexport_caller_line": 324,
+    "import_lines": [
+      61,
+      20
+    ],
+    "human_approved_supersession": true,
+    "exact_original_source_sets_retained": true,
+    "approved_state_saved": true
+  },
+  "decisions": [
+    {
+      "uid": "D-1",
+      "status": "superseded",
+      "approval": "human_approved",
+      "source_urls": [
+        "https://github.com/urllib3/urllib3/blob/a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8/src/urllib3/connectionpool.py#L910-L922",
+        "https://github.com/urllib3/urllib3/pull/5161"
+      ]
+    },
+    {
+      "uid": "D-2",
+      "status": "active",
+      "approval": "human_approved",
+      "source_urls": [
+        "https://github.com/urllib3/urllib3/blob/a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8/src/urllib3/connectionpool.py#L910-L922",
+        "https://github.com/urllib3/urllib3/blob/a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8/src/urllib3/util/request.py#L176-L230",
+        "https://github.com/urllib3/urllib3/pull/3780",
+        "https://github.com/urllib3/urllib3/pull/5161"
+      ]
+    }
+  ],
+  "recording": {
+    "video": "browser-demo-approved-sampled.mp4",
+    "sha256": "a8b9e0e9ebfae11db2c472e9152259974d2662394b1224ca7dca5a3ce8c9069d",
+    "source_frames": 85,
+    "duration_ms": 42598,
+    "capture": "Actual Browser screenshot recording at approximately 2 fps; variable timing preserved"
+  },
+  "limits": [
+    "Fresh local demo, not the original experiment database.",
+    "Document and supplemental AST-verified IMPORTS links are explicitly labeled demo additions.",
+    "Static caller analysis is incomplete.",
+    "Docker fallback was not needed because Browser attaches to Lite."
+  ]
+}

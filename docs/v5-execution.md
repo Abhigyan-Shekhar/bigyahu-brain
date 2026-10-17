@@ -16,11 +16,15 @@ All six fresh trials completed; both baseline and graph succeeded 3/3, with
 advantage was observed. See [results](v5-evaluation.md) and
 [operator lifecycle evidence](v5-lifecycle-evidence.json).
 
-Browser visual verification, the actual submission form, final video and the
-Saturday publication review remain release gates. The checkpoints below retain
-the earlier order of work; their proposed/pending states are historical.
+The separate [reconstructed Browser demo](browser-demo/README.md) now records
+visual traversal and human-approved supersession on its own graph. It uses a
+seeded editorial Document and different policy targets/text; it is not the frozen
+v5 experiment corpus. Visual verification of the original v5 paths, the actual
+submission form, final video and Saturday publication review remain release gates.
+The checkpoints below retain the earlier order of work; their proposed/pending
+states and permission failures are historical.
 
-Latest Browser check: the user installed FalkorDB Browser and added an explicit
+Earlier v5 Browser check: the user installed FalkorDB Browser and added an explicit
 `http://localhost:3000` browse allow entry. The local configuration confirms
 `access=allow`, but the computer-use gate still denies observing the existing
 Codex browser tab, reporting a saved-permission or managed-policy block. Native

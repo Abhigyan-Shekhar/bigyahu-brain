@@ -110,5 +110,10 @@ checkouts, capture model-selected pre-edit tool calls and actual tests/diffs, an
 measure whether the graph changes validation or implementation. The existing
 Requests candidate may already be handled by the baseline; reject it if it shows
 no added value. A real binding decision still needs independent human review.
-Browser/video validation remains pending; Lite does not start the Docker Browser
-web service. Cloud connectivity remains unverified and optional.
+Browser attachment was subsequently verified with the separate official Browser
+2.7.0 service; Lite itself does not start that web service. See
+[Browser verification](browser-verification.md) for the direct graph-opening
+procedure and original eligible-data blocker. A separate reconstructed public-source
+demo now verifies the document/caller paths and human-approved supersession, with
+sampled Browser footage; see the [completed runbook](browser-demo/README.md).
+Cloud connectivity remains unverified and optional.

@@ -13,10 +13,11 @@ The approved rule reached graph-2/3 before edits. See the
 [complete results and limitations](docs/v5-evaluation.md).
 
 FalkorDBLite 0.10.0 runs on this Mac with Redis 8.6.2 and graph module 4.18.3.
-Current v5 validation: **134 passed, 0 failed, 0 skipped**, with real graph
+Combined v5/Browser validation: **144 passed, 0 failed, 0 skipped**, with real graph
 and Lite lifecycle integration enabled. Ruff passes for `src`, `tests`, and
 `scripts`. Earlier merge checks and their overlapping STDIO/security selections
-are retained in [merge verification](docs/backend-verification.md).
+are retained in [backend verification](docs/backend-verification.md). Both graph
+rebuilds also pass; see [combined merge verification](docs/merge-verification.md).
 Codex has independently selected MCP tools, received historical graph evidence,
 and produced independently tested code changes. Some coding attempts failed;
 successful retrieval does not establish improved coding performance. The final
@@ -151,7 +152,13 @@ with unrestricted shell or database write access can bypass it. The environment
 flag is a workflow guard, not a secret credential. The MVP must not be described
 as tamper-proof. Private data is routed to a separate configured graph; it is not
 protected from database administrators. Browser recordings must show only org_demo.
-The direct Browser graph URL still needs verification on the running version.
+Browser 2.7.0 attaches to Lite and opens `/graph?graph=org_demo` directly;
+see the [verified procedure and initial missing-corpus finding](docs/browser-verification.md).
+That Browser inspection found Requests rather than the original eligible corpus. A separate
+[reconstructed public-source Browser demo](docs/browser-demo/README.md) now
+verifies the document and caller paths and includes sampled Browser footage;
+its human-approved D-2 → superseded D-1 path and retained sources are now
+verified in Browser. The runbook includes reproduction commands and final footage.
 
 ## Verification
 
@@ -206,8 +213,9 @@ data stay local and are not publication inputs.
 
 ## Remaining release gates
 
-- Verify the actual Browser visual and org graph selection; computer-use access
-  remains blocked even with the localhost allow entry saved.
+- Browser traversal and human-approved supersession are recorded for the
+  [separate reconstructed demo](docs/browser-demo/README.md). Visual verification
+  of the frozen v5 experiment graph remains pending; keep these corpora labeled.
 - Record a new video using the fresh graph-2 run, real approval/supersession
   evidence, complete comparison table and disclosed retrieval limits.
 - Inspect the actual submission form and its required links/declarations.
@@ -215,8 +223,9 @@ data stay local and are not publication inputs.
   and binary/video exports, make the repository public, and verify logged-out access.
 - Submit by early evening Sunday 18 October, ahead of the 11:59 PM IST deadline.
 
-Broader evaluation and runtime call resolution remain future work. Revalidate
-any engine version other than the measured Lite 4.18.3 setup before claiming it tested.
+Broader evaluation and runtime call resolution remain future work. The separate
+[Docker demo check](docs/browser-demo/docker-review.md) exercised FalkorDB 4.14.7;
+the frozen coding trials used Lite 4.18.3. Neither run certifies other versions.
 
 Static calls cover conservative same-module lexical calls, deterministic direct
 imports and explicit Python `from`-import re-export chains, including aliases and

@@ -1,8 +1,14 @@
 # v5 recording script — approximately 4:45
 
-**Recording readiness: blocked on Browser visual verification.** This is a
-recording plan, not a completed video or proof of a Browser attachment. The
-existing localhost Browser observation was denied by the runtime permission
+**Recording readiness: original v5 Browser paths still need visual verification.**
+The [separate Browser recording](browser-demo/README.md) now shows reconstructed
+editorial document/caller paths and its own approval history. Those paths and
+policy texts differ from the frozen v5 graph used below. If included, label that
+segment as a separate reconstructed demonstration and use its own narration;
+do not present it as footage of CHANGES.rst, ProxyManager or the trial decisions.
+
+This is a recording plan, not a completed video or proof of attachment to the
+frozen v5 graph. The earlier localhost Browser observation was denied by the runtime permission
 gate. Do not retry through an alternate app, browser, protocol or screenshot
 mechanism to bypass that denial. Driver/STDIO verification is recorded separately
 in [document evidence](v5-document-evidence.json).
