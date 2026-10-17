@@ -78,7 +78,7 @@ associations with checked source spans; no identity or policy authority is infer
 
 ## Validation and measured results
 
-The current full isolated memory/graph/application suite passed **340 tests**, including real
+The current full isolated memory/graph/application suite passed **345 tests**, including real
 FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
 pass. The portability workflow includes live Docker graph/memory regression
 checks and installs the optional Graphify extractor there. CI for these new changes
@@ -172,8 +172,10 @@ produce a downloadable diff without applying or publishing it.
 [Personal Brain](docs/personal-brain-app.md) now supports private notes, exact-consent
 selected-turn proposals, source review, acceptance/rejection/revocation and reviewed
 coding lesson recall through FalkorDB. A fresh real-agent chat returned two checked
-claims citing an accepted lesson. Team sharing/navigation and `.abhi` controls
-remain future UI work; the complete ten-step product workflow is not yet demonstrated.
+claims citing an accepted lesson. [Team Brain](docs/team-brain-app.md) now supports
+selected sharing, separate team review, catalog roles and member views of permitted shared contributions.
+Fresh Codex chat can cite accepted team evidence. `.abhi` UI controls and the
+complete integrated ten-step product demonstration remain outstanding.
 
 ## Graphify, semantic extraction and graph viewing
 

@@ -33,7 +33,8 @@ Passing reported tests do not prove that a proposed lesson is universally correc
 SQLite remains the authority for private records, permissions, exact-consent
 imports and review events. The existing memory projection publishes graph views
 to FalkorDB. App chat exposes read-only `memory_search` and `memory_graph`, fixed
-to the managed repository tenant and local operator. Search explicitly uses the
+to the managed repository tenant and local operator. Chat also reads currently
+authorized teams through [Team Brain](team-brain-app.md). Search explicitly uses the
 `falkor` backend and never falls back to SQLite vectors. Proposed/rejected records
 remain visible in the operator's review screen but are excluded from agent tools.
 
@@ -51,8 +52,8 @@ remain untrusted advisory evidence; they cannot grant permissions, approve an
 execution or replace explicit user instructions and current code checks.
 
 Each managed repository currently has a separate private catalog. This screen
-does not yet federate personal brains across repositories, manage team membership,
-share memories or expose `.abhi` exchange. Semantic correction/link proposals can
+does not federate personal brains across repositories or expose `.abhi` exchange.
+Team membership and selected sharing now live in the separate Team Brain screen. Semantic correction/link proposals can
 be inspected here, but their separate relationship review remains a backend
 workflow. There is no hosted multi-user identity or automatic transcript scraping.
 

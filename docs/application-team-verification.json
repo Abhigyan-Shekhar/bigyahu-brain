@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "fixture": "Disposable synthetic retry repository",
+  "model": "gpt-6.1-sol",
+  "independent_conversation_turns": 1,
+  "checked_claims": 1,
+  "team_memory_supports": 1,
+  "native_memory_search_calls": 1,
+  "vector_enabled": false,
+  "backend_implementation_hashes_match_agent_run": true,
+  "reader_items_before_acceptance": 0,
+  "reader_items_after_acceptance": 1,
+  "membership_lifecycle": [
+    "reader",
+    "revoke",
+    "reader"
+  ],
+  "revocation": {
+    "revoked_reader_search_empty": true,
+    "prior_citation_rejected": true
+  },
+  "selected_shared_snapshot_excludes_private_envelope": true,
+  "member_views_filter_only_shared_contributions": true,
+  "source_snapshot_sha256": "32617628fa5252333472831b5ecbfa9a5cbc0c605a4d86b44d43ca57f33d8c27",
+  "limits": [
+    "Trusted loopback operator and repository-scoped catalog principals; no hosted member login",
+    "Member navigation filters authorized shared contributions, never another private brain",
+    "Sharing is an independent proposal; team review and private review remain separate",
+    "At most ten retrieval scopes; stale, unavailable or invalid evidence fails closed",
+    "No automatic company semantic federation or general recall/coding-quality claim"
+  ]
+}

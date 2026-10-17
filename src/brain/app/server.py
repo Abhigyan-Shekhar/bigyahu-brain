@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from ..config import load_config
 from ..graph import GraphStore, GraphUnavailable
-from . import personal
+from . import personal, team
 from .actions import active_actions, approve, checked_action, execute, prepare_plan
 from .agent import run_turn
 from .enrichment import active_ingestions, run_enrichment
@@ -60,6 +60,23 @@ class MemoryReviewInput(PersonalInput):
     expected_state: str
     action: str
     reason: str = Field(min_length=1, max_length=1000)
+
+
+class TeamInput(PersonalInput):
+    name: str = Field(pattern="^[A-Za-z0-9_-]{1,64}$")
+
+
+class MembershipInput(PersonalInput):
+    principal: str = Field(pattern="^[A-Za-z0-9_-]{1,64}$")
+    role: str
+    expected_role: str
+    reason: str = Field(min_length=1, max_length=1000)
+
+
+class ShareInput(PersonalInput):
+    uid: str = Field(min_length=1, max_length=200)
+    expected_hash: str = Field(pattern="^[a-f0-9]{64}$")
+    expected_target: str = Field(default="", pattern="^(?:[a-f0-9]{64})?$")
 
 
 class ConversationSelection(PersonalInput):
@@ -117,6 +134,10 @@ def create_app(state, token, origin, assets=None):
     async def missing(request, exc):
         return JSONResponse({"detail": "Unknown resource"}, status_code=404)
 
+    @app.exception_handler(PermissionError)
+    async def forbidden(request, exc):
+        return JSONResponse({"detail": "Memory scope or action unavailable"}, status_code=403)
+
     @app.exception_handler(ValueError)
     async def invalid(request, exc):
         return JSONResponse({"detail": str(exc)}, status_code=400)
@@ -140,11 +161,12 @@ def create_app(state, token, origin, assets=None):
                 "falkordb_graphrag_sdk_ingestion",
                 "company_chat",
                 "personal_memory_review",
+                "authorized_team_sharing_navigation",
                 "reviewed_lesson_recall",
                 "source_inspection",
                 "approved_isolated_patch_tests",
             ],
-            "deferred": ["team_controls"],
+            "deferred": ["abhi_ui"],
         }
 
     @app.get("/api/repositories")
@@ -312,6 +334,139 @@ def create_app(state, token, origin, assets=None):
             raise HTTPException(404, "Unknown action in this repository")
         with lock:
             return personal.propose_lesson(state, action_id)
+
+    @app.get("/api/repositories/{project}/teams")
+    def team_list(project: str):
+        project_ready(project)
+        cfg = state.config(project)
+        if not Path(personal.config(cfg).memory_db).exists():
+            return {"items": [], "principal": cfg.principal, "truncated": False}
+        with lock, personal.catalog(cfg) as (memory, _):
+            names = team.authorized(memory)
+            return {
+                "items": [team.team_info(memory, b[5:]) for b in names[:100]],
+                "principal": memory.identity.principal,
+                "truncated": len(names) > 100,
+            }
+
+    @app.post("/api/repositories/{project}/teams", status_code=201)
+    def team_create(project: str, body: TeamInput):
+        project_ready(project)
+        with lock:
+            return team.create(state.config(project), body.name)
+
+    @app.post("/api/repositories/{project}/teams/{name}/members")
+    def team_membership(project: str, name: str, body: MembershipInput):
+        project_ready(project)
+        with lock:
+            return team.membership(
+                state.config(project),
+                name,
+                body.principal,
+                body.role,
+                body.expected_role,
+                body.reason,
+            )
+
+    @app.get("/api/repositories/{project}/teams/{name}/memories")
+    def team_memories(project: str, name: str, member: str = ""):
+        project_ready(project)
+        with lock, personal.catalog(state.config(project)) as (memory, _):
+            info = team.team_info(memory, name)
+            if member and member not in {m["principal"] for m in info["members"]}:
+                raise KeyError("Unknown member")
+            reviewer = info["role"] == "reviewer"
+            records = memory.db.execute(
+                "SELECT uid,text,state,hash,author,sources,expires FROM records WHERE tenant=? AND brain=? "
+                "AND state!='deleted' AND (expires='' OR expires>?) "
+                "AND (state='accepted' OR author=? OR ?) AND (?='' OR author=?) ORDER BY rowid DESC LIMIT 101",
+                (
+                    memory.identity.tenant,
+                    team.scope(name),
+                    personal.now(),
+                    memory.identity.principal,
+                    reviewer,
+                    member,
+                    member,
+                ),
+            ).fetchall()
+            return {
+                "items": [{**dict(r), "sources": json.loads(r["sources"])} for r in records[:100]],
+                "truncated": len(records) > 100,
+                "team": info,
+                "binding": False,
+            }
+
+    @app.get("/api/repositories/{project}/teams/{name}/graph")
+    def team_graph(project: str, name: str, member: str = ""):
+        project_ready(project)
+        cfg = state.config(project)
+        with lock, personal.catalog(cfg) as (memory, projection):
+            info = team.team_info(memory, name)
+            if member and member not in {m["principal"] for m in info["members"]}:
+                raise KeyError("Unknown member")
+            return team.graph(
+                cfg, memory, projection, [team.scope(name)], include_proposals=True, member=member
+            )
+
+    @app.post("/api/repositories/{project}/teams/{name}/refresh")
+    def team_refresh(project: str, name: str):
+        project_ready(project)
+        with lock, personal.catalog(state.config(project)) as (memory, projection):
+            memory.authorize(team.scope(name), review=True)
+            return team.refresh(memory, projection, name)
+
+    @app.post("/api/repositories/{project}/teams/{name}/share", status_code=201)
+    def team_share(project: str, name: str, body: ShareInput):
+        project_ready(project)
+        with lock:
+            return team.share(
+                state.config(project), name, body.uid, body.expected_hash, body.expected_target
+            )
+
+    @app.get("/api/repositories/{project}/teams/{name}/memories/{uid}")
+    def team_detail(project: str, name: str, uid: str):
+        project_ready(project)
+        cfg = state.config(project)
+        with lock, personal.catalog(cfg) as (memory, _):
+            r = team.record(memory, name, uid)
+            try:
+                source, error = team.source_details(cfg, memory, r), None
+            except (OSError, ValueError):
+                source, error = (
+                    None,
+                    "Selected shared source unavailable or changed; acceptance is blocked.",
+                )
+            events = memory.db.execute(
+                "SELECT actor,action,at,detail FROM events WHERE tenant=? AND brain=? AND uid=? "
+                "AND action IN ('accept','reject','rollback') ORDER BY rowid DESC LIMIT 30",
+                (memory.identity.tenant, team.scope(name), uid),
+            ).fetchall()
+            return {
+                "uid": uid,
+                "text": r["text"],
+                "hash": r["hash"],
+                "state": r["state"],
+                "author": r["author"],
+                "source": source,
+                "source_error": error,
+                "reviews": [dict(e) for e in events],
+                "binding": False,
+            }
+
+    @app.post("/api/repositories/{project}/teams/{name}/memories/{uid}/review")
+    def team_review(project: str, name: str, uid: str, body: MemoryReviewInput):
+        project_ready(project)
+        with lock:
+            return team.review(
+                state.config(project),
+                name,
+                uid,
+                body.expected_hash,
+                body.expected_state,
+                body.action,
+                body.reason,
+            )
 
     @app.get("/api/repositories/{project}/graph")
     def graph(project: str, query: str = ""):

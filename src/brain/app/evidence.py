@@ -168,6 +168,10 @@ def source_evidence(store, source_uid):
 
 
 def resolve(store, evidence):
+    if evidence["kind"] == "team_memory":
+        from .team import memory_evidence
+
+        return memory_evidence(store.cfg, **evidence["ref"])
     if evidence["kind"] == "memory":
         from .personal import memory_evidence
 

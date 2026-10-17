@@ -24,6 +24,7 @@ import { api, send } from "./api";
 import ActionPanel from "./ActionPanel";
 import IngestionPanel from "./IngestionPanel";
 import PersonalBrain from "./PersonalBrain";
+import TeamBrain from "./TeamBrain";
 
 const fragment = location.hash.slice(1);
 if (fragment) {
@@ -293,6 +294,7 @@ function App() {
         <button className={"nav " + (mode === "memory" ? "active" : "")} onClick={() => setMode("memory")}>
           <BrainCircuit size={17} /> Personal Brain
         </button>
+        <button className={"nav " + (mode === "team" ? "active" : "")} onClick={() => setMode("team")}><Network size={17} /> Team Brain</button>
         <div className="section-label">
           CONNECTED SOURCES
           <button
@@ -448,6 +450,8 @@ function App() {
               </button>
             )}
           </div>
+        ) : mode === "team" ? (
+          <TeamBrain key={project} project={project} renderGraph={(g) => <Graph graph={g} />} />
         ) : mode === "memory" ? (
           <PersonalBrain key={project} project={project} turns={turns} session={session} renderGraph={(g) => <Graph graph={g} />} />
         ) : (
@@ -710,6 +714,8 @@ function App() {
                       {selected.verification ===
                       "recorded_snapshot_and_native_graph"
                         ? "Recorded historical snapshot"
+                        : selected.verification === "accepted_team_memory_and_native_graph"
+                          ? "Accepted team memory · source and access checked"
                         : selected.verification === "accepted_private_memory_and_native_graph"
                           ? "Accepted private memory · source and graph checked"
                         : selected.verification === "original_file_digest_and_extraction_snapshot"

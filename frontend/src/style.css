@@ -1261,3 +1261,12 @@ h2 {
 .private-graph .graph { height: 350px; }
 @media(max-width:850px) { .memory-layout { grid-template-columns: 1fr; } .personal-brain { padding: 20px; height: auto; } }
 .new-chat-inline { margin-top: 10px; font-size: 12px; padding: 6px 10px; border: 1px solid #d8cfe0; border-radius: 5px; background: transparent; color: #70518a; }
+.team-brain input,.team-brain select { padding: 8px; margin: 8px 8px 12px 0; max-width: 100%; border: 1px solid #d8cfe0; border-radius: 5px; background: white; }
+.team-brain .memory-create input { display: block; width: min(100%,360px); }
+.team-members { margin: 20px 0; }
+.team-members button { padding: 10px 14px; margin: 6px 8px 6px 0; border: 1px solid #ded6e5; border-radius: 6px; }
+.team-members button[aria-pressed="true"] { background: #eee5f5; border-color: #79598f; }
+.team-members small { display: block; color: #777; margin-top: 4px; }
+.share-preview { padding: 16px; background: #f1edf4; margin-top: 16px; overflow-wrap: anywhere; }
+.share-preview pre { overflow-wrap: anywhere; white-space: pre-wrap; font-size: 12px; }
+.team-brain .private-graph > button { margin: 12px 0; }

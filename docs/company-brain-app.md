@@ -77,7 +77,9 @@ served by FastAPI is the supported authenticated workflow.
    required lookup sequences, preselected files or canned answers in this path.
 5. Application MCP adapters reuse `get_context`, `check_change`, `find_owner` and
    `trace_decision`, plus bounded `search_code`, `read_code` and `search_history`.
-   These three adapters expose indexed file/symbol lookup, original source bytes,
+   Accepted private/authorized team evidence is available through `memory_search`
+   and `memory_graph`, with server-fixed identity. The repository adapters expose
+   indexed file/symbol lookup, original source bytes,
    and recorded commit/issue/PR messages without shell access. Global MCP tool
    signatures and the existing coding demo runner are unchanged.
 6. Read tools mint citation IDs into a per-turn evidence ledger. Code evidence
@@ -126,7 +128,9 @@ application does not collect model credentials.
   selected-turn proposals and source review with acceptance/rejection/revocation.
   Passing coding actions can propose lessons for review; accepted lessons are
   retrieved and cited through native FalkorDB tools in fresh conversations. Team
-  sharing/navigation and `.abhi` controls remain future UI work. The full ten-step
+  [sharing/navigation](team-brain-app.md) now supports selected proposals, separate
+  review, catalog membership and permitted member views. `.abhi` controls remain
+  future UI work. The full ten-step
   product acceptance test is consequently **not complete**.
 
 Local jobs, sessions, managed repositories, snapshots, uploads, model traces and
@@ -149,7 +153,7 @@ uv run --frozen --extra app --extra lite --extra graphify --extra ingestion pyth
 The application tests exercise URL rejection, authentication/Origin/Host checks,
 read-only runner configuration, restart recovery, readiness gates, native code and
 uploaded-document evidence, invented quotes/IDs, citation access and stale source
-rejection. Live suite: **340 passed**. Browser acceptance uses a real public
+rejection. Live suite: **345 passed**. Browser acceptance uses a real public
 repository and actual Codex tool calls; see the [milestone report](application-milestone-verification.json).
 
 The [coding action report](application-action-verification.json) records a separate
@@ -164,3 +168,7 @@ PDF/Word original-file and extraction-snapshot citations.
 The [Personal Brain report](application-personal-verification.json) verifies the
 reviewed lesson → independent native graph recall → checked citation workflow,
 plus rejection and revocation on a disposable synthetic fixture.
+
+The [Team Brain report](application-team-verification.json) verifies selected
+sharing, reader proposal exclusion, membership revocation, permitted member slices
+and fresh real-agent recall with a checked team citation.
