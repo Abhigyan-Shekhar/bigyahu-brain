@@ -39,6 +39,7 @@ EDGES = {
     "CONSTRAINS",
     "APPLIES_TO",
     "SUPERSEDES",
+    "MENTIONS",
 }
 
 

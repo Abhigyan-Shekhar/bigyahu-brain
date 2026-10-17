@@ -1,0 +1,1 @@
+MATCH p=(d2:Decision {repo_id:'demo:urllib3:browser:eligible',uid:'D-2',status:'active'})-[:SUPERSEDES]->(d1:Decision {uid:'D-1',status:'superseded'}) MATCH evidence1=(d1)-[:SUPPORTED_BY]->(:Source) MATCH evidence2=(d2)-[:SUPPORTED_BY]->(:Source) RETURN p,evidence1,evidence2

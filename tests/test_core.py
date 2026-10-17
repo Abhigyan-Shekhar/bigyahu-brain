@@ -18,12 +18,9 @@ def cfg(tmp_path):
 
 
 def test_path_escape_and_scopes(cfg, tmp_path):
-    for bad in ("../secret", "/tmp/x", ""):
+    for bad in ("../secret", "/tmp/x", "", "C:\\secret", "C:secret", "..\\secret"):
         with pytest.raises(ValueError):
             cfg.path(bad)
-    (tmp_path / "outside").symlink_to("/tmp")
-    with pytest.raises(ValueError):
-        cfg.path("outside/secret")
     with pytest.raises(ValueError):
         cfg.graph_name("private_other")
     assert cfg.graph_name("private") == "private_demo_operator"
@@ -158,3 +155,12 @@ def test_caller_constraint_and_stale_downgrade(cfg, monkeypatch, stale):
     assert result["untrusted_source_excerpts"][0]["text"] == "SOURCE"
     # The constraint query is batched across target and both incoming callers.
     assert store.query.call_args_list[2].args[1]["ids"] == ["A", "B", "C"]
+
+
+def test_symlink_escape(cfg, tmp_path):
+    try:
+        (tmp_path / "outside").symlink_to(tmp_path.parent, target_is_directory=True)
+    except OSError:
+        pytest.skip("Creating symlinks requires Windows Developer Mode or elevated privileges")
+    with pytest.raises(ValueError):
+        cfg.path("outside/secret")

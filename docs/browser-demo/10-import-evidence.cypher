@@ -1,0 +1,1 @@
+MATCH (f:File {repo_id:'demo:urllib3:browser:eligible'})-[r:IMPORTS]->(target:File) RETURN f.path AS importing_file,r.line AS import_line,target.path AS target_file,r.source_url AS pinned_source_url,r.method AS method ORDER BY importing_file

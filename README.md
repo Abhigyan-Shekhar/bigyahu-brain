@@ -6,18 +6,33 @@ code-editing agent. Source prose is untrusted evidence; remembering something
 creates a proposal, never an approved rule.
 
 **Status: graph-aware Codex coding demonstration validated; no baseline coding improvement demonstrated.**
+The fresh approved-v5 comparison completed **3 baseline + 3 graph sessions**:
+every run passed **12/12 independent oracle cases** and its selected upstream
+suite. Both conditions succeeded 3/3; no correctness advantage was observed.
+The approved rule reached graph-2/3 before edits. See the
+[complete results and limitations](docs/v5-evaluation.md).
+
 FalkorDBLite 0.10.0 runs on this Mac with Redis 8.6.2 and graph module 4.18.3.
-Final backend verification: **120 passed, 0 failed, 0 skipped**, with real graph
-and Lite lifecycle integration enabled. A separate MCP STDIO selection passed
-**4/4**, and an explicit privacy/poisoning/approval/caller/reference selection
-passed **6/6**; those selections overlap the full suite. Ruff passes for
-`src`, `tests`, and `scripts`. See [merge verification](docs/backend-verification.md).
+Combined v5/Browser validation: **144 passed, 0 failed, 0 skipped**, with real graph
+and Lite lifecycle integration enabled. Ruff passes for `src`, `tests`, and
+`scripts`. Earlier merge checks and their overlapping STDIO/security selections
+are retained in [backend verification](docs/backend-verification.md). Both graph
+rebuilds also pass; see [combined merge verification](docs/merge-verification.md).
 Codex has independently selected MCP tools, received historical graph evidence,
 and produced independently tested code changes. Some coding attempts failed;
 successful retrieval does not establish improved coding performance. The final
 [agent demonstration](docs/agent-demo-results.md) passed 12/12 independent socket
-cases and 200 selected upstream tests; the integrated live suite passed 125 tests.
+cases and 200 selected upstream tests on the earlier graph.
 Use the [runner and reproduction commands](docs/agent-workflow.md).
+
+The v5 additions support deterministic RST/Markdown documentation and exact
+document → PR → file → symbol traversal, plus conservative public symbol
+re-exports. [Rebuild the eligible urllib3 graph](docs/v5-reproduction.md) from
+included filtered snapshots; no pre-existing demo database is required. Human
+approval remains a separate interactive step. The earlier 12/12 run predates
+these additions and is not evidence of their effect. See the
+[fixed paired protocol](docs/v5-evaluation-protocol.md) and
+[execution status](docs/v5-execution.md).
 
 ## Docker-free local setup (verified)
 
@@ -137,7 +152,13 @@ with unrestricted shell or database write access can bypass it. The environment
 flag is a workflow guard, not a secret credential. The MVP must not be described
 as tamper-proof. Private data is routed to a separate configured graph; it is not
 protected from database administrators. Browser recordings must show only org_demo.
-The direct Browser graph URL still needs verification on the running version.
+Browser 2.7.0 attaches to Lite and opens `/graph?graph=org_demo` directly;
+see the [verified procedure and initial missing-corpus finding](docs/browser-verification.md).
+That Browser inspection found Requests rather than the original eligible corpus. A separate
+[reconstructed public-source Browser demo](docs/browser-demo/README.md) now
+verifies the document and caller paths and includes sampled Browser footage;
+its human-approved D-2 → superseded D-1 path and retained sources are now
+verified in Browser. The runbook includes reproduction commands and final footage.
 
 ## Verification
 
@@ -192,14 +213,19 @@ data stay local and are not publication inputs.
 
 ## Remaining release gates
 
-- Revalidate on any different engine version; current live checks pass on Lite 4.18.3.
-- Broaden controlled coding evaluation beyond the recorded matched pair; no
-  general correctness or reasoning advantage is established.
-- Human-review and approve a real applicable constraint; agents must not do this.
-- Finish old-side diff mapping (currently file fallback), document ingestion,
-  and broader runtime call resolution. Reviewer evidence remains advisory.
-- Expand adversarial/integration coverage, record measured metrics, validate Browser
-  routing, record the video, and perform a clean-room setup.
+- Browser traversal and human-approved supersession are recorded for the
+  [separate reconstructed demo](docs/browser-demo/README.md). Visual verification
+  of the frozen v5 experiment graph remains pending; keep these corpora labeled.
+- Record a new video using the fresh graph-2 run, real approval/supersession
+  evidence, complete comparison table and disclosed retrieval limits.
+- Inspect the actual submission form and its required links/declarations.
+- On Saturday 17 October, scan the final release history, manually review source
+  and binary/video exports, make the repository public, and verify logged-out access.
+- Submit by early evening Sunday 18 October, ahead of the 11:59 PM IST deadline.
+
+Broader evaluation and runtime call resolution remain future work. The separate
+[Docker demo check](docs/browser-demo/docker-review.md) exercised FalkorDB 4.14.7;
+the frozen coding trials used Lite 4.18.3. Neither run certifies other versions.
 
 Static calls cover conservative same-module lexical calls, deterministic direct
 imports and explicit Python `from`-import re-export chains, including aliases and

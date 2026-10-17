@@ -1,5 +1,6 @@
 # Copy to an ignored *.local.yaml file; replace repo_root for each fresh checkout.
-# Requires the EXISTING eligible namespace. This file does not ingest graph data.
+# Rebuild with scripts/rebuild_demo_graph.py; see docs/v5-reproduction.md.
+# This configuration alone does not ingest graph data.
 repo_root: /ABSOLUTE/PATH/TO/FRESH/URLLIB3/CHECKOUT
 repo_id: experiment:urllib3:5181:eligible
 repo_url: https://github.com/urllib3/urllib3

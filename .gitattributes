@@ -1,2 +1,8 @@
 # Unified-diff context uses a single space for otherwise empty lines.
 docs/agent-demo.patch whitespace=-blank-at-eol
+docs/v5-trials/*.patch whitespace=-blank-at-eol
+
+# Snapshot SHA-256 uses UTF-8 with LF; loader also handles existing CRLF checkouts.
+tests/fixtures/**/work.json text eol=lf
+data/sources/urllib3/work.json text eol=lf
+*.sh text eol=lf

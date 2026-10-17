@@ -1,14 +1,12 @@
 """One owner for a persisted Lite engine; all other processes use the normal driver."""
 
 import argparse
-import fcntl
 import json
 import signal
 import socket
+import sys
 import threading
 from pathlib import Path
-
-from redislite.falkordb_client import FalkorDB
 
 
 def main():
@@ -16,6 +14,15 @@ def main():
     parser.add_argument("--db", type=Path, required=True)
     parser.add_argument("--port", type=int, default=6379)
     args = parser.parse_args()
+    if sys.platform == "win32":
+        parser.error("Native Windows Lite is unavailable. Use Docker Desktop Linux containers "
+                     "as documented in docs/browser-demo/README.md, or run Lite inside WSL.")
+    import fcntl
+    try:
+        from redislite.falkordb_client import FalkorDB
+    except ImportError:
+        parser.error("Install Lite with: uv sync --extra lite --python 3.12; "
+                     "or use the documented Docker setup")
     path = args.db.resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.with_suffix(path.suffix + ".lock").open("a") as lock:

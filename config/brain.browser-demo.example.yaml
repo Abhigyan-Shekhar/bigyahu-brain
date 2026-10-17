@@ -1,0 +1,7 @@
+# Fresh reconstructed demo, isolated from the original experiment and Requests DB.
+repo_root: /ABSOLUTE/PATH/TO/PINNED/URLLIB3/CHECKOUT
+repo_id: demo:urllib3:browser:eligible
+repo_url: https://github.com/urllib3/urllib3
+principal: browser_demo
+host: 127.0.0.1
+port: 6379

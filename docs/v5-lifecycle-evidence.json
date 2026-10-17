@@ -1,0 +1,81 @@
+{
+  "label": "Operator lifecycle on real sources; not authorization from urllib3 maintainers",
+  "corpus_sha256": "b16fc995c9d4429a54c20601ae471bbc7a789d61a1256184068aa30c5ef688f6",
+  "graph_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+  "source_url": "https://github.com/urllib3/urllib3/pull/5161",
+  "subject": "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py::PoolManager.urlopen",
+  "before_approval": {
+    "D-1": {
+      "uid": "D-5354eeec80024d77a83a2526ec952063",
+      "status": "proposed",
+      "approval": "none"
+    },
+    "must_preserve": []
+  },
+  "after_D1_approval": {
+    "must_preserve": [
+      {
+        "uid": "D-5354eeec80024d77a83a2526ec952063",
+        "status": "active",
+        "approval": "human_approved",
+        "kind": "constraint",
+        "approved_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+        "subjects": [
+          "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py::PoolManager.urlopen"
+        ],
+        "source_count": 1,
+        "source_uids": [
+          "experiment:urllib3:5181:eligible:pr:5161:source"
+        ]
+      }
+    ]
+  },
+  "after_supersession": {
+    "D-1": {
+      "uid": "D-5354eeec80024d77a83a2526ec952063",
+      "text": "On HTTP 303 redirects, PoolManager.urlopen must discard the request body and its framing and rewind state. This demo operator rule is grounded in upstream PR #5161.",
+      "status": "superseded",
+      "approval": "human_approved",
+      "requested_supersedes": "",
+      "approved_at": "2026-10-16T06:47:06.458988+00:00",
+      "approved_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8"
+    },
+    "D-2": {
+      "uid": "D-b00dc7379a3a4ca0a08dbce704942574",
+      "text": "In PoolManager.urlopen's HTTP 303 branch, preserve the switch to GET, body=None, chunked=False, body_pos=None, and removal of body framing headers. This rule applies only to body-discarding HTTP 303 redirects; it does not prescribe 307/308 upload replay. Demo operator clarification grounded in upstream PR #5161.",
+      "status": "active",
+      "approval": "human_approved",
+      "requested_supersedes": "D-5354eeec80024d77a83a2526ec952063",
+      "approved_at": "2026-10-16T06:49:06.504758+00:00",
+      "approved_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8"
+    },
+    "supersedes_edge": {
+      "a": "D-b00dc7379a3a4ca0a08dbce704942574",
+      "relation": "SUPERSEDES",
+      "b": "D-5354eeec80024d77a83a2526ec952063",
+      "properties": {}
+    },
+    "must_preserve": [
+      {
+        "uid": "D-b00dc7379a3a4ca0a08dbce704942574",
+        "status": "active",
+        "approval": "human_approved",
+        "kind": "constraint",
+        "approved_revision": "a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8",
+        "subjects": [
+          "experiment:urllib3:5181:eligible@a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8:src/urllib3/poolmanager.py::PoolManager.urlopen"
+        ],
+        "source_count": 1,
+        "source_uids": [
+          "experiment:urllib3:5181:eligible:pr:5161:source"
+        ]
+      }
+    ]
+  },
+  "disclosures": [
+    "Both approvals were performed by the human operator in a separate interactive terminal.",
+    "Operator login omitted from this public export; original local audit records retained.",
+    "The longer PR source is truncated in normal MCP responses; source URL remains available.",
+    "Local shell/database administrators can bypass the application workflow guard."
+  ]
+}
