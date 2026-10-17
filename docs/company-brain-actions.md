@@ -22,7 +22,9 @@ merge or memory-acceptance endpoint.
    regression, but baseline failure is not required for every legitimate change.
 6. Inspect baseline/patched output and the final diff; download the patch. The
    implementation handoff is generated before backend test validation. The test
-   report carries the execution result. Draft lessons remain unaccepted proposals.
+   report carries the execution result. Draft lessons remain proposals until separately accepted in
+   [Personal Brain](personal-brain-app.md). The report can send a passing lesson
+   directly to that review screen.
 
 Concurrent approval retries consume one lifecycle transition. A failed execution
 cannot reuse approval; prepare a new plan. Restarted running/queued jobs fail
@@ -106,7 +108,9 @@ The oracle itself is not passed to the planning/editor prompts.
 six regression tests, which failed on original code and passed on patched code;
 the reproduced downloadable patch passed all 15 oracle cases. The original
 checkout stayed clean. This demonstrates the approval-to-report plumbing on this
-fixture, not general coding quality or the full personal/team lesson-review loop.
+fixture, not general coding quality. The separate
+[Personal Brain verification](application-personal-verification.json) now checks
+private lesson review and fresh-chat recall; team sharing remains future UI work.
 
 Validation also includes approval tampering/replay/concurrency, authentication,
 path and command injection rejection, ignored-file scope violations, actual macOS

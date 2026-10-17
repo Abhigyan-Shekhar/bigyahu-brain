@@ -10,10 +10,11 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from ..config import load_config
 from ..graph import GraphStore, GraphUnavailable
+from . import personal
 from .actions import active_actions, approve, checked_action, execute, prepare_plan
 from .agent import run_turn
 from .enrichment import active_ingestions, run_enrichment
@@ -44,6 +45,31 @@ class DocumentInput(BaseModel):
 class EnrichmentInput(BaseModel):
     engine: str
     sources: list[str] = Field(min_length=1, max_length=8)
+
+
+class PersonalInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class NoteInput(PersonalInput):
+    text: str = Field(min_length=1, max_length=4000)
+
+
+class MemoryReviewInput(PersonalInput):
+    expected_hash: str = Field(pattern="^[a-f0-9]{64}$")
+    expected_state: str
+    action: str
+    reason: str = Field(min_length=1, max_length=1000)
+
+
+class ConversationSelection(PersonalInput):
+    session: str
+    turns: list[str] = Field(min_length=1, max_length=20)
+
+
+class ConversationImport(ConversationSelection):
+    consent_digest: str = Field(pattern="^[a-f0-9]{64}$")
+    semantic: bool = False
 
 
 def create_app(state, token, origin, assets=None):
@@ -113,10 +139,12 @@ def create_app(state, token, origin, assets=None):
                 "graphify_semantic_ingestion",
                 "falkordb_graphrag_sdk_ingestion",
                 "company_chat",
+                "personal_memory_review",
+                "reviewed_lesson_recall",
                 "source_inspection",
                 "approved_isolated_patch_tests",
             ],
-            "deferred": ["personal_team_controls"],
+            "deferred": ["team_controls"],
         }
 
     @app.get("/api/repositories")
@@ -145,6 +173,145 @@ def create_app(state, token, origin, assets=None):
     @app.get("/api/repositories/{project}")
     def repository(project: str):
         return state.get(project, "repository")
+
+    @app.get("/api/repositories/{project}/memory")
+    def personal_list(project: str):
+        project_ready(project)
+        cfg = state.config(project)
+        if not Path(personal.config(cfg).memory_db).exists():
+            return {"items": [], "truncated": False, "binding": False, "initialized": False}
+        with lock, personal.catalog(cfg) as (memory, _projection):
+            items, truncated = personal.rows(memory)
+            links = memory.db.execute(
+                "SELECT uid,source_uid,target_uid,relation,state FROM memory_links WHERE tenant=? AND brain=? ORDER BY rowid DESC LIMIT 100",
+                (memory.identity.tenant, personal.brain(memory)),
+            ).fetchall()
+            return {
+                "items": items,
+                "truncated": truncated,
+                "binding": False,
+                "initialized": True,
+                "relationships": [dict(r) for r in links],
+            }
+
+    @app.post("/api/repositories/{project}/memory", status_code=201)
+    def personal_propose(project: str, body: NoteInput):
+        project_ready(project)
+        with lock:
+            return personal.propose_note(state.config(project), body.text)
+
+    @app.get("/api/repositories/{project}/memory/graph")
+    def personal_graph(project: str):
+        project_ready(project)
+        cfg = state.config(project)
+        if not Path(personal.config(cfg).memory_db).exists():
+            return {
+                "status": "unavailable",
+                "graph": {"nodes": [], "edges": []},
+                "warnings": ["Add a memory to initialize this Personal Brain"],
+            }
+        with lock, personal.catalog(cfg) as (memory, projection):
+            view = projection.read([personal.brain(memory)], include_proposals=True)
+            return {
+                "status": view["status"],
+                "graph": personal.graph_view(view),
+                "warnings": view["warnings"],
+            }
+
+    @app.post("/api/repositories/{project}/memory/refresh")
+    def personal_refresh(project: str):
+        project_ready(project)
+        with lock, personal.catalog(state.config(project)) as (memory, projection):
+            return personal.refresh(memory, projection)
+
+    @app.get("/api/repositories/{project}/memory/records/{uid}")
+    def personal_detail(project: str, uid: str):
+        project_ready(project)
+        cfg = state.config(project)
+        with lock, personal.catalog(cfg) as (memory, _projection):
+            record = personal.row(memory, uid)
+            try:
+                sources = personal.source_details(cfg, memory, record)
+                error = None
+            except (ValueError, OSError):
+                sources, error = (
+                    [],
+                    "Original memory source is unavailable or changed; acceptance is blocked.",
+                )
+            reviews = memory.db.execute(
+                "SELECT actor,action,at,detail FROM events WHERE tenant=? AND brain=? AND uid=? AND action IN ('accept','reject','rollback') ORDER BY rowid DESC LIMIT 30",
+                (memory.identity.tenant, personal.brain(memory), uid),
+            ).fetchall()
+            return {
+                "uid": uid,
+                "text": record["text"],
+                "state": record["state"],
+                "hash": record["hash"],
+                "sources": sources,
+                "source_error": error,
+                "reviews": [dict(r) for r in reviews],
+                "binding": False,
+            }
+
+    @app.post("/api/repositories/{project}/memory/records/{uid}/review")
+    def personal_review(project: str, uid: str, body: MemoryReviewInput):
+        project_ready(project)
+        with lock:
+            return personal.review(
+                state.config(project),
+                uid,
+                body.expected_hash,
+                body.expected_state,
+                body.action,
+                body.reason,
+            )
+
+    @app.get("/api/repositories/{project}/memory/imports")
+    def memory_imports(project: str):
+        project_ready(project)
+        return [
+            {k: v for k, v in job.items() if k != "turns"}
+            for job in state.list("memory_import", project)
+        ]
+
+    @app.post("/api/repositories/{project}/memory/preview")
+    def memory_preview(project: str, body: ConversationSelection):
+        project_ready(project)
+        return personal.conversation_preview(state, project, body.session, body.turns)
+
+    @app.post("/api/repositories/{project}/memory/imports", status_code=202)
+    def memory_import(project: str, body: ConversationImport):
+        project_ready(project)
+        preview = personal.conversation_preview(state, project, body.session, body.turns)
+        if preview["consent_digest"] != body.consent_digest:
+            raise ValueError("Consent must match the exact previewed user turns")
+        with lock:
+            jobs = state.list("memory_import", project)
+            if len(jobs) >= 30 or any(j["status"] in {"running", "queued"} for j in jobs):
+                raise HTTPException(
+                    409, "Finish the current import; local limit is 30 imports per repository"
+                )
+            job = state.create(
+                "memory_import",
+                project,
+                project=project,
+                session=body.session,
+                turns=body.turns,
+                consent_digest=body.consent_digest,
+                semantic=body.semantic,
+                status="queued",
+                stage="Selected conversation import queued",
+            )
+            workers.submit(personal.import_selected, state, job["id"])
+        return {"id": job["id"], "status": job["status"]}
+
+    @app.post("/api/repositories/{project}/actions/{action_id}/lesson", status_code=201)
+    def lesson_proposal(project: str, action_id: str):
+        project_ready(project)
+        if state.get(action_id, "action")["project"] != project:
+            raise HTTPException(404, "Unknown action in this repository")
+        with lock:
+            return personal.propose_lesson(state, action_id)
 
     @app.get("/api/repositories/{project}/graph")
     def graph(project: str, query: str = ""):

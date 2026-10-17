@@ -20,12 +20,13 @@ function download(action) {
   a.click();
   URL.revokeObjectURL(url);
 }
-export default function ActionPanel({ turn, onEvidence }) {
+export default function ActionPanel({ turn, project, onEvidence, onReviewMemory }) {
   const [action, setAction] = useState(null),
     [form, setForm] = useState(false),
     [objective, setObjective] = useState(turn.question),
     [error, setError] = useState(""),
-    [submitting, setSubmitting] = useState(false);
+    [submitting, setSubmitting] = useState(false),
+    [lessonNotice, setLessonNotice] = useState("");
   useEffect(() => {
     let active = true;
     api(`/turns/${turn.id}/actions`)
@@ -291,8 +292,13 @@ export default function ActionPanel({ turn, onEvidence }) {
                   <summary>Draft lesson for later review</summary>
                   <p>{action.lesson_proposal.text}</p>
                   <small>
-                    Draft only. No memory or constraint has been accepted.
+                    This is the model’s draft. Personal Brain tracks its separate proposal and review status.
                   </small>
+                  <div className="lesson-controls"><button disabled={submitting || !action.tests_passed} onClick={async () => {
+                    setSubmitting(true);setError("");
+                    try {const r = await send(`/repositories/${project}/actions/${action.id}/lesson`,{});setLessonNotice(`Private memory ${r.state}. Open Personal Brain to inspect its source and review.`);} catch(e){setError(e.message);} finally {setSubmitting(false);}
+                  }}>Send to Personal Brain review</button><button onClick={onReviewMemory}>Open Personal Brain</button></div>
+                  {lessonNotice && <p role="status">{lessonNotice}</p>}
                 </details>
               )}
             </div>

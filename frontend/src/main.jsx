@@ -23,6 +23,7 @@ import "./style.css";
 import { api, send } from "./api";
 import ActionPanel from "./ActionPanel";
 import IngestionPanel from "./IngestionPanel";
+import PersonalBrain from "./PersonalBrain";
 
 const fragment = location.hash.slice(1);
 if (fragment) {
@@ -289,6 +290,9 @@ function App() {
           <Network size={17} /> Company graph
           {graph && <span className="count">{graph.nodes.length}</span>}
         </button>
+        <button className={"nav " + (mode === "memory" ? "active" : "")} onClick={() => setMode("memory")}>
+          <BrainCircuit size={17} /> Personal Brain
+        </button>
         <div className="section-label">
           CONNECTED SOURCES
           <button
@@ -444,6 +448,8 @@ function App() {
               </button>
             )}
           </div>
+        ) : mode === "memory" ? (
+          <PersonalBrain key={project} project={project} turns={turns} session={session} renderGraph={(g) => <Graph graph={g} />} />
         ) : (
           <div className="work-area">
             <section className="conversation">
@@ -459,6 +465,7 @@ function App() {
                       ? "Understand the why."
                       : "The company graph"}
                   </h2>
+                  {mode === "chat" && <button className="new-chat-inline" disabled={busy} onClick={() => newChat().catch(e => setError(e.message))}>New conversation</button>}
                 </div>
                 <label className="upload-button">
                   {uploading ? (
@@ -615,6 +622,8 @@ function App() {
                                   </div>
                                   <ActionPanel
                                     turn={t}
+                                    project={project}
+                                    onReviewMemory={() => setMode("memory")}
                                     onEvidence={(id, evidence) =>
                                       citation(id, evidence, "actions")
                                     }
@@ -701,6 +710,8 @@ function App() {
                       {selected.verification ===
                       "recorded_snapshot_and_native_graph"
                         ? "Recorded historical snapshot"
+                        : selected.verification === "accepted_private_memory_and_native_graph"
+                          ? "Accepted private memory · source and graph checked"
                         : selected.verification === "original_file_digest_and_extraction_snapshot"
                           ? "Original file and extracted text verified"
                           : "Original bytes match index"}

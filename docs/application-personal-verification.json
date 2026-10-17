@@ -1,0 +1,33 @@
+{
+  "status": "passed",
+  "fixture": "Disposable synthetic retry repository; local operator private brain",
+  "model": "gpt-6.1-sol",
+  "independent_conversation_turns": 1,
+  "checked_claims": 2,
+  "memory_search_calls": 1,
+  "retrieval_backend": "falkor",
+  "vector_enabled": false,
+  "native_source_relationship_checked": true,
+  "coding_report_snapshot_checked": true,
+  "memory_text_sha256": [
+    "048f85f137044cd1f1ab0bb839164c21fea13cb0b3ca3cb726cee725d88551ff"
+  ],
+  "backend_implementation_hashes_match_agent_run": true,
+  "rejected_proposals": 1,
+  "review_lifecycle": [
+    "accept",
+    "rollback",
+    "accept"
+  ],
+  "revocation_check": {
+    "native_search_empty": true,
+    "old_citation_rejected": true
+  },
+  "limits": [
+    "Personal catalog and identity are local and repository-scoped; no team UI or hosted identity",
+    "Rejected and proposed memories are excluded from chat; accepted memory remains advisory",
+    "Consent covers selected completed user turns only; no automatic transcript scraping",
+    "Semantic relationship proposals still require separate backend review",
+    "This verifies one synthetic workflow, not general recall or coding quality"
+  ]
+}

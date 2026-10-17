@@ -122,10 +122,12 @@ application does not collect model credentials.
   Validated advisory relationships enter the same company FalkorDB graph and
   evidence retrieval. Extraction uses the app's selected Codex model; no embedding
   model is required. See [semantic ingestion](semantic-document-ingestion.md).
-- Personal/team brain controls, consented conversation review/sharing, `.abhi`
-  controls and accepting reviewed lesson proposals remain future UI work. Coding
-  actions currently return an unaccepted draft lesson. The full ten-step product
-  acceptance test is consequently **not complete**.
+- [Personal Brain](personal-brain-app.md) supports private notes, exact-consent
+  selected-turn proposals and source review with acceptance/rejection/revocation.
+  Passing coding actions can propose lessons for review; accepted lessons are
+  retrieved and cited through native FalkorDB tools in fresh conversations. Team
+  sharing/navigation and `.abhi` controls remain future UI work. The full ten-step
+  product acceptance test is consequently **not complete**.
 
 Local jobs, sessions, managed repositories, snapshots, uploads, model traces and
 per-turn source-hash manifests stay beneath the selected `--data` directory. Keep
@@ -147,7 +149,7 @@ uv run --frozen --extra app --extra lite --extra graphify --extra ingestion pyth
 The application tests exercise URL rejection, authentication/Origin/Host checks,
 read-only runner configuration, restart recovery, readiness gates, native code and
 uploaded-document evidence, invented quotes/IDs, citation access and stale source
-rejection. Live suite: **331 passed**. Browser acceptance uses a real public
+rejection. Live suite: **340 passed**. Browser acceptance uses a real public
 repository and actual Codex tool calls; see the [milestone report](application-milestone-verification.json).
 
 The [coding action report](application-action-verification.json) records a separate
@@ -158,3 +160,7 @@ cases. This does not establish coding effectiveness on production repositories.
 The [semantic ingestion report](application-ingestion-verification.json) verifies
 real model-backed Graphify and SDK runs, native relationship retrieval, and
 PDF/Word original-file and extraction-snapshot citations.
+
+The [Personal Brain report](application-personal-verification.json) verifies the
+reviewed lesson → independent native graph recall → checked citation workflow,
+plus rejection and revocation on a disposable synthetic fixture.
