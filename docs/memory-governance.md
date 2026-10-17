@@ -13,6 +13,8 @@ scoring or graph traversal. Revocation applies to the next request; already
 delivered text and requests already executing cannot be recalled. A user with
 direct local database/filesystem access is an administrator and can bypass these
 application rules. No hosted/OIDC security or hostile-local-user isolation is claimed.
+The catalog is not encrypted by this application. Use the operator's encrypted
+storage and backup controls where encryption at rest is required.
 
 Session exports must be curated and redacted before consent. Do not ingest raw
 agent logs, shell history, credentials, personal messages or other people's data

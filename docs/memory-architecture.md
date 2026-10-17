@@ -70,6 +70,8 @@ choice, not a measured semantic optimum.
 
 The vector index is an exact cosine flat index stored as normalized vectors in
 SQLite. No extension daemon, paid service or external vector database is required.
+[SQLite's deliverable engine is public domain](https://www.sqlite.org/copyright.html);
+the flat-ranking code is implemented in this repository, without a separate ANN SDK.
 Authorization, tenant, state and expiry filtering happen before scoring. Each
 request builds an eligible-only [FTS5](https://sqlite.org/fts5.html) view so hidden
 or expired text cannot affect candidate cutoffs or BM25 statistics. RRF combines
