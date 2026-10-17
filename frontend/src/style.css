@@ -569,11 +569,15 @@ h2 {
 .source-text pre {
   white-space: pre-wrap;
   font-family: ui-monospace, monospace;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.85;
   color: #776b63;
   margin: 0;
   overflow-wrap: anywhere;
+}
+.source-text.code-source pre {
+  white-space: pre;
+  overflow-wrap: normal;
 }
 .source-link {
   font-size: 10px;
@@ -1783,6 +1787,107 @@ h2 {
   font-size: 12px;
   background: #e8efe3;
   line-height: 1.7;
+}
+.evidence-panel > .document-library {
+  margin: 0 16px 16px;
+}
+.evidence-panel > .document-library .ingestion-panel {
+  margin-top: 8px;
+}
+.ingestion-status p {
+  margin: 4px 0 0;
+}
+.agent-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #edf3e9;
+  border-left: 3px solid #54784d;
+  color: #304737;
+}
+.fix-jump {
+  color: #345438;
+  font-size: 12px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.action-panel {
+  scroll-margin-top: 16px;
+}
+.agent-step small, .agent-step strong {
+  display: block;
+}
+.agent-step small {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #4d6b51;
+  margin-bottom: 4px;
+}
+.agent-step strong {
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 550;
+}
+.test-comparison {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid #cbdac7;
+  background: #fafcf8;
+  font-size: 14px;
+}
+.test-comparison p {
+  margin-bottom: 0;
+}
+.test-run-summary {
+  display: block;
+  margin-top: 6px;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.execution-report summary, .plan-detail summary {
+  font-size: 13px;
+  color: #395d37;
+}
+.execution-report code, .execution-report pre, .plan-detail pre {
+  font-size: 12px;
+}
+.action-note, .plan-form p {
+  font-size: 12px;
+  color: #52684f;
+}
+.evidence-paths {
+  margin: 12px 0;
+  padding: 0 16px;
+  list-style: none;
+}
+.evidence-paths li {
+  padding: 10px 0;
+  border-bottom: 1px solid #d2dfce;
+}
+.evidence-paths button {
+  display: block;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #304737;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.evidence-paths span {
+  display: block;
+  color: #52684f;
+  font-size: 12px;
+  margin: 3px 0;
+}
+.citations button:focus-visible, .evidence-paths button:focus-visible {
+  outline: 2px solid #345438;
+  outline-offset: 3px;
 }
 .source-selections input {
   flex-shrink: 0;

@@ -1,0 +1,205 @@
+{
+  "action": "72aee76cdf684de6bde3b0aacd46759b",
+  "project_url": "https://github.com/pallets/itsdangerous",
+  "revision": "672971d66a2ef9f85151e53283113f33d642dabd",
+  "model": "gpt-6.1-sol",
+  "patch_export_repair": {
+    "reason": "Preserve final newline stripped by Git stdout helper",
+    "original_sha256": "a160ca98f73444665d1530c6afbe3815485a0ae1f86cfc41edce2e112ab34e48",
+    "repaired_sha256": "f245ebbec41c5e7c8c3a77002de30bef3cd8a4546b6b1329c8ecc4e4b727df9d"
+  },
+  "baseline": [
+    {
+      "argv": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_itsdangerous/test_timed.py"
+      ],
+      "exit_code": 1,
+      "summary": "14 failed, 112 passed in 0.30s"
+    }
+  ],
+  "patched": [
+    {
+      "argv": [
+        "python",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/test_itsdangerous/test_timed.py"
+      ],
+      "exit_code": 0,
+      "summary": "126 passed in 0.19s"
+    }
+  ],
+  "independent_replay": {
+    "original": {
+      "exit_code": 1,
+      "outcome": "exited",
+      "checks": {
+        "passed": 4,
+        "total": 16,
+        "cases": [
+          {
+            "case": "signer_extreme_plain",
+            "passed": false,
+            "error": "AssertionError"
+          },
+          {
+            "case": "signer_extreme_timestamp",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "signer_extreme_max_age",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "validate_extreme_returns_false",
+            "passed": false,
+            "error": "AssertionError"
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=False_age=False",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=False_age=True",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=True_age=False",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=True_age=True",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "TimedSerializer_normal_utc_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=False_age=False",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=False_age=True",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=True_age=False",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=True_age=True",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "URLSafeTimedSerializer_normal_utc_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "signer_normal_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "signer_normal_utc",
+            "passed": true
+          }
+        ]
+      }
+    },
+    "patched": {
+      "exit_code": 0,
+      "outcome": "exited",
+      "checks": {
+        "passed": 16,
+        "total": 16,
+        "cases": [
+          {
+            "case": "signer_extreme_plain",
+            "passed": true
+          },
+          {
+            "case": "signer_extreme_timestamp",
+            "passed": true
+          },
+          {
+            "case": "signer_extreme_max_age",
+            "passed": true
+          },
+          {
+            "case": "validate_extreme_returns_false",
+            "passed": true
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=False_age=False",
+            "passed": true
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=False_age=True",
+            "passed": true
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=True_age=False",
+            "passed": true
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=True_age=True",
+            "passed": true
+          },
+          {
+            "case": "TimedSerializer_normal_utc_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=False_age=False",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=False_age=True",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=True_age=False",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=True_age=True",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_normal_utc_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "signer_normal_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "signer_normal_utc",
+            "passed": true
+          }
+        ]
+      }
+    }
+  },
+  "indexed_checkout_clean": true,
+  "disclosure": "Previously guided investigation; no fresh discovery run or personal/team retrieval demonstrated by this action."
+}

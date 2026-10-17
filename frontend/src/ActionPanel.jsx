@@ -20,7 +20,12 @@ function download(action) {
   a.click();
   URL.revokeObjectURL(url);
 }
-export default function ActionPanel({ turn, project, onEvidence, onReviewMemory }) {
+export default function ActionPanel({
+  turn,
+  project,
+  onEvidence,
+  onReviewMemory,
+}) {
   const [action, setAction] = useState(null),
     [form, setForm] = useState(false),
     [objective, setObjective] = useState(turn.question),
@@ -96,8 +101,15 @@ export default function ActionPanel({ turn, project, onEvidence, onReviewMemory 
   const busy =
     action &&
     ["queued", "running", "awaiting_approval"].includes(action.status);
+  const baselineErrors = action?.baseline_tests?.some((t) =>
+    /errors=[1-9]\d*|\b[1-9]\d* errors?\b/.test(t.output || ""),
+  );
   return (
-    <section className="action-panel" aria-label="Plan and execution">
+    <section
+      className="action-panel"
+      id={`fix-${turn.id}`}
+      aria-label="Plan and execution"
+    >
       <div className="action-heading">
         <GitBranch size={14} />
         <strong>From investigation to a fix</strong>
@@ -144,13 +156,18 @@ export default function ActionPanel({ turn, project, onEvidence, onReviewMemory 
       )}
       {action && (
         <>
-          <div className="action-state">
+          <div className="action-state agent-step" role="status">
             {["queued", "running"].includes(action.status) ? (
               <LoaderCircle className="spin" size={14} />
             ) : action.status === "complete" ? (
               <Check size={14} />
             ) : null}
-            <span>{action.stage}</span>
+            <div>
+              <small>
+                {action.phase === "execution" ? "EXECUTION" : "FIX WORKFLOW"}
+              </small>
+              <strong>{action.stage}</strong>
+            </div>
           </div>
           {action.error && <p className="failure">{action.error}</p>}
           {action.plan && (
@@ -227,22 +244,74 @@ export default function ActionPanel({ turn, project, onEvidence, onReviewMemory 
           )}
           {action.status === "complete" && (
             <div className="execution-report">
+              <div
+                className="test-comparison"
+                aria-label="Before and after test results"
+              >
+                {[
+                  ["Original + proposed tests", action.baseline_tests],
+                  ["Patched code", action.tests],
+                ].map(([label, results]) => (
+                  <div key={label}>
+                    <strong>{label}</strong>
+                    {results?.length ? (
+                      results.map((t, i) => (
+                        <p
+                          key={i}
+                          className={
+                            t.passed && t.tests_reported > 0
+                              ? "test-pass"
+                              : "failure"
+                          }
+                        >
+                          {t.passed && t.tests_reported > 0
+                            ? "Passed"
+                            : t.outcome === "exited" && t.exit_code !== 0
+                              ? "Failed"
+                              : "Unverified"}{" "}
+                          · exit {t.exit_code} · {t.tests_reported ?? "Unknown"}{" "}
+                          {t.argv?.[2] === "pytest"
+                            ? "reported passing tests"
+                            : "reported tests"}
+                          {t.output?.trim() && (
+                            <span className="test-run-summary">
+                              {t.output.trim().split("\n").at(-1).slice(0, 500)}
+                            </span>
+                          )}
+                        </p>
+                      ))
+                    ) : (
+                      <p>No test results recorded</p>
+                    )}
+                  </div>
+                ))}
+              </div>
               <details>
                 <summary>Implementation handoff before test validation</summary>
                 <p>{action.summary}</p>
               </details>
               <strong className={action.tests_passed ? "test-pass" : "failure"}>
                 {action.tests_passed
-                  ? (action.regression_demonstrated ? "Approved tests passed · baseline failures resolved" : "Tests passed · fix remains unverified")
+                  ? action.regression_demonstrated
+                    ? "Approved tests passed · baseline failures resolved"
+                    : baselineErrors
+                      ? "Tests passed · baseline errors need review"
+                      : "Tests passed · fix remains unverified"
                   : "Tests did not pass — inspect the report"}
               </strong>
-              <p className="action-note">{action.regression_demonstrated ? "The same approved test command failed on the original and passed on the patch. Review its coverage; this signal does not independently prove the reported bug is fixed." : "No matched baseline regression has been demonstrated. Passing tests alone do not verify the fix; a coding lesson cannot be proposed from this report."}</p>
+              <p className="action-note">
+                {action.regression_demonstrated
+                  ? "The same approved test command failed on the original and passed on the patch. Review its coverage; this signal does not independently prove the reported bug is fixed."
+                  : baselineErrors
+                    ? "The original run reported test errors. Automatic verification excludes these because they may indicate setup problems. Inspect the trace and verify the reproduction independently; a coding lesson cannot be proposed from this report."
+                    : "No matched baseline regression has been demonstrated. Passing tests alone do not verify the fix; a coding lesson cannot be proposed from this report."}
+              </p>
               <p className="action-note">
                 Original checkout unchanged. This patch has not been applied,
                 committed, or pushed.
               </p>
               {action.baseline_tests && (
-                <details>
+                <details open>
                   <summary>Original code with proposed tests</summary>
                   <p>
                     {action.baseline_includes_proposed_tests
@@ -261,7 +330,7 @@ export default function ActionPanel({ turn, project, onEvidence, onReviewMemory 
                   ))}
                 </details>
               )}
-              <details>
+              <details open>
                 <summary>Patched code test results</summary>
                 {action.tests.map((t, i) => (
                   <div key={i}>
@@ -293,12 +362,36 @@ export default function ActionPanel({ turn, project, onEvidence, onReviewMemory 
                   <summary>Draft lesson for later review</summary>
                   <p>{action.lesson_proposal.text}</p>
                   <small>
-                    This is the model’s draft. Personal Brain tracks its separate proposal and review status.
+                    This is the model’s draft. Personal Brain tracks its
+                    separate proposal and review status.
                   </small>
-                  <div className="lesson-controls"><button disabled={submitting || !action.regression_demonstrated} onClick={async () => {
-                    setSubmitting(true);setError("");
-                    try {const r = await send(`/repositories/${project}/actions/${action.id}/lesson`,{});setLessonNotice(`Private memory ${r.state}. Open Personal Brain to inspect its source and review.`);} catch(e){setError(e.message);} finally {setSubmitting(false);}
-                  }}>Send to Personal Brain review</button><button onClick={onReviewMemory}>Open Personal Brain</button></div>
+                  <div className="lesson-controls">
+                    <button
+                      disabled={submitting || !action.regression_demonstrated}
+                      onClick={async () => {
+                        setSubmitting(true);
+                        setError("");
+                        try {
+                          const r = await send(
+                            `/repositories/${project}/actions/${action.id}/lesson`,
+                            {},
+                          );
+                          setLessonNotice(
+                            `Private memory ${r.state}. Open Personal Brain to inspect its source and review.`,
+                          );
+                        } catch (e) {
+                          setError(e.message);
+                        } finally {
+                          setSubmitting(false);
+                        }
+                      }}
+                    >
+                      Send to Personal Brain review
+                    </button>
+                    <button onClick={onReviewMemory}>
+                      Open Personal Brain
+                    </button>
+                  </div>
                   {lessonNotice && <p role="status">{lessonNotice}</p>}
                 </details>
               )}

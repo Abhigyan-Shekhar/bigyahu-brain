@@ -29,8 +29,8 @@ export default function IngestionPanel({
     };
   }, [project, refresh]);
   useEffect(() => {
-    let live = true,
-      wasActive = false;
+    let live = true;
+    const terminal = new Set();
     async function poll() {
       try {
         const v = await api(`/repositories/${project}/enrichments`);
@@ -38,8 +38,13 @@ export default function IngestionPanel({
         setJobs(v);
         const running = v.some((j) => ["queued", "running"].includes(j.status));
         callbacks.current.onStatus?.(running);
-        if (wasActive && !running) callbacks.current.onComplete();
-        wasActive = running;
+        const finished = v.filter((j) =>
+          ["complete", "failed"].includes(j.status),
+        );
+        if (finished.some((j) => !terminal.has(j.id))) {
+          finished.forEach((j) => terminal.add(j.id));
+          callbacks.current.onComplete?.();
+        }
       } catch (e) {
         if (live) setError(e.message);
       }
@@ -69,14 +74,24 @@ export default function IngestionPanel({
     }
   }
   const latest = jobs.at(-1);
+  const current = jobs.filter((j) => ["queued", "running"].includes(j.status));
   return (
     <div className="document-library">
-      {latest && (
-        <div className="ingestion-status" role="status">
-          <strong>{latest.stage}</strong>
-          {latest.error && <p className="failure">{latest.error}</p>}
+      {(active ? current : latest ? [latest] : []).map((job) => (
+        <div className="ingestion-status" role="status" key={job.id}>
+          <strong>
+            {active ? "Extraction" : "Latest extraction"} · {job.stage}
+          </strong>
+          {job.result && (
+            <p>
+              {job.result.nodes} entities · {job.result.relationships}{" "}
+              relationships indexed
+              {job.status === "failed" ? " before extraction stopped" : ""}.
+            </p>
+          )}
+          {job.error && <p className="failure">{job.error}</p>}
         </div>
-      )}
+      ))}
       <details className="ingestion-panel">
         <summary>
           Document sources & extraction {active ? "· extracting…" : ""}
@@ -136,18 +151,6 @@ export default function IngestionPanel({
           <p role="alert" className="failure">
             {error}
           </p>
-        )}
-        {latest && (
-          <div role="status">
-            <strong>{latest.stage}</strong>
-            {latest.result && (
-              <p>
-                {latest.result.engine}: {latest.result.nodes} entities,{" "}
-                {latest.result.relationships} relationships indexed.
-              </p>
-            )}
-            {latest.error && <p className="failure">{latest.error}</p>}
-          </div>
         )}
       </details>
     </div>

@@ -394,7 +394,15 @@ def patch_for(work, allowed):
             raise ValueError("Patch file exceeds approved text limits")
         if file.exists() and "\0" in file.read_text(encoding="utf-8"):
             raise ValueError("Patch must contain UTF-8 text files")
-    patch = git(work, "diff", "--no-ext-diff", "--no-textconv", "HEAD", "--")
+    # The general Git helper strips stdout, which corrupts unified diffs by
+    # dropping their final newline (and potentially trailing context spaces).
+    patch = subprocess.check_output(
+        ["git", "diff", "--no-ext-diff", "--no-textconv", "HEAD", "--"],
+        cwd=work,
+        text=True,
+        encoding="utf-8",
+        timeout=30,
+    )
     for path in git(work, "ls-files", "--others").splitlines():
         result = subprocess.run(
             ["git", "diff", "--no-index", "--no-ext-diff", "--no-textconv", "--", os.devnull, path],

@@ -20,6 +20,40 @@ from brain.config import Config
 from brain.memory import digest
 
 
+@pytest.mark.parametrize("new_file", [False, True])
+def test_downloaded_patch_applies_in_fresh_checkout(tmp_path, new_file):
+    source, replay = tmp_path / "source", tmp_path / "replay"
+    source.mkdir()
+    subprocess.run(["git", "init", "-q", str(source)], check=True)
+    (source / "x.py").write_text("value = 1\n")
+    subprocess.run(["git", "add", "x.py"], cwd=source, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.com",
+            "commit",
+            "-qm",
+            "initial",
+        ],
+        cwd=source,
+        check=True,
+    )
+    actions.clone_at(source, replay, "HEAD")
+    # Whitespace is part of the artifact; exporting through a stripped helper
+    # used to produce an invalid patch when the last hunk ended here.
+    (source / "x.py").write_text("value = 2  \n")
+    if new_file:
+        (source / "test_x.py").write_text("assert True\n")
+    _, patch = actions.patch_for(source, ["x.py", "test_x.py"])
+    subprocess.run(["git", "apply", "-"], cwd=replay, input=patch, text=True, check=True)
+    assert (replay / "x.py").read_bytes() == (source / "x.py").read_bytes()
+    if new_file:
+        assert (replay / "test_x.py").read_bytes() == (source / "test_x.py").read_bytes()
+
+
 @pytest.mark.parametrize(
     "path",
     [

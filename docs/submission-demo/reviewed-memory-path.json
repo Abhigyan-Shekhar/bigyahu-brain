@@ -1,0 +1,16 @@
+{
+  "disclosure": "Human-approved demo seed, with an explicit lexical code identity appended under the authorization to enable code links.",
+  "team": "signed-token-demo",
+  "paths": [
+    {
+      "source": "src/itsdangerous/timed.py::TimestampSigner.unsign",
+      "relation": "RESOLVES_TO",
+      "target": "TimestampSigner.unsign"
+    },
+    {
+      "source": "Demo engineering lesson from source inspection: Ti",
+      "relation": "MENTIONS",
+      "target": "src/itsdangerous/timed.py::TimestampSigner.unsign"
+    }
+  ]
+}

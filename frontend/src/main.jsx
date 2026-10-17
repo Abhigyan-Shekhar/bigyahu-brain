@@ -84,7 +84,7 @@ function Graph({ graph, compact = false, onExpand }) {
       data: e,
       markerEnd: { type: MarkerType.ArrowClosed },
       style: { stroke: "#8b80bd" },
-      labelStyle: { fontSize: 10 },
+      labelStyle: { fontSize: compact ? 11 : 12 },
     }));
   return (
     <div className={"graph " + (compact ? "compact" : "")}>
@@ -404,7 +404,7 @@ function App() {
       await loadGraph();
       setError("");
       setUploadNotice(
-        `${result.filename}: ${result.sections} sections saved. Graphify is building document relationships.`,
+        `${result.filename}: ${result.sections} source sections saved.`,
       );
     } catch (e) {
       setError(e.message);
@@ -783,10 +783,13 @@ function App() {
                             <BrainCircuit size={21} />
                             <div>
                               {["running", "queued"].includes(t.status) ? (
-                                <p className="pending">
+                                <div className="agent-step" role="status">
                                   <LoaderCircle size={15} className="spin" />
-                                  {t.stage}…
-                                </p>
+                                  <div>
+                                    <small>ACTIVE AGENT STEP</small>
+                                    <strong>{t.stage}</strong>
+                                  </div>
+                                </div>
                               ) : t.status === "failed" ? (
                                 <p className="failure">{t.error}</p>
                               ) : (
@@ -796,6 +799,18 @@ function App() {
                                     <span>
                                       <Check size={12} /> Source checked
                                     </span>
+                                    {t.claims?.length > 0 && (
+                                      <button
+                                        className="fix-jump"
+                                        onClick={() =>
+                                          document
+                                            .getElementById(`fix-${t.id}`)
+                                            ?.scrollIntoView({ block: "start" })
+                                        }
+                                      >
+                                        Review fix workflow ↓
+                                      </button>
+                                    )}
                                   </div>
                                   {t.claims?.map((c, i) => (
                                     <div className="claim" key={i}>
@@ -954,6 +969,13 @@ function App() {
                   </button>
                 )}
               </div>
+              <IngestionPanel
+                key={project}
+                project={project}
+                refresh={uploadNotice}
+                onComplete={() => loadGraph("")}
+                onStatus={setIngesting}
+              />
               {loadingEvidence ? (
                 <div className="evidence-empty">
                   <LoaderCircle className="spin" />
@@ -984,7 +1006,9 @@ function App() {
                                 : "Original bytes match index"}
                     </span>
                   </div>
-                  <div className="source-text">
+                  <div
+                    className={`source-text ${selected.kind === "code" ? "code-source" : ""}`}
+                  >
                     <pre>{selected.text}</pre>
                   </div>
                   <a
@@ -1008,6 +1032,33 @@ function App() {
                       {selected.graph.edges.length} recorded relationships
                     </small>
                   </div>
+                  <ol
+                    className="evidence-paths"
+                    aria-label="Recorded evidence links"
+                  >
+                    {selected.graph.edges.slice(0, 8).map((edge, i) => {
+                      const label = (id) =>
+                        selected.graph.nodes.find((n) => n.id === id)?.label ||
+                        id;
+                      return (
+                        <li key={i}>
+                          <button onClick={() => focusNode(edge.source)}>
+                            {label(edge.source)}
+                          </button>
+                          <span>→ {edge.relation} →</span>
+                          <button onClick={() => focusNode(edge.target)}>
+                            {label(edge.target)}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                  {selected.graph.edges.length > 8 && (
+                    <p className="proof-note">
+                      Showing 8 of {selected.graph.edges.length} links. Select a
+                      node to explore its neighbors.
+                    </p>
+                  )}
                   <Graph graph={selected.graph} compact />
                   <div className="proof-note">
                     These nodes and relationships come from FalkorDB. A source
@@ -1055,13 +1106,6 @@ function App() {
                     {graph?.truncated ? " · paged view" : ""}. Open the explorer
                     to search and page through the graph.
                   </p>
-                  <IngestionPanel
-                    key={project}
-                    project={project}
-                    refresh={uploadNotice}
-                    onComplete={() => loadGraph("")}
-                    onStatus={setIngesting}
-                  />
                   <div className="source-tip">
                     <FileText size={18} />
                     <div>

@@ -1,0 +1,39 @@
+1
+00:00:00,000 --> 00:00:12,000
+Edited walkthrough of captured application states; waits omitted.
+Synthetic company documents and human-reviewed demo notes.
+
+2
+00:00:12,000 --> 00:00:24,000
+A fresh symptom-only prompt named no files or documents.
+The agent selected code and company evidence through 16 tool calls.
+
+3
+00:00:24,000 --> 00:00:36,000
+Personal Brain contributes a reviewed validation preference:
+show original-code failure, matched tests and the final diff.
+
+4
+00:00:36,000 --> 00:00:50,000
+Team Brain contributes a reviewed engineering lesson and code links.
+The planning request explicitly asked for memory contributions.
+
+5
+00:00:50,000 --> 00:01:00,000
+Human approval authorizes two files in an isolated checkout.
+The coding agent generates the implementation and regression tests.
+
+6
+00:01:00,000 --> 00:01:14,000
+Original: 5 assertion failures and 18 raw conversion errors in subtests.
+Patched: all 8 test methods pass. Baseline errors require separate review.
+
+7
+00:01:14,000 --> 00:01:28,000
+The actual generated patch normalizes timestamp conversion errors.
+The downloaded patch matches the artifact applied in a fresh clone.
+
+8
+00:01:28,000 --> 00:01:40,000
+Separate fresh-clone reproduction: original 4/16; patched 16/16.
+The prior 126-case pytest corpus also passes. Indexed source stays unchanged.

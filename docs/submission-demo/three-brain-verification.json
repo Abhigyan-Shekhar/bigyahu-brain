@@ -1,0 +1,194 @@
+{
+  "action": "631a079f63e64cf2b0855c6bec2fa25e",
+  "turn": "7dc1111cc2ba437a9a1461e5e474d5a2",
+  "revision": "672971d66a2ef9f85151e53283113f33d642dabd",
+  "approved_commands": [
+    [
+      "python",
+      "-m",
+      "unittest",
+      "tests/test_timestamp_range_unittest.py",
+      "-v"
+    ]
+  ],
+  "tests_passed": true,
+  "automatic_regression_demonstrated": false,
+  "automatic_gate_note": "The strict gate rejects baseline runner errors; this baseline contains 5 assertion failures and 18 raw conversion errors across subtests. No coding lesson is proposed from this action.",
+  "baseline_summary": "FAILED (failures=5, errors=18)",
+  "patched_summary": [
+    "----------------------------------------------------------------------",
+    "Ran 8 tests in 0.003s",
+    "",
+    "OK"
+  ],
+  "independent_replay": {
+    "original": {
+      "exit_code": 1,
+      "outcome": "exited",
+      "checks": {
+        "passed": 4,
+        "total": 16,
+        "cases": [
+          {
+            "case": "signer_extreme_plain",
+            "passed": false,
+            "error": "AssertionError"
+          },
+          {
+            "case": "signer_extreme_timestamp",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "signer_extreme_max_age",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "validate_extreme_returns_false",
+            "passed": false,
+            "error": "AssertionError"
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=False_age=False",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=False_age=True",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=True_age=False",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=True_age=True",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "TimedSerializer_normal_utc_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=False_age=False",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=False_age=True",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=True_age=False",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=True_age=True",
+            "passed": false,
+            "error": "ValueError"
+          },
+          {
+            "case": "URLSafeTimedSerializer_normal_utc_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "signer_normal_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "signer_normal_utc",
+            "passed": true
+          }
+        ]
+      }
+    },
+    "patched": {
+      "exit_code": 0,
+      "outcome": "exited",
+      "checks": {
+        "passed": 16,
+        "total": 16,
+        "cases": [
+          {
+            "case": "signer_extreme_plain",
+            "passed": true
+          },
+          {
+            "case": "signer_extreme_timestamp",
+            "passed": true
+          },
+          {
+            "case": "signer_extreme_max_age",
+            "passed": true
+          },
+          {
+            "case": "validate_extreme_returns_false",
+            "passed": true
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=False_age=False",
+            "passed": true
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=False_age=True",
+            "passed": true
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=True_age=False",
+            "passed": true
+          },
+          {
+            "case": "TimedSerializer_extreme_timestamp=True_age=True",
+            "passed": true
+          },
+          {
+            "case": "TimedSerializer_normal_utc_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=False_age=False",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=False_age=True",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=True_age=False",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_extreme_timestamp=True_age=True",
+            "passed": true
+          },
+          {
+            "case": "URLSafeTimedSerializer_normal_utc_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "signer_normal_roundtrip",
+            "passed": true
+          },
+          {
+            "case": "signer_normal_utc",
+            "passed": true
+          }
+        ]
+      }
+    }
+  },
+  "additional_prior_pytest_corpus": {
+    "disclosure": "The 126-case test file from the first guided run was copied into the fresh replay clone after patch generation; it was not supplied to the second editor.",
+    "passed": true,
+    "summary": "126 passed in 0.20s"
+  },
+  "indexed_checkout_clean": true,
+  "patch_sha256": "0b2937cbe3577e4a49bb35139cf6050d60ccb95fa936a5994d1906bf558a795f",
+  "browser_download_matches_replayed_patch": true
+}

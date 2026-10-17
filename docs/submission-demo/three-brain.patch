@@ -1,0 +1,253 @@
+diff --git a/src/itsdangerous/timed.py b/src/itsdangerous/timed.py
+index 52deeea..b4c6530 100644
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -114,19 +114,19 @@ class TimestampSigner(Signer):
+         except Exception:
+             pass
+ 
++        if ts_int is not None:
++            try:
++                ts_dt = self.timestamp_to_datetime(ts_int)
++            except (ValueError, OSError, OverflowError) as exc:
++                # Windows raises OSError
++                # 32-bit raises OverflowError
++                raise BadTimeSignature(
++                    "Malformed timestamp", payload=value
++                ) from exc
++
+         # Signature is *not* okay. Raise a proper error now that we have
+         # split the value and the timestamp.
+         if sig_error is not None:
+-            if ts_int is not None:
+-                try:
+-                    ts_dt = self.timestamp_to_datetime(ts_int)
+-                except (ValueError, OSError, OverflowError) as exc:
+-                    # Windows raises OSError
+-                    # 32-bit raises OverflowError
+-                    raise BadTimeSignature(
+-                        "Malformed timestamp", payload=value
+-                    ) from exc
+-
+             raise BadTimeSignature(str(sig_error), payload=value, date_signed=ts_dt)
+ 
+         # Signature was okay but the timestamp is actually not there or
+@@ -142,18 +142,18 @@ class TimestampSigner(Signer):
+                 raise SignatureExpired(
+                     f"Signature age {age} > {max_age} seconds",
+                     payload=value,
+-                    date_signed=self.timestamp_to_datetime(ts_int),
++                    date_signed=ts_dt,
+                 )
+ 
+             if age < 0:
+                 raise SignatureExpired(
+                     f"Signature age {age} < 0 seconds",
+                     payload=value,
+-                    date_signed=self.timestamp_to_datetime(ts_int),
++                    date_signed=ts_dt,
+                 )
+ 
+         if return_timestamp:
+-            return value, self.timestamp_to_datetime(ts_int)
++            return value, ts_dt
+ 
+         return value
+ 
+
+diff --git a/tests/test_timestamp_range_unittest.py b/tests/test_timestamp_range_unittest.py
+new file mode 100644
+index 0000000..b62a3d4
+--- /dev/null
++++ b/tests/test_timestamp_range_unittest.py
+@@ -0,0 +1,190 @@
++"""Dependency-free regression coverage for timestamp range validation."""
++
++import sys
++import unittest
++from datetime import datetime
++from datetime import timezone
++from pathlib import Path
++from unittest.mock import patch
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
++
++from itsdangerous import BadSignature
++from itsdangerous import BadTimeSignature
++from itsdangerous import SignatureExpired
++from itsdangerous import Signer
++from itsdangerous import TimedSerializer
++from itsdangerous import TimestampSigner
++from itsdangerous import URLSafeTimedSerializer
++
++
++class TimestampRangeTests(unittest.TestCase):
++    now = 1_700_000_000
++    payload = b"payload.\x00\xff"
++
++    def setUp(self):
++        self.signer = TimestampSigner("test-secret")
++
++    def sign_at(self, timestamp):
++        with patch.object(TimestampSigner, "get_timestamp", return_value=timestamp):
++            return self.signer.sign(self.payload)
++
++    @staticmethod
++    def tamper(token):
++        # Change the first signature character, avoiding base64 padding bits.
++        value, signature = token.rsplit(b".", 1)
++        first = b"A" if signature[:1] != b"A" else b"B"
++        return value + b"." + first + signature[1:]
++
++    def assert_malformed(self, error, payload):
++        self.assertEqual(str(error), "Malformed timestamp")
++        self.assertEqual(error.payload, payload)
++        self.assertIsNone(error.date_signed)
++
++    def test_extreme_timestamp_unsign_and_validate(self):
++        token = self.sign_at(10**12)
++        with patch.object(TimestampSigner, "get_timestamp", return_value=self.now):
++            for options in ({}, {"return_timestamp": True}, {"max_age": 60},
++                            {"max_age": 60, "return_timestamp": True}):
++                with self.subTest(options=options):
++                    with self.assertRaises(BadTimeSignature) as caught:
++                        self.signer.unsign(token, **options)
++                    self.assert_malformed(caught.exception, self.payload)
++
++            for max_age in (None, 60):
++                with self.subTest(max_age=max_age):
++                    self.assertFalse(self.signer.validate(token, max_age=max_age))
++
++    def test_extreme_timestamp_serializers(self):
++        for serializer_type in (TimedSerializer, URLSafeTimedSerializer):
++            serializer = serializer_type("test-secret")
++            with patch.object(TimestampSigner, "get_timestamp", return_value=10**12):
++                token = serializer.dumps({"message": "hello"})
++            raw = token.encode("utf-8") if isinstance(token, str) else token
++            payload = raw.rsplit(b".", 2)[0]
++            with patch.object(TimestampSigner, "get_timestamp", return_value=self.now):
++                for max_age in (None, 60):
++                    for return_timestamp in (False, True):
++                        with self.subTest(serializer=serializer_type.__name__,
++                                          max_age=max_age,
++                                          return_timestamp=return_timestamp):
++                            with self.assertRaises(BadTimeSignature) as caught:
++                                serializer.loads(
++                                    token, max_age=max_age,
++                                    return_timestamp=return_timestamp,
++                                )
++                            self.assert_malformed(caught.exception, payload)
++
++    def test_conversion_errors_are_normalized_and_chained(self):
++        token = self.sign_at(self.now)
++        for error_type in (ValueError, OSError, OverflowError):
++            for tampered in (False, True):
++                for options in ({}, {"return_timestamp": True}, {"max_age": 60}):
++                    with self.subTest(error=error_type.__name__,
++                                      tampered=tampered, options=options):
++                        cause = error_type("unrepresentable timestamp")
++                        candidate = self.tamper(token) if tampered else token
++                        with patch.object(
++                            TimestampSigner, "timestamp_to_datetime",
++                            side_effect=cause,
++                        ):
++                            with self.assertRaises(BadTimeSignature) as caught:
++                                self.signer.unsign(candidate, **options)
++                            self.assertFalse(self.signer.validate(candidate))
++                            self.assertFalse(
++                                self.signer.validate(candidate, max_age=60)
++                            )
++                        self.assert_malformed(caught.exception, self.payload)
++                        self.assertIs(caught.exception.__cause__, cause)
++
++    def test_normal_payload_timestamp_and_max_age_boundary(self):
++        token = self.sign_at(self.now)
++        expected = datetime.fromtimestamp(self.now, tz=timezone.utc)
++        with patch.object(TimestampSigner, "get_timestamp", return_value=self.now + 60):
++            self.assertEqual(self.signer.unsign(token), self.payload)
++            self.assertEqual(self.signer.unsign(token, max_age=60), self.payload)
++            value, timestamp = self.signer.unsign(
++                token, max_age=60, return_timestamp=True,
++            )
++            self.assertEqual(value, self.payload)
++            self.assertEqual(timestamp, expected)
++            self.assertIs(timestamp.tzinfo, timezone.utc)
++            self.assertTrue(self.signer.validate(token))
++            self.assertTrue(self.signer.validate(token, max_age=60))
++
++    def test_expired_and_future_tokens_preserve_date_signed(self):
++        expected = datetime.fromtimestamp(self.now, tz=timezone.utc)
++        token = self.sign_at(self.now)
++        for current_time, message in (
++            (self.now + 61, "Signature age 61 > 60 seconds"),
++            (self.now - 1, "Signature age -1 < 0 seconds"),
++        ):
++            with self.subTest(current_time=current_time):
++                with patch.object(
++                    TimestampSigner, "get_timestamp", return_value=current_time,
++                ):
++                    with self.assertRaises(SignatureExpired) as caught:
++                        self.signer.unsign(token, max_age=60)
++                    self.assertFalse(self.signer.validate(token, max_age=60))
++                self.assertEqual(str(caught.exception), message)
++                self.assertEqual(caught.exception.payload, self.payload)
++                self.assertEqual(caught.exception.date_signed, expected)
++                self.assertIs(caught.exception.date_signed.tzinfo, timezone.utc)
++
++    def test_tampered_token_is_rejected(self):
++        token = self.tamper(self.sign_at(self.now))
++        expected = datetime.fromtimestamp(self.now, tz=timezone.utc)
++        with patch.object(TimestampSigner, "get_timestamp", return_value=self.now):
++            for options in ({}, {"return_timestamp": True}, {"max_age": 60}):
++                with self.subTest(options=options):
++                    with self.assertRaises(BadTimeSignature) as caught:
++                        self.signer.unsign(token, **options)
++                    self.assertEqual(caught.exception.payload, self.payload)
++                    self.assertEqual(caught.exception.date_signed, expected)
++            self.assertFalse(self.signer.validate(token))
++            self.assertFalse(self.signer.validate(token, max_age=60))
++
++    def test_missing_and_malformed_timestamps_are_rejected(self):
++        signer = Signer("test-secret")
++        for payload, message, expected_payload in (
++            (b"payload", "timestamp missing", b"payload"),
++            (b"payload.a", "Malformed timestamp", b"payload"),
++        ):
++            with self.subTest(payload=payload):
++                token = signer.sign(payload)
++                with self.assertRaises(BadTimeSignature) as caught:
++                    self.signer.unsign(token)
++                self.assertEqual(str(caught.exception), message)
++                self.assertEqual(caught.exception.payload, expected_payload)
++                self.assertIsNone(caught.exception.date_signed)
++                self.assertFalse(self.signer.validate(token))
++                with self.assertRaises(BadSignature):
++                    self.signer.unsign(self.tamper(token))
++
++    def test_serializer_round_trips_and_tampering(self):
++        data = {"message": "hello", "items": [1, 2]}
++        expected = datetime.fromtimestamp(self.now, tz=timezone.utc)
++        for serializer_type in (TimedSerializer, URLSafeTimedSerializer):
++            serializer = serializer_type("test-secret")
++            with patch.object(TimestampSigner, "get_timestamp", return_value=self.now):
++                token = serializer.dumps(data)
++            raw = token.encode("utf-8") if isinstance(token, str) else token
++            with patch.object(
++                TimestampSigner, "get_timestamp", return_value=self.now + 60,
++            ):
++                for max_age in (None, 60):
++                    with self.subTest(serializer=serializer_type.__name__,
++                                      max_age=max_age):
++                        self.assertEqual(serializer.loads(token, max_age=max_age), data)
++                        value, timestamp = serializer.loads(
++                            token, max_age=max_age, return_timestamp=True,
++                        )
++                        self.assertEqual(value, data)
++                        self.assertEqual(timestamp, expected)
++                        self.assertIs(timestamp.tzinfo, timezone.utc)
++                        with self.assertRaises(BadTimeSignature):
++                            serializer.loads(self.tamper(raw), max_age=max_age)
++
++
++if __name__ == "__main__":
++    unittest.main()

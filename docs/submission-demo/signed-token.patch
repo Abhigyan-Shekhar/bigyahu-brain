@@ -1,0 +1,193 @@
+diff --git a/src/itsdangerous/timed.py b/src/itsdangerous/timed.py
+index 52deeea..0a49dc6 100644
+--- a/src/itsdangerous/timed.py
++++ b/src/itsdangerous/timed.py
+@@ -134,6 +134,11 @@ class TimestampSigner(Signer):
+         if ts_int is None:
+             raise BadTimeSignature("Malformed timestamp", payload=value)
+ 
++        try:
++            ts_dt = self.timestamp_to_datetime(ts_int)
++        except (ValueError, OSError, OverflowError) as exc:
++            raise BadTimeSignature("Malformed timestamp", payload=value) from exc
++
+         # Check timestamp is not older than max_age
+         if max_age is not None:
+             age = self.get_timestamp() - ts_int
+@@ -142,18 +147,18 @@ class TimestampSigner(Signer):
+                 raise SignatureExpired(
+                     f"Signature age {age} > {max_age} seconds",
+                     payload=value,
+-                    date_signed=self.timestamp_to_datetime(ts_int),
++                    date_signed=ts_dt,
+                 )
+ 
+             if age < 0:
+                 raise SignatureExpired(
+                     f"Signature age {age} < 0 seconds",
+                     payload=value,
+-                    date_signed=self.timestamp_to_datetime(ts_int),
++                    date_signed=ts_dt,
+                 )
+ 
+         if return_timestamp:
+-            return value, self.timestamp_to_datetime(ts_int)
++            return value, ts_dt
+ 
+         return value
+ 
+diff --git a/tests/test_itsdangerous/test_timed.py b/tests/test_itsdangerous/test_timed.py
+index a4c1741..21c7c2f 100644
+--- a/tests/test_itsdangerous/test_timed.py
++++ b/tests/test_itsdangerous/test_timed.py
+@@ -2,6 +2,7 @@ from datetime import datetime
+ from datetime import timedelta
+ from datetime import timezone
+ from functools import partial
++from unittest.mock import patch
+ 
+ import pytest
+ from freezegun import freeze_time
+@@ -11,6 +12,7 @@ from itsdangerous.exc import SignatureExpired
+ from itsdangerous.signer import Signer
+ from itsdangerous.timed import TimedSerializer
+ from itsdangerous.timed import TimestampSigner
++from itsdangerous.url_safe import URLSafeTimedSerializer
+ from test_itsdangerous.test_serializer import TestSerializer
+ from test_itsdangerous.test_signer import TestSigner
+ 
+@@ -40,7 +42,52 @@ class TestTimestampSigner(FreezeMixin, TestSigner):
+         with pytest.raises(SignatureExpired) as exc_info:
+             signer.unsign(signed, max_age=10)
+ 
++        assert str(exc_info.value) == "Signature age 11 > 10 seconds"
++        assert exc_info.value.payload == b"value"
+         assert exc_info.value.date_signed == ts
++        assert exc_info.value.date_signed.tzinfo is timezone.utc
++
++    @pytest.mark.parametrize(
++        "kwargs", [{}, {"return_timestamp": True}, {"max_age": 3600}]
++    )
++    def test_unrepresentable_timestamp(self, signer, kwargs):
++        with patch.object(TimestampSigner, "get_timestamp", return_value=10**12):
++            signed = signer.sign("value")
++
++        # Plain unsign returned successfully before representability was checked.
++        with pytest.raises(BadTimeSignature) as exc_info:
++            signer.unsign(signed, **kwargs)
++
++        assert type(exc_info.value) is BadTimeSignature
++        assert str(exc_info.value) == "Malformed timestamp"
++        assert exc_info.value.payload == b"value"
++        assert exc_info.value.date_signed is None
++        assert isinstance(exc_info.value.__cause__, (ValueError, OSError, OverflowError))
++
++    @pytest.mark.parametrize("error_type", [ValueError, OSError, OverflowError])
++    def test_timestamp_conversion_error(self, signer, error_type):
++        signed = signer.sign("value")
++        error = error_type("conversion failed")
++
++        with patch.object(signer, "timestamp_to_datetime", side_effect=error):
++            with pytest.raises(BadTimeSignature) as exc_info:
++                signer.unsign(signed)
++
++        assert type(exc_info.value) is BadTimeSignature
++        assert str(exc_info.value) == "Malformed timestamp"
++        assert exc_info.value.payload == b"value"
++        assert exc_info.value.date_signed is None
++        assert exc_info.value.__cause__ is error
++
++    def test_unrelated_timestamp_conversion_error(self, signer):
++        signed = signer.sign("value")
++        error = RuntimeError("unexpected conversion failure")
++
++        with patch.object(signer, "timestamp_to_datetime", side_effect=error):
++            with pytest.raises(RuntimeError) as exc_info:
++                signer.unsign(signed, return_timestamp=True)
++
++        assert exc_info.value is error
+ 
+     def test_return_timestamp(self, signer, ts):
+         signed = signer.sign("value")
+@@ -75,14 +122,17 @@ class TestTimestampSigner(FreezeMixin, TestSigner):
+         assert "Malformed" in str(exc_info.value)
+         assert exc_info.value.date_signed is None
+ 
+-    def test_future_age(self, signer):
++    def test_future_age(self, signer, ts, freeze):
+         signed = signer.sign("value")
++        freeze.tick(timedelta(seconds=-1))
+ 
+-        with freeze_time("1971-05-31"):
+-            with pytest.raises(SignatureExpired) as exc_info:
+-                signer.unsign(signed, max_age=10)
++        with pytest.raises(SignatureExpired) as exc_info:
++            signer.unsign(signed, max_age=10)
+ 
+-        assert isinstance(exc_info.value.date_signed, datetime)
++        assert str(exc_info.value) == "Signature age -1 < 0 seconds"
++        assert exc_info.value.payload == b"value"
++        assert exc_info.value.date_signed == ts
++        assert exc_info.value.date_signed.tzinfo is timezone.utc
+ 
+     def test_sig_error_date_signed(self, signer):
+         signed = signer.sign("my string").replace(b"my", b"other", 1)
+@@ -107,9 +157,58 @@ class TestTimedSerializer(FreezeMixin, TestSerializer):
+         with pytest.raises(SignatureExpired) as exc_info:
+             serializer.loads(signed, max_age=10)
+ 
++        assert str(exc_info.value) == "Signature age 11 > 10 seconds"
+         assert exc_info.value.date_signed == ts
++        assert exc_info.value.date_signed.tzinfo is timezone.utc
+         assert serializer.load_payload(exc_info.value.payload) == value
+ 
+     def test_return_payload(self, serializer, value, ts):
+         signed = serializer.dumps(value)
+         assert serializer.loads(signed, return_timestamp=True) == (value, ts)
++
++
++class TestTimedSerializerTimestampValidation(FreezeMixin):
++    @pytest.fixture(params=[TimedSerializer, URLSafeTimedSerializer])
++    def serializer(self, request):
++        return request.param("secret-key")
++
++    @pytest.mark.parametrize("kwargs", [{}, {"max_age": 3600}])
++    @pytest.mark.parametrize("return_timestamp", [False, True])
++    def test_unrepresentable_timestamp(self, serializer, kwargs, return_timestamp):
++        value = {"example": "value"}
++        with patch.object(TimestampSigner, "get_timestamp", return_value=10**12):
++            signed = serializer.dumps(value)
++
++        with pytest.raises(BadTimeSignature) as exc_info:
++            serializer.loads(signed, return_timestamp=return_timestamp, **kwargs)
++
++        assert type(exc_info.value) is BadTimeSignature
++        assert str(exc_info.value) == "Malformed timestamp"
++        assert exc_info.value.payload == serializer.dump_payload(value)
++        assert exc_info.value.date_signed is None
++        assert isinstance(exc_info.value.__cause__, (ValueError, OSError, OverflowError))
++
++    @pytest.mark.parametrize("kwargs", [{}, {"max_age": 3600}])
++    @pytest.mark.parametrize("return_timestamp", [False, True])
++    def test_normal_timestamp(self, serializer, ts, kwargs, return_timestamp):
++        value = {"example": "value"}
++        signed = serializer.dumps(value)
++        expected = (value, ts) if return_timestamp else value
++
++        assert serializer.loads(
++            signed, return_timestamp=return_timestamp, **kwargs
++        ) == expected
++
++    def test_tampered_token(self, serializer, ts):
++        signed = serializer.dumps({"example": "value"})
++        if isinstance(signed, str):
++            signed = signed.encode("utf-8")
++        tampered = b"!" + signed
++
++        with pytest.raises(BadTimeSignature) as exc_info:
++            serializer.loads(tampered)
++
++        assert type(exc_info.value) is BadTimeSignature
++        assert exc_info.value.payload == tampered.rsplit(b".", 2)[0]
++        assert exc_info.value.date_signed == ts
++        assert exc_info.value.date_signed.tzinfo is timezone.utc

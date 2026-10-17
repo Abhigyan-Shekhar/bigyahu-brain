@@ -1,0 +1,77 @@
+{
+  "action": "631a079f63e64cf2b0855c6bec2fa25e",
+  "investigation_turn": "7dc1111cc2ba437a9a1461e5e474d5a2",
+  "objective": "Fix the root cause discovered in this investigation. Use relevant accepted Personal Brain validation preferences and Team Brain engineering lessons, and cite the contribution of each alongside company evidence. Independently choose the smallest implementation change and deterministic regression coverage. Preserve normal token behavior, UTC, expiration and tampered-token rejection. Prepare the bounded plan for human review.",
+  "status": "complete",
+  "plan": {
+    "files": [
+      "src/itsdangerous/timed.py",
+      "tests/test_timestamp_range_unittest.py"
+    ],
+    "steps": [
+      "In TimestampSigner.unsign, move the existing guarded datetime conversion immediately after timestamp decoding, conditional on ts_int being non-None. Preserve its ValueError/OSError/OverflowError handling, BadTimeSignature message, payload and exception chaining.",
+      "Retain signature-error and missing/malformed timestamp rejection. Reuse ts_dt for both SignatureExpired branches and return_timestamp instead of converting again. Keep signing, public parameters, UTC conversion and age comparisons unchanged.",
+      "Add tests/test_timestamp_range_unittest.py using unittest, unittest.mock.patch and subTest only. Add the checkout's src directory to the test module's import path using pathlib so tests exercise this source without installation.",
+      "Create correctly signed tokens with get_timestamp patched to 10**12. Assert BadTimeSignature with the expected payload and date_signed=None for unsign with default options, return_timestamp=True and max_age; assert validate returns False with and without max_age. Cover both TimedSerializer and URLSafeTimedSerializer loads with and without max_age and timestamp returns.",
+      "Add deterministic conversion-error cases for ValueError, OSError and OverflowError using patch.object on timestamp_to_datetime. Assert normalization and exception chaining for valid and tampered tokens.",
+      "Add fixed-clock preservation cases for ordinary byte payloads, serializer round trips, aware UTC timestamps, max_age equality, expired and future tokens with SignatureExpired.date_signed preserved, and tampered-token rejection with validate returning False.",
+      "After human review, use the operator-installed Python to run the exact command `python -m unittest discover -s tests -p test_timestamp_range_unittest.py -v` against the original source to establish regression failures, then against the proposed source change. Inspect the final two-file diff and matched results before describing the fix as verified. Do not install dependencies."
+    ],
+    "summary": "Normalize timestamp conversion once in TimestampSigner.unsign and add one dependency-free deterministic regression file.",
+    "tests": [
+      {
+        "path": "tests/test_timestamp_range_unittest.py",
+        "runner": "unittest"
+      }
+    ],
+    "commands": [
+      [
+        "python",
+        "-m",
+        "unittest",
+        "tests/test_timestamp_range_unittest.py",
+        "-v"
+      ]
+    ]
+  },
+  "claims": [
+    {
+      "text": "Source inspection identifies the root cause: conversion failures are normalized only on the invalid-signature path. A correctly signed, unrepresentable timestamp can leak a Python exception when converted, or be accepted when conversion is skipped.",
+      "titles": [
+        "src/itsdangerous/timed.py:35\u2013130",
+        "src/itsdangerous/timed.py:131\u2013228"
+      ]
+    },
+    {
+      "text": "Normalizing the error in TimestampSigner.unsign also fixes validate() and timed serializer loads() through their existing exception handling; neither caller needs changing.",
+      "titles": [
+        "src/itsdangerous/timed.py:131\u2013228",
+        "src/itsdangerous/exc.py:1\u2013106"
+      ]
+    },
+    {
+      "text": "The accepted Personal Brain preference contributes the original-code failure check and final diff review. Company reproduction evidence supplies a deterministic extreme timestamp without changing system time.",
+      "titles": [
+        "Personal Brain \u00b7 reviewed memory",
+        "02_bug_report_reproduction.md"
+      ]
+    },
+    {
+      "text": "The accepted Team Brain lesson contributes the preservation checks. Company requirements and source support checking representability for every decoded timestamp while retaining UTC conversion and existing exception classes.",
+      "titles": [
+        "Team Brain \u00b7 signed-token-demo \u00b7 reviewed memory",
+        "02_bug_report_reproduction.md",
+        "src/itsdangerous/timed.py:35\u2013130"
+      ]
+    },
+    {
+      "text": "A bounded source change plus a standalone standard-library unittest file avoids adding dependencies or requiring the existing pytest/freezegun suite.",
+      "titles": [
+        "03_fix_acceptance_criteria.md",
+        "tests/test_itsdangerous/test_timed.py:1\u2013115"
+      ]
+    }
+  ],
+  "disclosure": "The investigation used the symptom-only prompt. The subsequent planning request explicitly asked for relevant accepted personal/team contributions; the records are human-approved synthetic demo seeds.",
+  "execution_receipt": "three-brain-verification.json"
+}

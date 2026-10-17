@@ -1,0 +1,64 @@
+{
+  "format": "edited still-frame application walkthrough; not continuous screen recording",
+  "audio": false,
+  "captions": "default selectable English MP4 subtitle track and SRT sidecar",
+  "duration_seconds": 100,
+  "scenes": [
+    {
+      "file": "discovery.png",
+      "sha256": "227bc7982404b5c2c52b7158b3ea63e1207b3c64665aed6c37d7b7613a488a9e",
+      "start_seconds": 0,
+      "duration_seconds": 12,
+      "caption": "Edited walkthrough of captured application states; waits omitted.\nSynthetic company documents and human-reviewed demo notes."
+    },
+    {
+      "file": "company-evidence.png",
+      "sha256": "91039e7c2bce2269c2e1511c5642005183ecbe606057688f66c236924a75cca7",
+      "start_seconds": 12,
+      "duration_seconds": 12,
+      "caption": "A fresh symptom-only prompt named no files or documents.\nThe agent selected code and company evidence through 16 tool calls."
+    },
+    {
+      "file": "personal-evidence.png",
+      "sha256": "d926f1e333400a5f8ca09d1e20174803325974a7be7087f784a896ea93369cd8",
+      "start_seconds": 24,
+      "duration_seconds": 12,
+      "caption": "Personal Brain contributes a reviewed validation preference:\nshow original-code failure, matched tests and the final diff."
+    },
+    {
+      "file": "team-evidence.png",
+      "sha256": "a8285f023d345f117cf2043bfd62f7ad2b9c218cb92f7e0d5002544770873a87",
+      "start_seconds": 36,
+      "duration_seconds": 14,
+      "caption": "Team Brain contributes a reviewed engineering lesson and code links.\nThe planning request explicitly asked for memory contributions."
+    },
+    {
+      "file": "execution.png",
+      "sha256": "8eda16dbfb28f00e38f25c1789dcebaf3091c7b8b2b59cf6b7fd926bcdc6274b",
+      "start_seconds": 50,
+      "duration_seconds": 10,
+      "caption": "Human approval authorizes two files in an isolated checkout.\nThe coding agent generates the implementation and regression tests."
+    },
+    {
+      "file": "result.png",
+      "sha256": "d7435e0d6fa2eceb979ffb75880bad8903ce4295c07c0c4bb1e72cffb95d4a9e",
+      "start_seconds": 60,
+      "duration_seconds": 14,
+      "caption": "Original: 5 assertion failures and 18 raw conversion errors in subtests.\nPatched: all 8 test methods pass. Baseline errors require separate review."
+    },
+    {
+      "file": "patch.png",
+      "sha256": "46d90dee43124522814789f064d4f3c95672483ad551a249ac5788996fcef0bf",
+      "start_seconds": 74,
+      "duration_seconds": 14,
+      "caption": "The actual generated patch normalizes timestamp conversion errors.\nThe downloaded patch matches the artifact applied in a fresh clone."
+    },
+    {
+      "file": "result.png",
+      "sha256": "d7435e0d6fa2eceb979ffb75880bad8903ce4295c07c0c4bb1e72cffb95d4a9e",
+      "start_seconds": 88,
+      "duration_seconds": 12,
+      "caption": "Separate fresh-clone reproduction: original 4/16; patched 16/16.\nThe prior 126-case pytest corpus also passes. Indexed source stays unchanged."
+    }
+  ]
+}

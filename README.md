@@ -6,6 +6,40 @@ code-editing agent. An opt-in memory extension connects personal, team and compa
 knowledge through scoped graph paths. Source prose is untrusted evidence;
 remembering something creates a proposal, never an approved rule.
 
+## Latest application demo — 18 October 2026
+
+The signed-token demonstration now continues through an approved code change,
+downloadable patch, original-code failures, patched tests and fresh-clone replay.
+Start with the [100-second captioned walkthrough](docs/submission-demo/walkthrough.mp4),
+[captions](docs/submission-demo/captions.srt), and
+[patches, receipts and reproduction instructions](docs/submission-demo/README.md).
+The video uses actual captured application states with waits omitted; it is an
+edited still-frame walkthrough, not continuous screen recording. Enable the
+selectable English captions if the player hides them.
+
+A fresh conversation began with only the signed-token crash symptom and selected
+the relevant company documents and code through 16 tool calls. Subsequent planning
+explicitly requested reviewed Personal and Team Brain contributions: a validation
+preference, an engineering lesson and a native path to `TimestampSigner.unsign`.
+These are human-approved synthetic demo seeds, not upstream policy or evidence
+of improved coding performance.
+
+| Validation of the three-brain patch | Original code | Patched code |
+| --- | --- | --- |
+| Approved unittest selection | 5 assertion failures and 18 errors across subtests in 8 methods | 8 methods passed |
+| Independent reproduction in fresh clones | 4/16 passed | 16/16 passed |
+| Additional pytest corpus from the earlier guided run | 14 failed, 112 passed | 126 passed |
+
+The app's strict automatic regression flag rejects baseline runner errors and
+remains false for this unittest run. The conversion errors were checked through
+the separate reproduction; the rule was not weakened. Neither patch was applied
+to the indexed checkout. The app now keeps extraction status visible during source
+inspection, exposes readable evidence links and before/after results, and exports
+valid Git patches without stripping their final newline. The latest targeted
+application check passed **36 tests** with a disposable FalkorDB instance, plus
+Ruff and the frontend production build. Use the
+[recording runbook](docs/submission-demo-runbook.md) for a new presentation.
+
 ## Current architecture and status
 
 The default server exposes five company-code tools. Configuring a memory catalog
@@ -78,7 +112,7 @@ associations with checked source spans; no identity or policy authority is infer
 
 ## Validation and measured results
 
-The current full isolated memory/graph/application suite passed **369 tests**, including real
+The previously recorded full isolated memory/graph/application suite passed **369 tests**, including real
 FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
 pass. The portability workflow includes live Docker graph/memory regression
 checks and installs the optional Graphify extractor there. CI for these new changes
