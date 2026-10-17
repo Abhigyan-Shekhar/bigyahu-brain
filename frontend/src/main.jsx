@@ -36,21 +36,23 @@ function Graph({ graph, compact = false, onExpand }) {
   const [expandTarget, setExpandTarget] = useState("");
   useEffect(() => setSelectedEdge(null), [graph]);
   const groups = {};
-  const nodes = (graph?.nodes || []).map((n) => {
+  const visibleIds = new Set();
+  if (compact) {
+    for (const edge of graph?.edges || []) {
+      if (visibleIds.size >= 6) break;
+      visibleIds.add(edge.source);
+      visibleIds.add(edge.target);
+    }
+    if (!visibleIds.size)
+      (graph?.nodes || []).slice(0, 6).forEach((n) => visibleIds.add(n.id));
+  }
+  const visibleNodes = (graph?.nodes || []).filter(
+    (n) => !compact || visibleIds.has(n.id),
+  );
+  const kinds = [...new Set(visibleNodes.map((n) => n.labels?.[0] || "Node"))];
+  const nodes = visibleNodes.map((n, nodeIndex) => {
     const kind = n.labels?.[0] || "Node";
-    const col = [
-      "Project",
-      "File",
-      "Symbol",
-      "Document",
-      "Source",
-      "Commit",
-      "PR",
-      "Issue",
-      "Person",
-      "Team",
-    ].indexOf(kind);
-    const key = col < 0 ? 10 : col;
+    const key = kinds.indexOf(kind);
     const i = groups[key] || 0;
     groups[key] = i + 1;
     return {
@@ -58,7 +60,9 @@ function Graph({ graph, compact = false, onExpand }) {
       displayLabel: n.label,
       sourcePosition: "right",
       targetPosition: "left",
-      position: { x: key * 260, y: i * 95 },
+      position: compact
+        ? { x: (nodeIndex % 2) * 180, y: Math.floor(nodeIndex / 2) * 95 }
+        : { x: key * 260, y: i * 95 },
       data: {
         label: (
           <>
@@ -67,7 +71,7 @@ function Graph({ graph, compact = false, onExpand }) {
           </>
         ),
       },
-      style: { width: 220 },
+      style: { width: compact ? 150 : 220 },
     };
   });
   const ids = new Set(nodes.map((n) => n.id));
@@ -84,7 +88,7 @@ function Graph({ graph, compact = false, onExpand }) {
     }));
   return (
     <div className={"graph " + (compact ? "compact" : "")}>
-      {onExpand && (
+      {onExpand && !compact && (
         <div className="graph-node-picker">
           <select
             aria-label="Node to expand"
@@ -106,7 +110,7 @@ function Graph({ graph, compact = false, onExpand }) {
           </button>
         </div>
       )}
-      {edges.length > 0 && (
+      {edges.length > 0 && !compact && (
         <select
           className="graph-edge-picker"
           aria-label="Inspect relationship"
@@ -187,8 +191,9 @@ function App() {
     [model, setModel] = useState(""),
     [uploading, setUploading] = useState(false),
     [uploadNotice, setUploadNotice] = useState(""),
-    [historyRequired, setHistoryRequired] = useState(true),
-    [expansion, setExpansion] = useState(null);
+    [historyRequired, setHistoryRequired] = useState(false),
+    [expansion, setExpansion] = useState(null),
+    [ingesting, setIngesting] = useState(false);
   const repo = repos.find((r) => r.id === project),
     busy = turns.some((t) => ["running", "queued"].includes(t.status));
   async function refresh() {
@@ -272,12 +277,31 @@ function App() {
         setError(e.message);
     }
   }
-  async function loadGraph(q = filter) {
+  async function focusNode(uid) {
+    const request = ++graphRequest.current;
+    setMode("graph");
+    setFilter("");
+    try {
+      const next = await api(
+        `/repositories/${project}/graph/neighbors?uid=${encodeURIComponent(uid)}`,
+      );
+      if (
+        request === graphRequest.current &&
+        project === activeProject.current
+      ) {
+        setGraph(next);
+        setExpansion(next);
+      }
+    } catch (e) {
+      setError(e.message);
+    }
+  }
+  async function loadGraph(q = filter, offset = 0) {
     const request = ++graphRequest.current;
     try {
       setExpansion(null);
       const next = await api(
-        `/repositories/${project}/graph?query=${encodeURIComponent(q)}`,
+        `/repositories/${project}/graph?query=${encodeURIComponent(q)}&offset=${offset}`,
       );
       if (request === graphRequest.current && project === activeProject.current)
         setGraph(next);
@@ -319,7 +343,7 @@ function App() {
   }
   async function ask(e) {
     e.preventDefault();
-    if (!question.trim() || busy) return;
+    if (!question.trim() || busy || ingesting) return;
     setError("");
     try {
       const id = session || (await newChat());
@@ -376,10 +400,11 @@ function App() {
         ...payload,
       });
       setSelected(null);
+      setIngesting(true);
       await loadGraph();
       setError("");
       setUploadNotice(
-        `${result.filename}: ${result.sections} source-backed sections indexed.`,
+        `${result.filename}: ${result.sections} sections saved. Graphify is building document relationships.`,
       );
     } catch (e) {
       setError(e.message);
@@ -413,18 +438,15 @@ function App() {
           <Network size={17} /> Company graph
           {graph && <span className="count">{graph.nodes.length}</span>}
         </button>
-        <button
-          className={"nav " + (mode === "memory" ? "active" : "")}
-          onClick={() => setMode("memory")}
-        >
-          <BrainCircuit size={17} /> Personal Brain
-        </button>
-        <button
-          className={"nav " + (mode === "team" ? "active" : "")}
-          onClick={() => setMode("team")}
-        >
-          <Network size={17} /> Team Brain
-        </button>
+        <details className="secondary-tools">
+          <summary>More workspace tools</summary>
+          <button className="nav" onClick={() => setMode("memory")}>
+            <BrainCircuit size={17} /> Personal Brain
+          </button>
+          <button className="nav" onClick={() => setMode("team")}>
+            <Network size={17} /> Team Brain
+          </button>
+        </details>
         <div className="section-label">
           CONNECTED SOURCES
           <button
@@ -513,7 +535,7 @@ function App() {
             </button>
           </div>
           <span className="read-only">
-            <span className="dot ready" /> Read-only chat · approved actions
+            <span className="dot ready" /> Graphify → FalkorDB → cited answers
           </span>
         </header>
         {error && (
@@ -529,13 +551,14 @@ function App() {
           <div className="welcome">
             <span className="eyebrow">A SHARED UNDERSTANDING</span>
             <h1>
-              Your code has a history.
+              One place to ask your code.
               <br />
-              Put it to work.
+              And the people behind it.
             </h1>
             <p>
-              Connect a repository to explore the code, recover its context, and
-              ask questions with sources you can inspect.
+              Connect a repository, add your team’s documents, and ask why
+              things work the way they do. Follow every answer back to its graph
+              nodes.
             </p>
             <button className="primary" onClick={() => setAdding(true)}>
               <Plus size={17} /> Connect your first repository
@@ -595,8 +618,17 @@ function App() {
             renderGraph={(g) => <Graph graph={g} />}
           />
         ) : (
-          <div className="work-area">
-            <section className="conversation">
+          <div
+            className={
+              "work-area " + (mode === "graph" ? "graph-workspace" : "")
+            }
+          >
+            <section
+              className={
+                "conversation " +
+                (turns.length && mode === "chat" ? "has-turns" : "")
+              }
+            >
               <div className="page-heading">
                 <div>
                   <span className="eyebrow">
@@ -606,7 +638,7 @@ function App() {
                   </span>
                   <h2>
                     {mode === "chat"
-                      ? "Understand the why."
+                      ? "What would you like to understand?"
                       : "The company graph"}
                   </h2>
                   {mode === "chat" && (
@@ -631,27 +663,31 @@ function App() {
                   <input
                     type="file"
                     accept=".md,.rst,.pdf,.docx"
-                    disabled={uploading || busy}
+                    disabled={uploading || busy || ingesting}
                     onChange={upload}
                   />
                 </label>
               </div>
-              <IngestionPanel
-                key={project}
-                project={project}
-                refresh={uploadNotice}
-                onComplete={loadGraph}
-              />
               {uploadNotice && (
                 <div className="coverage" role="status">
                   {uploadNotice}
                 </div>
               )}
-              {repo.warnings?.map((w, i) => (
-                <div className="coverage" key={i}>
-                  {w}
-                </div>
-              ))}
+              <details className="coverage-details">
+                <summary>Repository coverage & extraction</summary>
+                {repo.graphify && (
+                  <p>
+                    Graphify: {repo.graphify.files} files ·{" "}
+                    {repo.graphify.nodes} extracted nodes ·{" "}
+                    {repo.graphify.relationships} relationships
+                  </p>
+                )}
+                {repo.warnings?.map((w, i) => (
+                  <div className="coverage" key={i}>
+                    {w}
+                  </div>
+                ))}
+              </details>
               {mode === "graph" ? (
                 <>
                   <form
@@ -689,6 +725,24 @@ function App() {
                       More neighbors
                     </button>
                   )}
+                  {graph?.offset != null && (
+                    <div className="graph-pages">
+                      <button
+                        disabled={!graph?.offset}
+                        onClick={() =>
+                          loadGraph(filter, Math.max(0, graph.offset - 100))
+                        }
+                      >
+                        Previous nodes
+                      </button>
+                      <button
+                        disabled={graph?.next_offset == null}
+                        onClick={() => loadGraph(filter, graph.next_offset)}
+                      >
+                        Next nodes
+                      </button>
+                    </div>
+                  )}
                   <Graph key={project} graph={graph} onExpand={expandNode} />
                 </>
               ) : (
@@ -708,8 +762,8 @@ function App() {
                         <div className="suggestions">
                           {[
                             "What does this project do, and where should I start?",
-                            "How is the code organized?",
-                            "What evidence explains the most recent changes?",
+                            "Which uploaded instructions explain how this code should behave?",
+                            "Investigate a change and compare it with previous approaches.",
                           ].map((q) => (
                             <button key={q} onClick={() => setQuestion(q)}>
                               {q}
@@ -746,6 +800,34 @@ function App() {
                                   {t.claims?.map((c, i) => (
                                     <div className="claim" key={i}>
                                       <p>{c.text}</p>
+                                      <div className="quoted-support">
+                                        {c.support.map((support, j) => (
+                                          <details key={j}>
+                                            <summary>
+                                              Evidence {j + 1} ·{" "}
+                                              {support.nodes?.length || 0} graph
+                                              nodes
+                                            </summary>
+                                            <blockquote>
+                                              {support.quote}
+                                            </blockquote>
+                                            {support.nodes?.map((n) => (
+                                              <button
+                                                className="node-reference"
+                                                key={n.id}
+                                                title={n.id}
+                                                onClick={() => {
+                                                  focusNode(n.id);
+                                                }}
+                                              >
+                                                <Network size={12} />
+                                                {n.label}
+                                                <small>{n.id}</small>
+                                              </button>
+                                            ))}
+                                          </details>
+                                        ))}
+                                      </div>
                                       <div className="citations">
                                         {[
                                           ...new Map(
@@ -816,10 +898,10 @@ function App() {
                     </label>
                     <textarea
                       id="question"
-                      placeholder="Ask about the code, a decision, or a bug…"
+                      placeholder="Ask a question, explore a past approach, or describe a change…"
                       rows={2}
                       value={question}
-                      disabled={busy}
+                      disabled={busy || ingesting}
                       onChange={(e) => setQuestion(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
@@ -834,15 +916,17 @@ function App() {
                           <Network size={12} /> Company
                         </span>
                         <small>
-                          {busy
-                            ? "Investigating…"
-                            : "Code · documents · available history"}
+                          {ingesting
+                            ? "Building document graph…"
+                            : busy
+                              ? "Investigating…"
+                              : "Code · documents · available history"}
                         </small>
                       </span>
                       <button
                         className="submit"
                         aria-label="Send question"
-                        disabled={busy || !question.trim()}
+                        disabled={busy || ingesting || !question.trim()}
                       >
                         <ArrowUp size={18} />
                       </button>
@@ -858,7 +942,8 @@ function App() {
             <aside className="evidence-panel">
               <div className="inspector-heading">
                 <span>
-                  <BookOpen size={16} /> Evidence inspector
+                  <Network size={16} />{" "}
+                  {selected ? "Cited evidence" : "Knowledge & sources"}
                 </span>
                 {selected && (
                   <button
@@ -931,25 +1016,62 @@ function App() {
                   </div>
                 </>
               ) : (
-                <div className="evidence-empty">
-                  <span className="evidence-icon">
-                    <Network size={28} />
-                  </span>
-                  <h3>Follow a claim to its source.</h3>
-                  <p>
-                    Click a citation in the conversation to inspect the original
-                    text and its recorded graph path.
+                <div className="knowledge-overview">
+                  <div className="knowledge-heading">
+                    <strong>Company knowledge graph</strong>
+                    <button
+                      onClick={() =>
+                        setMode(mode === "graph" ? "chat" : "graph")
+                      }
+                    >
+                      {mode === "graph" ? "Return to chat" : "Explore graph"}
+                      <ArrowUpRight size={14} />
+                    </button>
+                  </div>
+                  <p>Code, documents, and recorded history in FalkorDB.</p>
+                  <div className="knowledge-counts">
+                    {graph?.counts
+                      ?.filter((c) =>
+                        ["File", "Symbol", "Document", "Source"].includes(
+                          c.kind,
+                        ),
+                      )
+                      .map((c) => (
+                        <span key={c.kind}>
+                          <strong>{c.count}</strong>
+                          {c.kind}
+                        </span>
+                      ))}
+                  </div>
+                  <Graph
+                    key={mode}
+                    graph={graph}
+                    compact
+                    onExpand={expandNode}
+                  />
+                  <p className="graph-caption">
+                    Graph preview · {graph?.nodes.length || 0} nodes in this
+                    page
+                    {graph?.truncated ? " · paged view" : ""}. Open the explorer
+                    to search and page through the graph.
                   </p>
-                  <div className="evidence-guide">
-                    <span>
-                      <span>01</span>Check the original source
-                    </span>
-                    <span>
-                      <span>02</span>Inspect the graph relationship
-                    </span>
-                    <span>
-                      <span>03</span>Decide what the evidence supports
-                    </span>
+                  <IngestionPanel
+                    key={project}
+                    project={project}
+                    refresh={uploadNotice}
+                    onComplete={() => loadGraph("")}
+                    onStatus={setIngesting}
+                  />
+                  <div className="source-tip">
+                    <FileText size={18} />
+                    <div>
+                      <strong>Add your company context</strong>
+                      <p>
+                        Upload design notes, file instructions, and previous
+                        approaches with Add document. Graphify extracts
+                        relationships automatically.
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1002,12 +1124,14 @@ function App() {
               acquisition fails
             </label>
             <div className="modal-note">
-              Python symbol indexing · Markdown & RST documents
+              Graphify code extraction · Python call analysis · FalkorDB storage
               <br />
               Up to 20 recently updated work items, with complete children for
               each imported item. Older history is not covered.
               <br />
-              Public repositories only. GitHub CLI authentication is required.
+              Public repositories only. Graphify supports up to 500 code files /
+              10 MB per repository; unsupported languages are outside extraction
+              coverage.
             </div>
             <button className="primary" disabled={connecting}>
               {connecting ? (

@@ -17,7 +17,7 @@ from ..graph import GraphStore, GraphUnavailable
 from . import exchange, personal, team
 from .actions import active_actions, approve, checked_action, execute, prepare_plan
 from .agent import run_turn
-from .enrichment import active_ingestions, run_enrichment
+from .enrichment import active_ingestions, run_document_enrichment, run_enrichment
 from .evidence import canonical_graph, native_graph, ready, resolve
 from .sources import onboard, repository_url, upload_binary, upload_document
 from .state import State
@@ -38,7 +38,7 @@ class CompanyBridgeInput(BaseModel):
 class RepositoryInput(BaseModel):
     url: str = Field(min_length=1, max_length=300)
     history: bool = True
-    history_required: bool = True
+    history_required: bool = False
 
 
 class QuestionInput(BaseModel):
@@ -567,17 +567,18 @@ def create_app(state, token, origin, assets=None):
             )
 
     @app.get("/api/repositories/{project}/graph")
-    def graph(project: str, query: str = ""):
+    def graph(project: str, query: str = "", offset: int = 0):
         project_ready(project)
-        if len(query) > 100:
+        if len(query) > 100 or not 0 <= offset <= 50000:
             raise ValueError("Use a shorter graph filter")
         store = GraphStore(state.config(project))
         sha = ready(store)
         nodes = store.query(
             "MATCH (n {repo_id:$repo}) WHERE coalesce(n.current,true) AND NOT n:Source "
             "AND ($q='' OR any(value IN [n.path,n.qualname,n.title,n.name,n.uid] WHERE toLower(coalesce(value,'')) CONTAINS toLower($q))) "
-            "RETURN n.uid AS uid ORDER BY uid LIMIT 101",
-            {"repo": store.cfg.repo_id, "q": query},
+            "WITH n, CASE WHEN n:Project THEN 0 WHEN n:File THEN 1 WHEN n:Symbol THEN 2 WHEN n:Document THEN 3 ELSE 4 END AS rank "
+            "RETURN n.uid AS uid ORDER BY rank,uid SKIP $offset LIMIT 101",
+            {"repo": store.cfg.repo_id, "q": query, "offset": offset},
         )
         roots = [n["uid"] for n in nodes[:100]]
         sources = store.query(
@@ -591,6 +592,13 @@ def create_app(state, token, origin, assets=None):
         return {
             **result,
             "revision": sha,
+            "offset": offset,
+            "next_offset": offset + 100 if len(nodes) > 100 else None,
+            "counts": store.query(
+                "MATCH (n {repo_id:$repo}) WHERE coalesce(n.current,true) "
+                "RETURN labels(n)[0] AS kind,count(n) AS count ORDER BY kind",
+                {"repo": store.cfg.repo_id},
+            ),
             "truncated": truncated,
             "limits": {"nodes": 150, "edges": 300, "roots": 100, "source_neighbors": 50},
         }
@@ -648,8 +656,21 @@ def create_app(state, token, origin, assets=None):
                     raw = base64.b64decode(body.data_base64, validate=True)
                 except (ValueError, binascii.Error):
                     raise ValueError("Invalid base64 file data") from None
-                return upload_binary(state, project, body.filename, raw)
-            return upload_document(state, project, body.filename, body.text)
+                receipt = upload_binary(state, project, body.filename, raw)
+            else:
+                receipt = upload_document(state, project, body.filename, body.text)
+            job = state.create(
+                "enrichment",
+                project,
+                project=project,
+                engine="graphify",
+                sources=receipt.pop("source_ids"),
+                model=state.model,
+                status="queued",
+                stage="Document saved; Graphify extraction queued",
+            )
+            workers.submit(run_document_enrichment, state, job["id"])
+            return {**receipt, "enrichment": job}
 
     @app.get("/api/repositories/{project}/documents")
     def documents(project: str):

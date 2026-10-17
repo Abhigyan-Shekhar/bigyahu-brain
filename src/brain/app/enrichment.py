@@ -108,7 +108,7 @@ def publish(store, result, documents, engine, model, sha):
         "UNWIND $nodes AS item MERGE (d:Document {uid:item.uid}) SET d += item.props,d.path=null "
         "WITH d,item MATCH (s:Source {uid:item.source,repo_id:$repo}) "
         "MERGE (copy:Source {uid:item.uid+':source'}) SET copy += properties(s),copy.uid=item.uid+':source' "
-        "MERGE (d)-[:SUPPORTS]->(copy) "
+        "MERGE (d)-[:SUPPORTS]->(copy) MERGE (d)-[:DERIVED_FROM]->(s) "
         "WITH count(d) AS written UNWIND $edges AS item "
         "MATCH (a:Document {uid:item.a}), (b:Document {uid:item.b}) "
         "MERGE (a)-[r:EXTRACTED_RELATION {relation:item.relation}]->(b) "
@@ -131,8 +131,8 @@ def publish(store, result, documents, engine, model, sha):
     }
 
 
-def run_enrichment(state, uid):
-    job = state.get(uid, "enrichment")
+def run_enrichment(state, uid, kind="enrichment"):
+    job = state.get(uid, kind)
     if not state.transition(
         uid,
         {"status": "queued"},
@@ -208,4 +208,49 @@ def run_enrichment(state, uid):
             error=str(exc)[:500]
             if isinstance(exc, ValueError)
             else "Semantic extraction failed; no semantic graph was published.",
+        )
+
+
+def run_document_enrichment(state, uid):
+    """Process every uploaded section in bounded batches; retain partial failure receipts."""
+    job = state.get(uid, "enrichment")
+    if not state.transition(
+        uid, {"status": "queued"}, status="running", stage="Preparing document graph"
+    ):
+        return
+    totals = {"nodes": 0, "relationships": 0, "engine": "graphify", "batches": 0}
+    try:
+        # Upload sections are at most 1800 characters, so eight always fit the worker bound.
+        for index in range(0, len(job["sources"]), 8):
+            state.update(
+                uid,
+                stage=f"Extracting document sections {index + 1}–{min(index + 8, len(job['sources']))}",
+            )
+            child = state.create(
+                "enrichment_batch",
+                uid,
+                project=job["project"],
+                engine="graphify",
+                sources=job["sources"][index : index + 8],
+                status="queued",
+                model=state.model,
+            )
+            # The worker accepts durable enrichment records. Child records remain out of the UI list.
+            state.update(child["id"], batch_parent=uid)
+            run_enrichment(state, child["id"], kind="enrichment_batch")
+            completed = state.get(child["id"])
+            if completed["status"] != "complete":
+                raise ValueError(completed.get("error", "Document extraction failed"))
+            for key in ("nodes", "relationships"):
+                totals[key] += completed["result"][key]
+            totals["batches"] += 1
+        state.update(uid, status="complete", stage="Document knowledge graph ready", result=totals)
+    except Exception as exc:  # noqa: BLE001 - retain recoverable source and partial graph status
+        state.update(
+            uid,
+            status="failed",
+            stage="Document graph incomplete",
+            result=totals,
+            error=(str(exc)[:400] if isinstance(exc, ValueError) else "Graphify extraction failed")
+            + ". Uploaded sources remain searchable; completed batches are retained. Retry from document sources.",
         )

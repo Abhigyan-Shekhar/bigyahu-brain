@@ -16,8 +16,10 @@ from ..ingest.documents import (
 from ..ingest.git_parser import git
 from ..ingest.github_initial import sync_initial
 from ..ingest.github_sync import GitHub
+from ..ingest.graphify import SUFFIXES, ingest_graphify
 from ..ingest.sync import sync
 from ..memory import digest
+from .knowledge import link_sources
 
 
 def repository_url(url):
@@ -94,7 +96,7 @@ def clone_public(url, target):
     )
 
 
-def onboard(state, project, history=True, history_required=True):
+def onboard(state, project, history=True, history_required=False):
     try:
         state.update(project, status="running", stage="Cloning public repository")
         folder = state.folder(project)
@@ -104,7 +106,30 @@ def onboard(state, project, history=True, history_required=True):
         store = GraphStore(cfg)
         state.update(project, stage="Indexing code and Git history")
         result = sync(store)
-        warnings = []
+        state.update(project, stage="Extracting repository knowledge with Graphify")
+        code_paths = [
+            p
+            for p in git(cfg.repo_root, "ls-files", "-z").split("\0")
+            if Path(p).suffix in SUFFIXES
+        ]
+        graphify = (
+            ingest_graphify(store, code_paths)
+            if code_paths
+            else {
+                "files": 0,
+                "nodes": 0,
+                "relationships": 0,
+                "warning": "No supported code files found",
+            }
+        )
+        warnings = [graphify["warning"]] if "warning" in graphify else []
+        excluded = graphify.get("coverage", {})
+        if any(excluded.values()):
+            warnings.append(
+                f"Graphify coverage excludes {excluded.get('unlocated_nodes_excluded', 0)} unlocated references "
+                f"and {excluded.get('relationships_without_located_endpoints', 0)} relationships without located endpoints. "
+                "External dependency definitions are not indexed."
+            )
         github_coverage = {"mode": "not_requested"}
         if history:
             state.update(project, stage="Acquiring GitHub issues and pull requests")
@@ -156,6 +181,7 @@ def onboard(state, project, history=True, history_required=True):
             status="ready",
             stage="Ready",
             indexing=result,
+            graphify=graphify,
             revision=store.revision()["sha"],
             warnings=warnings,
             github_coverage=github_coverage,
@@ -189,6 +215,7 @@ def upload_document(state, project, filename, text):
     folder = state.folder(project) / "uploads"
     folder.mkdir(exist_ok=True)
     (folder / content).write_bytes(raw)
+    source_ids = []
     for start, end, body in prepared:
         uid = f"{cfg.repo_id}@{sha}:upload:{content}:L{start}-L{end}"
         props = {
@@ -213,11 +240,14 @@ def upload_document(state, project, filename, text):
         )
         store.upsert("Document", uid, {**props, "text": body})
         store.edge(uid, "SUPPORTS", uid + ":source")
+        source_ids.append(uid + ":source")
     return {
         "filename": filename,
         "digest": content,
         "sections": len(prepared),
         "format": "text",
+        "source_ids": source_ids,
+        **link_sources(store, source_ids),
         "binding": False,
     }
 
@@ -312,6 +342,8 @@ def upload_binary(state, project, filename, raw):
         "digest": content,
         "sections": len(prepared),
         "format": extracted["format"],
+        "source_ids": [s["uid"] for s in sources],
+        **link_sources(store, [s["uid"] for s in sources]),
         "binding": False,
         "extraction": {k: v for k, v in extracted.items() if k != "text"},
     }

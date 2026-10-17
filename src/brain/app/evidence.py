@@ -16,7 +16,7 @@ def native_graph(store, uids):
     params = {"repo": store.cfg.repo_id, "ids": uids}
     nodes = store.query(
         "MATCH (n {repo_id:$repo}) WHERE n.uid IN $ids "
-        "RETURN n.uid AS id, labels(n) AS labels, coalesce(n.qualname,n.path,n.title,n.name,n.uid) AS label ORDER BY id",
+        "RETURN n.uid AS id, labels(n) AS labels, coalesce(n.qualname,n.title,n.path,n.name,n.uid) AS label ORDER BY id",
         params,
     )
     edges = store.query(
@@ -118,7 +118,7 @@ def source_evidence(store, source_uid):
     text = row["text"] or ""
     if not text or len(text) > 12000 or (row["digest"] and digest(text) != row["digest"]):
         raise ValueError("Source evidence missing, changed or exceeds bounds")
-    if row["kind"] == "repository_document":
+    if row["kind"] in {"repository_document", "graphify_structural"}:
         proof = code_evidence(store, row["path"], row["start"], row["end"])
         if proof["text"] != text:
             raise ValueError("Document source differs from current file bytes")
@@ -176,7 +176,7 @@ def source_evidence(store, source_uid):
         "verification": "original_file_digest_and_extraction_snapshot"
         if row["kind"] == "app_binary_upload"
         else "source_bytes_and_native_graph"
-        if row["kind"] in {"repository_document", "app_upload", "app_binary_upload"}
+        if row["kind"] in {"repository_document", "graphify_structural", "app_upload", "app_binary_upload"}
         else "recorded_snapshot_and_native_graph",
         "binding": False,
     }
@@ -236,7 +236,14 @@ def verified_claims(store, folder, output):
                 or quoted not in current["text"]
             ):
                 raise ValueError("Evidence changed or quotation unsupported")
-            supporting.append({"evidence_id": uid, "quote": quoted, "title": current["title"]})
+            supporting.append(
+                {
+                    "evidence_id": uid,
+                    "quote": quoted,
+                    "title": current["title"],
+                    "nodes": current["graph"]["nodes"],
+                }
+            )
         if not supporting:
             raise ValueError("Repository claims require checked source support")
         claims.append({"text": claim["text"], "support": supporting})

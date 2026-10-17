@@ -139,7 +139,7 @@ def test_required_history_acquisition_cannot_silently_fall_back(tmp_path, monkey
         lambda *_args, **_kw: (_ for _ in ()).throw(ValueError("rate limit")),
     )
     monkeypatch.setattr(sources, "git", lambda *_: "")
-    sources.onboard(state, project["id"])
+    sources.onboard(state, project["id"], history_required=True)
     assert state.get(project["id"])["status"] == "failed"
     assert "Required GitHub" in state.get(project["id"])["error"]
     other = state.create("repository", url="https://github.com/example/fixture")

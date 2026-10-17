@@ -2,8 +2,11 @@
 
 A local React/FastAPI application now connects public GitHub onboarding, real
 FalkorDB graph exploration, document upload, conversational Codex investigation,
-source inspection, and approval-controlled isolated coding actions. The flow is
-**paste repository URL → index → ask → inspect source → plan → approve → patch/test report**.
+source inspection, and approval-controlled isolated coding actions. The primary flow is
+**paste repository URL → Graphify → chat + graph → upload documents → automatic
+Graphify extraction → cited answers → plan → approve → patch/test report**.
+See [the chat workspace guide](chat-knowledge-workspace.md) for the current interface,
+node quotations, graph paging, automatic extraction and coverage limits.
 See [approved coding actions](company-brain-actions.md) for execution requirements
 and a reproducible synthetic acceptance check.
 
@@ -60,12 +63,12 @@ served by FastAPI is the supported authenticated workflow.
 1. A public HTTPS GitHub URL creates a persisted indexing job. The server checks
    public visibility, clones the default branch with up to 100 commits into a new
    workspace, checks size/file/symlink/submodule limits before checkout, and runs
-   the existing Python AST/Git indexer. It never imports the repository's Python,
+   the existing Python AST/Git indexer followed by mandatory Graphify extraction. It never imports the repository's Python,
    installs its dependencies or runs its scripts during onboarding.
 2. Bounded existing GitHub sync acquires accessible issue/PR snapshots. Acquisition
    fails before mutation on pagination/request limits. By default, unavailable
-   acquisition stops onboarding. The connect dialog can explicitly permit
-   code/Git-only indexing instead, with missing coverage reported.
+   acquisition is reported as a coverage gap. The connect dialog can require
+   acquisition to succeed for demonstrations that depend on issue/PR history.
    A failed graph mutation/readiness fence fails the onboarding job instead.
 3. Existing Markdown/RST ingestion indexes at most 12 repository documents,
    256 KB/file and 1 MB total. Coverage limits are visible. Uploaded UTF-8

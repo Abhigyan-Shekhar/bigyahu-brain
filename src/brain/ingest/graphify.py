@@ -166,9 +166,8 @@ def ingest_graphify(store, paths=None):
             raise ValueError(
                 "Graphify failed; install the pinned graphify extra and check supported inputs"
             )
-        nodes, sources, edges = normalize(
-            json.loads(output.read_text()), texts, cfg.repo_id, sha, cfg.repo_url
-        )
+        extracted = json.loads(output.read_text())
+        nodes, sources, edges = normalize(extracted, texts, cfg.repo_id, sha, cfg.repo_url)
     if (
         not clean(cfg.repo_root)
         or revision(cfg.repo_root) != sha
@@ -192,6 +191,12 @@ def ingest_graphify(store, paths=None):
     for uid, source, props in nodes:
         store.upsert("Document", uid, props)
         store.edge(uid, "SUPPORTS", source)
+    store.query(
+        "MATCH (d:Document {repo_id:$repo,source_kind:'graphify_structural',current:true}), "
+        "(f:File {repo_id:$repo}) WHERE d.path=f.path AND d.path IN $paths "
+        "MERGE (f)-[:HAS_EXTRACTED_NODE]->(d)",
+        params,
+    )
     for a, b, relation, confidence, source, basis in edges:
         # Fixed relationship type; upstream prose never becomes executable Cypher.
         store.query(
@@ -223,4 +228,5 @@ def ingest_graphify(store, paths=None):
         "relationships": len(edges),
         "binding": False,
         "semantic_extraction": False,
+        "coverage": extracted.get("coverage", {}),
     }

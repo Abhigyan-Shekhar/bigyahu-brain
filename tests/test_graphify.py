@@ -115,3 +115,50 @@ def test_live_graphify_ingestion_retrieval_idempotency_and_bridge(real):
         real.query("MATCH (n {repo_id:$repo}) RETURN count(n) AS count", {"repo": real.cfg.repo_id})
         == before
     )
+
+
+def test_worker_preserves_nested_paths_and_discloses_unlocated_references(tmp_path):
+    """A real extractor run covers same-name files, an empty file, and external types."""
+    pytest.importorskip("graphify")
+    import json
+    import subprocess
+    import sys
+
+    root = tmp_path / "input"
+    for folder in ("one", "two"):
+        (root / folder).mkdir(parents=True)
+        (root / folder / "__init__.py").write_text(
+            "from typing import Any\ndef value(x: Any): return x\n"
+        )
+    (root / "empty.py").write_text("")
+    # macOS /var is an alias of /private/var; an explicit symlink reproduces it on all hosts.
+    alias = tmp_path / "alias"
+    alias.symlink_to(root, target_is_directory=True)
+    manifest, output = tmp_path / "files.json", tmp_path / "result.json"
+    paths = ["one/__init__.py", "two/__init__.py", "empty.py"]
+    manifest.write_text(json.dumps(paths))
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "brain.ingest.graphify_worker",
+            str(alias),
+            str(tmp_path / "cache"),
+            str(output),
+            str(manifest),
+        ],
+        check=True,
+        capture_output=True,
+        timeout=30,
+    )
+    result = json.loads(output.read_text())
+    assert {n["source_file"] for n in result["nodes"]} == set(paths[:2])
+    assert result["coverage"]["unlocated_nodes_excluded"] >= 1
+    assert result["coverage"]["relationships_without_located_endpoints"] >= 1
+    normalize(
+        result,
+        {p: (root / p).read_text() for p in paths},
+        "fixture",
+        "sha",
+        "https://github.com/example/fixture",
+    )

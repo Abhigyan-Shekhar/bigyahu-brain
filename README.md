@@ -159,7 +159,11 @@ selected `.abhi/2` export/import.
 
 ## Company Brain application
 
-The new local React/FastAPI application connects public GitHub onboarding, bounded
+The [chat and knowledge workspace](docs/chat-knowledge-workspace.md) makes conversation
+the primary interface, runs Graphify during onboarding and automatically on uploaded
+documents, and shows quoted evidence with graph node identities beside the conversation.
+
+The local React/FastAPI application connects public GitHub onboarding, bounded
 indexing status, Markdown/RST/PDF/Word upload, conversational Codex investigation, a native
 graph explorer and clickable source inspection. Chat uses real read-only tools;
 the server checks citation IDs, source bytes, quotations and graph paths.
