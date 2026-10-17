@@ -1,5 +1,10 @@
 # Graphify and three-brain integration milestone
 
+**Later application extension:** selected document sections now support the real
+Graphify semantic API and FalkorDB SDK ingestion, including PDF/DOCX uploads. See
+[semantic document ingestion](semantic-document-ingestion.md). The structural
+CLI contract and historical measurements below remain unchanged.
+
 This milestone addresses the runner/tool gap and adds a fresh guided agent run,
 a structural Graphify runtime adapter, optional semantic conversation selection,
 frontier traversal and a local authorized viewer. Existing approved demo databases

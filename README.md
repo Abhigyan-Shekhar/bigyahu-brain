@@ -58,8 +58,12 @@ frontier traversal, a permission-aware local viewer and a freshly verified guide
 Codex run. The runner's `--memory-graph` option enables search and inspection;
 write/administration tools remain excluded.
 
-**Still planned:** Graphify's semantic model pass, the FalkorDB GraphRAG SDK/PDF
-pipeline, full-history graph portability, a hosted multi-user graph experience,
+**Document semantic ingestion is now integrated:** PDF/Word uploads, Graphify’s
+semantic API and FalkorDB GraphRAG SDK ingestion, with native source-backed
+relationships. See [the ingestion guide](docs/semantic-document-ingestion.md).
+
+**Still planned:** whole-repository semantic automation, SDK vector retrieval,
+full-history graph portability, a hosted multi-user graph experience,
 and broader agent evaluation. [Named company concepts](docs/company-concepts.md)
 now have source-grounded mention paths; arbitrary semantic identity resolution is
 still unbuilt; automatic correction proposals require an explicit correction and
@@ -74,7 +78,7 @@ associations with checked source spans; no identity or policy authority is infer
 
 ## Validation and measured results
 
-The current full isolated memory/graph suite passed **287 tests**, including real
+The current full isolated memory/graph/application suite passed **361 tests**, including real
 FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
 pass. The portability workflow includes live Docker graph/memory regression
 checks and installs the optional Graphify extractor there. CI for these new changes
@@ -152,6 +156,35 @@ Replace `alice` with the configured principal. Launch MCP with the same
 paths require current company access and `sync-graph --include-company`, followed
 by search with `--include-graph`. See [portable exchange](docs/abhi-format.md) for
 selected `.abhi/2` export/import.
+
+## Company Brain application
+
+The new local React/FastAPI application connects public GitHub onboarding, bounded
+indexing status, Markdown/RST/PDF/Word upload, conversational Codex investigation, a native
+graph explorer and clickable source inspection. Chat uses real read-only tools;
+the server checks citation IDs, source bytes, quotations and graph paths.
+
+See [the application run guide](docs/company-brain-app.md) for installation,
+launch commands, limits and verification. The application now supports repository →
+graph → cited answer → source → cited fix plan → explicit approval → isolated
+patch and test report. [Approved coding actions](docs/company-brain-actions.md)
+produce a downloadable diff without applying or publishing it.
+[Personal Brain](docs/personal-brain-app.md) now supports private notes, exact-consent
+selected-turn proposals, source review, acceptance/rejection/revocation and reviewed
+coding lesson recall through FalkorDB. A fresh real-agent chat returned two checked
+claims citing an accepted lesson. [Team Brain](docs/team-brain-app.md) now supports
+selected sharing, separate team review, catalog roles and member views of permitted shared contributions.
+Fresh Codex chat can cite accepted team evidence. [Portable `.abhi` controls](docs/abhi-app.md)
+now preview selected exports, validate imports and keep record/assertion review
+independent. The [integrated synthetic demonstration](docs/application-integrated-demo.md)
+combines a reviewed import with company policy, approves and tests an isolated
+fix, then reviews its new lesson and recalls it in a fresh chat. Five regression
+tests and 15 held-out replay cases pass. Public onboarding and PDF/Word semantic
+ingestion retain their separate verification reports.
+
+The [PR #7 review fixes](docs/pr7-review-fixes.md) improve symbol search, semantic
+relationship inspection and source paths, distinguish passing tests from a
+baseline-failing regression, and make citation graph comparison order-independent.
 
 ## Graphify, semantic extraction and graph viewing
 

@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "fixture": "Existing indexed disposable synthetic retry repository",
+  "format": "abhi/2",
+  "records": 1,
+  "portable_nodes": 2,
+  "portable_edges": 1,
+  "envelope_digest": "ee16a5e291a6d9f2961c7ba7069cc007143f8a8a6c0d4a364b6944a86204f732",
+  "browser_reexport_preserves_entire_envelope": true,
+  "imported_proposal_excluded_before_review": true,
+  "accepted_import_retrieved_natively": true,
+  "original_envelope_and_selected_record_snapshots_checked": true,
+  "origin_authenticated": false,
+  "fresh_integrated_investigation": {
+    "checked_claims": 3,
+    "verified_source_kinds": [
+      "code",
+      "reviewed_import",
+      "source"
+    ],
+    "actual_read_tool_calls": 13,
+    "backend_hashes_match_run": true,
+    "model": "gpt-6.1-sol"
+  },
+  "integrated_coding_action": {
+    "status": "passed",
+    "scope": "Synthetic application coding acceptance; not a production repository benchmark",
+    "base_revision": "43c355b14cc3d65852987b4dce30916286837af9",
+    "plan_digest": "1a34cb4469576b962d752d995ef9fc5bafc46e272806506c640f24968b391868",
+    "approved_files": [
+      "retry.py",
+      "test_retry.py"
+    ],
+    "approved_commands": [
+      [
+        "python",
+        "-m",
+        "unittest",
+        "test_retry.py",
+        "-v"
+      ]
+    ],
+    "changed_files": [
+      "retry.py",
+      "test_retry.py"
+    ],
+    "patch_sha256": "c2114227e63038d63489eb483528edda22e363d37d5f2578d25ab7e976d56f14",
+    "baseline_regression_tests_failed": true,
+    "patched_tests_reported": [
+      5
+    ],
+    "held_out_oracle_cases": 15,
+    "downloaded_patch_replay_passed": true,
+    "original_oracle_failed": true,
+    "original_checkout_unchanged": true,
+    "consumed_approval_replay_rejected": true,
+    "lesson_status": "unaccepted draft",
+    "planning_evidence": {
+      "checked_claims": 3,
+      "verified_source_kinds": [
+        "code",
+        "reviewed_import",
+        "source"
+      ],
+      "actual_read_tool_calls": 9,
+      "backend_hashes_match_run": true,
+      "model": "gpt-6.1-sol"
+    }
+  },
+  "new_coding_lesson_independently_accepted_and_graph_verified": true,
+  "fresh_new_lesson_recall": {
+    "checked_claims": 2,
+    "independent_conversation_turns": 1,
+    "query_mode": "User explicitly referenced the newly reviewed memory ID",
+    "actual_memory_search_verified": true,
+    "backend_hashes_match_run": true
+  },
+  "limits": [
+    "App supports abhi/2 only, matching configured tenant/team; no automatic tenant remapping",
+    "Origin signatures, permissions, identities and approval are not imported",
+    "Relationships retain separate review after endpoint acceptance; browser fixture exported one record, relationship round-trip covered by live tests",
+    "Integrated coding run starts from an existing indexed synthetic fixture; public onboarding and PDF/Word semantic ingestion have separate reports",
+    "No production readiness, general recall quality or causal coding advantage is claimed"
+  ]
+}
