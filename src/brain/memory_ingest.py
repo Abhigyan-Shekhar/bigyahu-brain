@@ -6,7 +6,36 @@ from collections import Counter
 from pathlib import Path
 
 from .ingest.documents import sections
-from .memory import canonical, citations, digest
+from .memory import canonical, citations, digest, now
+
+
+def share_memory(memory, uid, expected_hash, target, expected_target=""):
+    """Explicitly copy one reviewed private record into a shared proposal.
+
+    Original source citations are retained so authorized graph views can follow
+    SAME_CITATION paths. No private brain or membership is granted to readers.
+    """
+    if target != "company" and not re.fullmatch(r"team:[A-Za-z0-9_-]{1,64}", target):
+        raise ValueError("Sharing requires a team or company destination")
+    brain = "private:" + memory.identity.principal
+    with memory.lock, memory.db:
+        memory.db.execute("BEGIN IMMEDIATE")
+        memory.authorize(brain)
+        memory.authorize(target, write=True)
+        row = memory.db.execute(
+            "SELECT * FROM records WHERE tenant=? AND brain=? AND uid=? "
+            "AND hash=? AND state='accepted' AND (expires='' OR expires>?)",
+            (memory.identity.tenant, brain, uid, expected_hash, now()),
+        ).fetchone()
+        if not row:
+            raise ValueError("Share requires the exact current accepted private record")
+        shared = memory.put(
+            target, row["text"], json.loads(row["sources"]),
+            uid="share:" + digest(canonical([memory.identity.principal, uid, target])),
+            expected=expected_target, expires=row["expires"],
+        )
+        memory._event(brain, uid, "share", canonical({"target": target, "hash": expected_hash}))
+        return {**shared, "brain": target, "binding": False}
 
 
 def read_json(path):
@@ -26,6 +55,14 @@ def read_json(path):
 
 
 def import_abhi(memory, payload):
+    if isinstance(payload, dict) and payload.get("format") == "abhi/2":
+        from .abhi_graph import import_graph
+
+        return import_graph(memory, payload)
+    return _import_records(memory, payload)
+
+
+def _import_records(memory, payload, fingerprint=None, after_records=None):
     required = {"format", "tenant", "team", "collection", "parent_digest", "records"}
     if not isinstance(payload, dict) or set(payload) != required or payload["format"] != "abhi/1":
         raise ValueError("Invalid .abhi envelope")
@@ -41,7 +78,7 @@ def import_abhi(memory, payload):
     records = payload["records"]
     if not isinstance(records, list) or len(records) > 512:
         raise ValueError("Import record bound exceeded")
-    fingerprint = digest(canonical(payload))
+    fingerprint = fingerprint or digest(canonical(payload))
     keys = (memory.identity.tenant, brain, collection)
     memory.db.execute("BEGIN IMMEDIATE")
     try:
@@ -85,6 +122,8 @@ def import_abhi(memory, payload):
                 record["expires"],
                 collection,
             )
+        if after_records is not None:
+            after_records()
         memory.db.execute("INSERT OR REPLACE INTO imports VALUES(?,?,?,?)", (*keys, fingerprint))
         memory._event(brain, collection, "import", fingerprint)
         memory.db.commit()

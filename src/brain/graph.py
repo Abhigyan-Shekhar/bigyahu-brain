@@ -52,6 +52,16 @@ class GraphStore:
 
     def query(self, cypher, params=None, scope="org"):
         name = self.cfg.graph_name(scope)
+        return self._query(name, cypher, params)
+
+    def memory_query(self, cypher, params=None):
+        """Separate opt-in projection namespace; never reachable via scope arguments."""
+        if not self.cfg.memory_graph_enabled or not self.cfg.tenant_id:
+            raise ValueError("Memory graph is not enabled")
+        prefix = self.cfg.graph_name("org").removesuffix("org_demo")
+        return self._query(prefix + "memory", cypher, params)
+
+    def _query(self, name, cypher, params=None):
         try:
             if self.db is None:
                 self.db = FalkorDB(**self.cfg.connection_options())

@@ -7,5 +7,7 @@ tenant_id: example
 host: 127.0.0.1
 port: 6395
 memory_db: /ABSOLUTE/PATH/TO/PRIVATE/RUNTIME/memory.db
+# Optional native personal/team/company memory projections and memory_graph MCP tool.
+# memory_graph_enabled: true
 # Optional. Omit for lexical/graph search without model dependencies.
 # embedding_model_dir: /ABSOLUTE/PATH/TO/PRIVATE/RUNTIME/models/minilm-v1

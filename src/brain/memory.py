@@ -74,7 +74,7 @@ class Memory:
         self.db.execute("PRAGMA foreign_keys=ON")
         self.db.execute("PRAGMA secure_delete=ON")
         version = self.db.execute("PRAGMA user_version").fetchone()[0]
-        if version not in {0, 1}:
+        if version not in {0, 1, 2}:
             self.db.close()
             raise ValueError("Unsupported memory schema; restore compatible backup")
         if version == 0:
@@ -91,6 +91,17 @@ class Memory:
                 CREATE TABLE imports(tenant TEXT, brain TEXT, collection TEXT, hash TEXT,
                     PRIMARY KEY(tenant,brain,collection));
                 PRAGMA user_version=1;
+                COMMIT;
+            """)
+        if version in {0, 1}:
+            self.db.executescript("""
+                BEGIN IMMEDIATE;
+                CREATE TABLE memory_links(
+                    tenant TEXT, brain TEXT, uid TEXT, source_uid TEXT,
+                    source_hash TEXT, target_uid TEXT, target_hash TEXT,
+                    relation TEXT, sources TEXT, author TEXT, state TEXT,
+                    PRIMARY KEY(tenant,brain,uid));
+                PRAGMA user_version=2;
                 COMMIT;
             """)
         if Path(path).stat().st_mode & 0o077 and __import__("os").name != "nt":
@@ -195,7 +206,7 @@ class Memory:
         brains = list(dict.fromkeys(brains or ["private:" + self.identity.principal]))
         if len(brains) > 10 or not 1 <= limit <= 20 or not 1 <= len(query) <= 1000:
             raise ValueError("Search bounds exceeded")
-        if mode not in {"hybrid", "exact", "fulltext", "vector"}:
+        if mode not in {"hybrid", "exact", "fulltext", "exact_fulltext", "vector"}:
             raise ValueError("Unknown retrieval mode")
         for brain in brains:
             self.authorize(brain)
@@ -236,7 +247,7 @@ class Memory:
                 )
                 terms = re.findall(r"[\w]+", query, re.UNICODE)[:20]
                 lists = []
-                if mode in {"hybrid", "exact"}:
+                if mode in {"hybrid", "exact", "exact_fulltext"}:
                     lists.append(
                         [
                             uid
@@ -245,7 +256,7 @@ class Memory:
                             or any(s["uri"] == query for s in json.loads(r["sources"]))
                         ]
                     )
-                if mode in {"hybrid", "fulltext"} and terms:
+                if mode in {"hybrid", "fulltext", "exact_fulltext"} and terms:
                     expression = " OR ".join('"' + t + '"' for t in terms)
                     lists.append(
                         [
@@ -310,6 +321,21 @@ class Memory:
     def delete(self, brain, uid):
         self.authorize(brain, review=True)
         with self.db:
+            links = self.db.execute(
+                "SELECT uid FROM memory_links WHERE tenant=? AND brain=? "
+                "AND (source_uid=? OR target_uid=?)",
+                (self.identity.tenant, brain, uid, uid),
+            ).fetchall()
+            for link in links:
+                self.db.execute(
+                    "UPDATE events SET detail='' WHERE tenant=? AND brain=? AND uid=?",
+                    (self.identity.tenant, brain, link["uid"]),
+                )
+            self.db.execute(
+                "DELETE FROM memory_links WHERE tenant=? AND brain=? "
+                "AND (source_uid=? OR target_uid=?)",
+                (self.identity.tenant, brain, uid, uid),
+            )
             self.db.execute(
                 "UPDATE records SET text='',sources='[]',vector='[]',state='deleted' "
                 "WHERE tenant=? AND brain=? AND uid=?",
