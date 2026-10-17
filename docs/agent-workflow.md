@@ -116,3 +116,17 @@ Raw outputs and configurations stay in ignored `data/experiments/`. Use
 only manually reviewed summaries and source patches. Check the staged tree and
 reachable history with `scripts/check_publication.py --history` before committing.
 No baseline improvement claim follows from this single demonstration.
+
+## Native three-brain runner mode
+
+Use `--memory-graph` with an enabled graph/catalog config to expose both
+`memory_search` and `memory_graph` alongside the four historical read-only tools.
+`remember` and `memory_propose` remain disabled. The config must point at the
+coding checkout and use the trusted tenant/principal; no caller identity inputs
+are accepted. Baseline and existing `--memory-search` invocations are unchanged.
+
+The [fresh guided three-brain fixture](graphify-three-brain-integration.md) uses
+consented conversation proposals, synthetic review and selected team/company
+sharing, then launches a real fresh Codex process. It preserves raw local traces
+and runs a separate oracle; see [verification](three-brain-agent-verification.json).
+This experiment does not replace the historical frozen urllib3 comparisons.

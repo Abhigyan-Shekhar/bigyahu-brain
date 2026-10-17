@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - run: python -m pip install uv==0.12.23
-      - run: uv sync --frozen --python 3.12
+      - run: uv sync --frozen --extra graphify --python 3.12
       - run: docker run -d --name brain-browser-demo -p 127.0.0.1:6379:6379 falkordb/falkordb:v4.14.7
       - run: git clone https://github.com/urllib3/urllib3.git .checkouts/urllib3-browser-demo
       - run: git -C .checkouts/urllib3-browser-demo checkout --detach a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8

@@ -144,3 +144,27 @@ SAVE, including failures. It runs all live tests, then starts a separate empty
 engine for the retrieval benchmark. Raw logs/configs/databases stay ignored.
 Parser comparison is opt-in in an isolated comparison environment with the
 pinned upstream checkouts; those projects are not runtime dependencies.
+
+## Optional semantic extraction and local viewing
+
+`import-conversation --semantic-model MODEL` sends the exactly consented selected
+envelope to a fresh Codex process for durable-span/literal-entity selection. It
+uses existing Codex authentication and account model usage; omit this option to
+retain deterministic extraction. Record proposals and correction link proposals
+require their existing separate review steps before acceptance. Refresh each
+affected graph projection after review.
+
+Run `python -m brain.memory_viewer --config /ABSOLUTE/PATH/memory.local.yaml` to
+inspect current authorized slices as the configured principal. Open the printed
+loopback session URL; reopen it after reload. Do not expose this local viewer as
+a hosted multi-user service. Member selection shows authored shared memories in
+the currently selected scopes, without access to another private brain.
+See [the integration guide](graphify-three-brain-integration.md) for Graphify
+ingestion, model boundaries and the guided demonstration commands.
+
+Named company document concepts can be explicitly annotated with
+`python -m brain annotate-concepts --document UID --model MODEL`. This sends only
+the selected current document text to that model. Refresh affected memory graph
+projections afterward. Interrupted annotation remains fenced until successful
+retry; model-selected mentions are never approved code constraints. See the
+[named-concept runbook](company-concepts.md) for bounds and evidence checks.

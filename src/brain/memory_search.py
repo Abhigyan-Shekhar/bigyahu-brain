@@ -16,6 +16,8 @@ EXPAND = {
     "EXTENDS",
     "RELATES_TO",
     "MENTIONS",
+    "MENTIONS_CONCEPT",
+    "MATCHES_MENTION",
     "SUPPORTED_BY",
     "SAME_CITATION",
     "VERIFIED_SOURCE",
@@ -29,6 +31,7 @@ SEED_KINDS = {
     "Source",
     "CompanySource",
     "CompanyDocument",
+    "CompanyConceptMention",
     "CompanySymbol",
     "CompanyFile",
 }
@@ -136,59 +139,17 @@ class FalkorMemorySearch:
                 if uid in memory_nodes:
                     add(uid, uid, [uid], [], [], [])
             if seeds:
-                paths = self.store.memory_query(
-                    "MATCH p=(start:MemoryNode)-[*1..4]-(target:MemoryNode) "
-                    "WHERE start.uid IN $seeds AND target.uid IN $memories AND start.uid<>target.uid "
-                    "AND all(n IN nodes(p) WHERE n.uid IN $allowed) "
-                    "AND all(r IN relationships(p) WHERE type(r) IN $types "
-                    "AND (coalesce(r.assertion_uid,'')='' OR r.assertion_uid IN $assertions)) "
-                    "RETURN [n IN nodes(p) | n.uid] AS path, "
-                    "[r IN relationships(p) | type(r)] AS relations, "
-                    "[r IN relationships(p) | coalesce(r.assertion_uid,'')] AS assertions LIMIT 1001",
-                    {
-                        "seeds": list(seeds),
-                        "memories": list(memory_nodes),
-                        "allowed": list(nodes),
-                        "types": sorted(EXPAND),
-                        "assertions": [
-                            e["assertion_uid"] for e in view["edges"] if e.get("assertion_uid")
-                        ],
-                    },
+                from .memory_walk import frontier_paths
+
+                paths, traversal = frontier_paths(
+                    self.store, seeds, nodes, view["edges"], memory_nodes, EXPAND
                 )
-                if len(paths) > 1000:
+                base["traversal"] = traversal
+                if traversal["status"] != "ok":
                     base["status"] = "incomplete"
-                    base["warnings"].append("graph_path_bound_exceeded_narrow_query")
+                    base["warnings"].append(traversal["reason"])
                     return base
-                expected = {
-                    (e["source"], e["relation"], e["target"], e.get("assertion_uid", ""))
-                    for e in view["edges"]
-                }
-                for row in paths:
-                    ids, relations, assertions = row["path"], row["relations"], row["assertions"]
-                    if len(ids) != len(set(ids)):
-                        continue
-                    if (
-                        not ids
-                        or ids[0] not in seeds
-                        or ids[-1] not in memory_nodes
-                        or any(uid not in nodes for uid in ids)
-                        or not 1 <= len(relations) <= 4
-                        or len(ids) != len(relations) + 1
-                        or len(assertions) != len(relations)
-                    ):
-                        raise ValueError("Unexpected native retrieval path")
-                    directions = []
-                    for i, (relation, assertion) in enumerate(zip(relations, assertions)):
-                        if relation not in EXPAND:
-                            raise ValueError("Unexpected native retrieval relationship")
-                        if (ids[i], relation, ids[i + 1], assertion) in expected:
-                            directions.append("outgoing")
-                        elif (ids[i + 1], relation, ids[i], assertion) in expected:
-                            directions.append("incoming")
-                        else:
-                            base["status"] = "incomplete"
-                            base["warnings"].append("retrieval_path_projection_mismatch")
-                            return base
+                for ids, relations, assertions, directions in paths:
                     add(ids[-1], ids[0], ids, relations, assertions, directions)
             ordered = sorted(
                 contributions,

@@ -252,6 +252,61 @@ class CompanyBridge:
                         "company_native_document_mention",
                         source["proof"],
                     )
+        # Named semantic concepts use source-grounded mention associations only.
+        # They never become lexical symbol identities or binding constraints.
+        if entities:
+            from .company_concepts import concept_mentions
+            from .ingest.concepts import concept_key
+
+            mentions, rejected = concept_mentions(self.store, entities, sha)
+            unresolved.extend(rejected)
+            for row in mentions:
+                mention = row["mention"]
+                target = proxy(
+                    "ConceptMention",
+                    mention["uid"],
+                    name=mention["name"],
+                    text=mention["name"],
+                    model=mention["model"],
+                    path=row["path"],
+                    start=mention["start"],
+                    end=mention["end"],
+                    association="literal_concept_mention_not_identity",
+                )
+                source = proxy(
+                    "Source",
+                    row["source_uid"],
+                    uri=row["uri"],
+                    digest=row["digest"],
+                    text=row["text"],
+                    source_revision=sha,
+                )
+                document = proxy(
+                    "Document",
+                    row["document_uid"],
+                    path=row["path"],
+                    text=row["text"],
+                    line_start=row["line_start"],
+                    line_end=row["line_end"],
+                )
+                edge(document, "SUPPORTS", source, "company_native_document_source", row["proof"])
+                edge(
+                    document,
+                    "MENTIONS_CONCEPT",
+                    target,
+                    "model_selected_literal_span",
+                    row["proof"],
+                )
+                edge(target, "SUPPORTED_BY", source, "exact_document_bytes", row["proof"])
+                for reference in entities:
+                    if concept_key(reference["name"]) == mention["key"]:
+                        edge(
+                            reference["uid"],
+                            "MATCHES_MENTION",
+                            target,
+                            "unicode_casefold_whitespace_label_association",
+                            row["proof"],
+                        )
         if self.state() != state:
             raise GraphUnavailable("Company graph changed during reference resolution")
         if len(nodes) > 500 or len(edges) > 1000:

@@ -84,6 +84,8 @@ def main():
         cmd.add_argument("path", type=Path)
         if name in {"import-session", "import-conversation"}:
             cmd.add_argument("--consent-digest", required=True)
+        if name == "import-conversation":
+            cmd.add_argument("--semantic-model", help="Opt in to sending selected turns to this Codex model")
     for name in ("sync-graph", "graph-view"):
         cmd = sub.add_parser(name)
         cmd.add_argument("--brain", required=True)
@@ -301,7 +303,7 @@ def main():
             if args.command == "import-conversation":
                 from .conversation import ingest_conversation
 
-                result = ingest_conversation(memory, payload, args.consent_digest)
+                result = ingest_conversation(memory, payload, args.consent_digest, args.semantic_model)
             else:
                 result = ingest_session(memory, payload, args.consent_digest)
         elif args.command == "ingest-docs":

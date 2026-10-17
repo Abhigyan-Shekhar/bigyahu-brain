@@ -1,0 +1,45 @@
+{
+  "scope": "synthetic_connected_memory_frontier",
+  "results": [
+    {
+      "memory_records": 10,
+      "status": "ok",
+      "returned": 10,
+      "elapsed_ms": 5.295625000144355,
+      "visited_states": 21,
+      "frontier_queries": 4,
+      "max_hops": 4,
+      "state_budget": 10000
+    },
+    {
+      "memory_records": 50,
+      "status": "ok",
+      "returned": 20,
+      "elapsed_ms": 9.0234170002077,
+      "visited_states": 101,
+      "frontier_queries": 4,
+      "max_hops": 4,
+      "state_budget": 10000
+    },
+    {
+      "memory_records": 100,
+      "status": "ok",
+      "returned": 20,
+      "elapsed_ms": 15.77062499927706,
+      "visited_states": 201,
+      "frontier_queries": 4,
+      "max_hops": 4,
+      "state_budget": 10000
+    }
+  ],
+  "implementation_sha256": {
+    "src/brain/memory_walk.py": "391c58154a9f983d06f819d81e13ad430edcc146d9014d2e78b8a6f8dde5120f",
+    "src/brain/memory_search.py": "8a9c6b219f2612b42f70d48a2258705df21cf908045f1a78442cf7af2abe2be3",
+    "scripts/benchmark_memory_frontier.py": "4d63d8dc79f1a9df8ce9dfb537b96b859f279c1eee519f64aacbc2a4b2a02bc2"
+  },
+  "limits": [
+    "One query per size on a synthetic shared-identifier corpus",
+    "Current eligible-view limits remain; no enterprise-scale claim",
+    "No variable-length path enumeration; at most four native frontier queries"
+  ]
+}

@@ -112,6 +112,7 @@ def main():
                         "scripts/benchmark_falkor_memory.py",
                         "src/brain/memory.py",
                         "src/brain/memory_search.py",
+                        "src/brain/memory_walk.py",
                         "src/brain/memory_graph.py",
                         "src/brain/memory_tools.py",
                         "src/brain/memory_links.py",

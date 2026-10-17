@@ -19,6 +19,7 @@ LABELS = {
     "PR",
     "Comment",
     "Document",
+    "ConceptMention",
     "Source",
     "Decision",
     "ReviewRecord",
@@ -41,6 +42,7 @@ EDGES = {
     "APPLIES_TO",
     "SUPERSEDES",
     "MENTIONS",
+    "MENTIONS_CONCEPT",
     "REVIEWS",
 }
 
@@ -115,10 +117,12 @@ class GraphStore:
             scope,
         )
 
-    def revision(self, code_only=False):
+    def revision(self, code_only=False, ignore_concepts=False):
         syncing = "coalesce(p.syncing,true)" if code_only else (
             "coalesce(p.syncing,true) OR coalesce(p.documents_syncing,false) "
-            "OR coalesce(p.github_syncing,false)")
+            "OR coalesce(p.github_syncing,false) OR coalesce(p.graphify_syncing,false)")
+        if not code_only and not ignore_concepts:
+            syncing += " OR coalesce(p.concepts_syncing,false)"
         rows = self.query(
             "MATCH (p:Project {uid:$uid}) RETURN "
             f"p.last_completed_sync_sha AS sha, ({syncing}) AS syncing",

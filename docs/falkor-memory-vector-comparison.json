@@ -4,10 +4,11 @@
   "corpus_sha256": "9efcebb4352edc8b8f0f497c89de6c006c2a3149d3f9ed3d46f577a34874f8bf",
   "embedding_model": "sentence-transformers/all-MiniLM-L6-v2@9cf8ce8fba6ff86a0dc9fe957dcc2e8f80b7388bbc797e4dc4fa7dca0647be91",
   "implementation_sha256": {
-    "scripts/benchmark_falkor_memory.py": "d5c3fbc82bb5e6e1d97fb1f509da21588ff10f73c564a96b6770ab5e69442e59",
+    "scripts/benchmark_falkor_memory.py": "d71381baeae8d1a6f7d48f40dbd12ed01f64b3b730955fbd78d84af11a9cbb0d",
     "src/brain/memory.py": "1e37a7a6625161592488d74649ce0889effbfdaf613bfda1cd4522b0122c75c9",
-    "src/brain/memory_search.py": "c7ac418265c1d69aa8e42fffb48cbd57ad3e5ff85a77025d1c28d0514c9546a7",
-    "src/brain/memory_graph.py": "355089b121f03e42c943e6a745fbaa3d12743a28407cfb3230930ceac16807ec",
+    "src/brain/memory_search.py": "8a9c6b219f2612b42f70d48a2258705df21cf908045f1a78442cf7af2abe2be3",
+    "src/brain/memory_walk.py": "391c58154a9f983d06f819d81e13ad430edcc146d9014d2e78b8a6f8dde5120f",
+    "src/brain/memory_graph.py": "f5d8b806379b16d801d3b7d89ac623172f9059829685f04c6c6a3cea1091f165",
     "src/brain/memory_tools.py": "dd4a4fde140a9f1842833afa281a8c603d1e37c3688ea49afdef6e1b729a90b0",
     "src/brain/memory_links.py": "ca83c7b8960f540cb6d63fc40531056bbf5897f61b99218571d6f32879694d5b"
   },
@@ -18,7 +19,7 @@
         "hit_at_3": 0.6666666666666666,
         "recall_at_3": 0.6666666666666666,
         "mrr_at_3": 0.6111111111111112,
-        "latency_ms_p50": 0.2004590005526552,
+        "latency_ms_p50": 0.20108399985474534,
         "details": [
           {
             "query": "upload replay 307",
@@ -164,7 +165,7 @@
         "hit_at_3": 0.6666666666666666,
         "recall_at_3": 0.6666666666666666,
         "mrr_at_3": 0.6111111111111112,
-        "latency_ms_p50": 3.7960410008963663,
+        "latency_ms_p50": 2.4395000000367872,
         "details": [
           {
             "query": "upload replay 307",
@@ -366,7 +367,7 @@
         "hit_at_3": 0.8888888888888888,
         "recall_at_3": 0.8888888888888888,
         "mrr_at_3": 0.7592592592592593,
-        "latency_ms_p50": 3.849749999062624,
+        "latency_ms_p50": 4.274541999620851,
         "details": [
           {
             "query": "upload replay 307",
@@ -523,7 +524,7 @@
         "hit_at_3": 0,
         "recall_at_3": 0.0,
         "mrr_at_3": 0,
-        "latency_ms_p50": 0.20729200150526594,
+        "latency_ms_p50": 0.24862499958544504,
         "details": [
           {
             "query": "amber beacon",
@@ -568,7 +569,7 @@
         "hit_at_3": 1,
         "recall_at_3": 1.0,
         "mrr_at_3": 0.5,
-        "latency_ms_p50": 3.4290839994355338,
+        "latency_ms_p50": 3.1154999996942934,
         "details": [
           {
             "query": "amber beacon",
@@ -651,7 +652,7 @@
         "hit_at_3": 0.3333333333333333,
         "recall_at_3": 0.16666666666666666,
         "mrr_at_3": 0.16666666666666666,
-        "latency_ms_p50": 3.923582999050268,
+        "latency_ms_p50": 4.5005000010860385,
         "details": [
           {
             "query": "amber beacon",

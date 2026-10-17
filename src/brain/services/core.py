@@ -480,7 +480,7 @@ class Services:
         number = re.fullmatch(r"#([0-9]{1,10})", query)
         params["number"] = int(number[1]) if number else -1
         rows = self.store.query(
-            "MATCH (n {repo_id:$repo}) WHERE (NOT n:Document OR "
+            "MATCH (n {repo_id:$repo}) WHERE NOT n:ConceptMention AND (NOT n:Document OR "
             "(coalesce(n.current,true) AND (n.source_kind IS NULL OR n.revision=$sha))) AND (n.uid=$query OR "
             "(n:Symbol AND n.current=true AND n.qualname=$query) OR "
             "((n:Issue OR n:PR) AND (n.url=$query OR n.number=$number))) "
@@ -510,20 +510,25 @@ class Services:
             truncated.add("items")
         rows = rows[: limits["items"]]
         ids = [r["uid"] for r in rows]
-        params = {"ids": ids, "repo": self.cfg.repo_id, "chars": limits["excerpt_chars"],"sha":sha}
+        params = {
+            "ids": ids,
+            "repo": self.cfg.repo_id,
+            "chars": limits["excerpt_chars"],
+            "sha": sha,
+        }
         paths, sources, associations, coverage = [], [], [], []
         if ids:
             paths = self.store.query(
                 "MATCH p=(a)-[*1..2]-(b) WHERE a.uid IN $ids "
                 "AND all(n IN nodes(p) WHERE n.repo_id=$repo AND "
-                "(NOT n:Document OR (coalesce(n.current,true) AND "
+                "NOT n:ConceptMention AND (NOT n:Document OR (coalesce(n.current,true) AND "
                 "(n.source_kind IS NULL OR n.revision=$sha)))) "
                 "RETURN [n IN nodes(p)|n.uid] AS path, "
                 "[r IN relationships(p)|type(r)] AS relationships, "
                 "[r IN relationships(p)|r.confidence] AS confidence, "
                 "[r IN relationships(p)|startNode(r).uid] AS relationship_sources, "
                 "[r IN relationships(p)|{source_uid:r.source_uid, uri:r.source_url, "
-                "basis:r.basis, source_line:r.source_line, reference:r.reference, "
+                "basis:r.basis, extractor_relation:r.relation, source_line:r.source_line, reference:r.reference, "
                 "snapshot_at:r.snapshot_at, "
                 "resolution_verified:r.resolution_verified}] AS relationship_evidence "
                 "ORDER BY path LIMIT 51",
@@ -556,6 +561,16 @@ class Services:
             # then discussion. No arbitrary traversal through another repository or graph.
             fields = SOURCE_FIELDS
             routes = source_routes()
+            routes.append(
+                (
+                    "extractor_relationship_source",
+                    (
+                        "MATCH (a:Document {repo_id:$repo,current:true,revision:$sha})"
+                        "-[r:EXTRACTED_RELATION]-(:Document {repo_id:$repo,current:true,revision:$sha}) "
+                        "MATCH (s:Source {repo_id:$repo}) WHERE a.uid IN $ids AND s.uid=r.source_uid AND r.revision=$sha "
+                    ),
+                )
+            )
             routes.extend(
                 [
                     (

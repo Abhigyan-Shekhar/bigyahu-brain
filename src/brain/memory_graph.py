@@ -6,6 +6,7 @@ always obtained from the live catalog, including when a projection is stale.
 
 import json
 import re
+from collections import defaultdict
 
 from .memory import canonical, digest, now
 from .memory_links import MemoryLinks
@@ -17,6 +18,8 @@ RELATIONS = {
     "AUTHORED",
     "SUPPORTED_BY",
     "MENTIONS",
+    "MENTIONS_CONCEPT",
+    "MATCHES_MENTION",
     "UPDATES",
     "EXTENDS",
     "RELATES_TO",
@@ -44,6 +47,18 @@ class MemoryGraph:
     def slot(self, brain):
         return "memory:" + digest(canonical([self.memory.identity.tenant, brain]))
 
+    def _annotations(self, brain):
+        rows = self.memory.db.execute(
+            "SELECT e.uid,e.detail FROM events e WHERE e.tenant=? AND e.brain=? "
+            "AND e.action='conversation_analysis' AND e.rowid=(SELECT max(x.rowid) "
+            "FROM events x WHERE x.tenant=e.tenant AND x.brain=e.brain AND x.uid=e.uid "
+            "AND x.action='conversation_analysis') ORDER BY e.uid LIMIT 1001",
+            (self.memory.identity.tenant, brain),
+        ).fetchall()
+        if len(rows) > 1000:
+            raise ValueError("Conversation annotation bound exceeded")
+        return {row["uid"]: json.loads(row["detail"]) for row in rows if row["detail"]}
+
     def _manifest(self, brain):
         rows = self.memory.db.execute(
             "SELECT uid,hash,state,expires,author,previous FROM records "
@@ -61,7 +76,14 @@ class MemoryGraph:
         if len(rows) > 1000 or len(members) > 500 or len(links) > 2000:
             raise ValueError("Graph projection bound exceeded; partition this brain")
         return digest(
-            canonical([list(map(tuple, rows)), list(map(tuple, members)), list(map(tuple, links))])
+            canonical(
+                [
+                    list(map(tuple, rows)),
+                    list(map(tuple, members)),
+                    list(map(tuple, links)),
+                    self._annotations(brain),
+                ]
+            )
         )
 
     def _rows(self, brain, include_proposals):
@@ -118,6 +140,7 @@ class MemoryGraph:
                 person = node("Person", member[0], name=member[0])
                 edge(team, "HAS_MEMBER", person)
         memory_nodes = {}
+        annotations = self._annotations(brain)
         for row in rows:
             uid = node(
                 "Memory",
@@ -145,6 +168,17 @@ class MemoryGraph:
             for name in entities(row["text"]):
                 entity = node("Entity", name, name=name)
                 edge(uid, "MENTIONS", entity, "explicit_backtick_mention")
+            analysis = annotations.get(row["uid"], {})
+            if analysis.get("hash") == row["hash"]:
+                for name in analysis.get("entities", []):
+                    if (
+                        not isinstance(name, str)
+                        or not 1 <= len(name) <= 160
+                        or name not in row["text"]
+                    ):
+                        raise ValueError("Invalid literal conversation entity")
+                    entity = node("Entity", name, name=name)
+                    edge(uid, "MENTIONS", entity, "model_selected_literal_entity")
         for link in MemoryLinks(self.memory).visible(brain, rows, include_proposals):
             edge(
                 memory_nodes[link["source_uid"]],
@@ -343,9 +377,16 @@ class MemoryGraph:
             result["edges"].extend(rows)
         sources = [n for n in result["nodes"] if n["kind"] == "Source"]
         expected = []
-        for i, a in enumerate(sources):
-            for b in sources[i + 1 :]:
-                if a["brain"] != b["brain"] and a["uri"] == b["uri"] and a["digest"] == b["digest"]:
+        by_citation = defaultdict(list)
+        for source in sources:
+            by_citation[source["uri"], source["digest"]].append(source)
+        for group in by_citation.values():
+            for i, a in enumerate(group):
+                for b in group[i + 1 :]:
+                    if a["brain"] == b["brain"]:
+                        continue
+                    if len(expected) >= 1000:
+                        raise ValueError("Cross-brain citation edge bound exceeded")
                     left, right = sorted([a["uid"], b["uid"]])
                     expected.append(
                         {
@@ -355,8 +396,6 @@ class MemoryGraph:
                             "basis": "exact_uri_and_digest",
                         }
                     )
-        if len(expected) > 1000:
-            raise ValueError("Cross-brain citation edge bound exceeded")
         if sources:
             rows = self.store.memory_query(
                 "MATCH (a:MemoryNode)-[r:SAME_CITATION]->(b:MemoryNode) "

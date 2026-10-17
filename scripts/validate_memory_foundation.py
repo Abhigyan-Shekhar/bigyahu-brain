@@ -5,6 +5,7 @@ import contextlib
 import json
 import os
 import selectors
+import shutil
 import socket
 import subprocess
 import sys
@@ -17,8 +18,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 @contextlib.contextmanager
-def engine(folder):
+def engine(folder, *, seed=None):
     folder.mkdir(parents=True)
+    if seed is not None:
+        shutil.copyfile(seed / "brain.rdb", folder / "brain.rdb")
+        shutil.copytree(seed / "appendonlydir", folder / "appendonlydir")
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
         port = probe.getsockname()[1]

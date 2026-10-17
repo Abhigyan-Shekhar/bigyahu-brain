@@ -84,3 +84,18 @@ def test_evaluation_exit_tracks_actual_checks(tmp_path, monkeypatch,
     summary = json.loads((run / 'evaluation/summary.json').read_text())
     assert summary['upstream_total'] == upstream_tests
     assert summary['upstream_passed'] == upstream_tests - skipped
+
+
+def test_graph_runner_exposes_inspection_without_write_tools(tmp_path):
+    runner = module('run_codex_agent')
+    args = SimpleNamespace(model='example', reasoning='medium', work=tmp_path,
+        brain_config=tmp_path/'config', brain_python=tmp_path/'python', brain_src=tmp_path/'src',
+        memory_graph=True, memory_search=False)
+    command = runner.build_command(args, tmp_path/'out')
+    config = dict(value.split('=', 1) for i, value in enumerate(command)
+                  if i and command[i-1] == '-c')
+    prefix = 'mcp_servers.company-brain.'
+    assert json.loads(config[prefix+'enabled_tools']) == runner.READONLY + ['memory_search', 'memory_graph']
+    assert json.loads(config[prefix+'disabled_tools']) == ['remember', 'memory_propose']
+    assert config[prefix+'tools.memory_graph.approval_mode'] == '"approve"'
+    assert config[prefix+'tools.memory_search.approval_mode'] == '"approve"'

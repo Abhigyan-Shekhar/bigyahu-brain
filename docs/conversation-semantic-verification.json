@@ -1,0 +1,27 @@
+{
+  "scope": "synthetic_semantic_extraction_acceptance",
+  "model_requested": "gpt-6.1-sol",
+  "input_sha256": "5e4533f0e173b4f4f22f8cb0a516d2956459c3807a1dbc069f623f805f1320cf",
+  "selected_user_turns": [
+    "u2",
+    "u3"
+  ],
+  "candidate_kinds": [
+    "decision",
+    "correction"
+  ],
+  "literal_entities": [
+    [
+      "retry.delay_ms"
+    ],
+    [
+      "retry.delay_ms"
+    ]
+  ],
+  "casual_and_assistant_excluded": true,
+  "source_spans_validated": true,
+  "limits": [
+    "One authored synthetic check, not an accuracy benchmark",
+    "Opt-in model selection; extracted records still require review"
+  ]
+}

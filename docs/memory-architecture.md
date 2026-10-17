@@ -31,7 +31,10 @@ Enable it explicitly with `memory_graph_enabled: true`; this adds the read-only
 Schema version 2 additionally stores version-pinned
 [memory relationship assertions](memory-relationships.md), with independent
 review and optional `.abhi/2` exchange. Automatic shared-identifier suggestions
-remain non-binding proposals; semantic correction inference is not implemented.
+remain non-binding proposals. Opt-in model selection now extracts durable literal
+spans/entities and suggests explicitly signaled, unambiguous code-identifier
+corrections; unrestricted semantic supersession remains unimplemented. See the
+[integration milestone](graphify-three-brain-integration.md).
 An [optional company bridge](memory-company-bridge.md) adds native, verified
 source/document and explicit lexical code paths to the projection. Both sync
 and `memory_graph(include_company=true)` require current company membership;
@@ -146,3 +149,13 @@ ambiguous modules, wildcard/conditional imports and rebound symbols remain
 unresolved; self/cls edges remain heuristic. No absent edge proves absence of
 dependencies. Graphify's broader structural coverage is a comparison target,
 not justification to silently convert speculative edges into approved facts.
+
+## Named document concept mentions
+
+The [source-grounded concept extension](company-concepts.md) adds explicit
+operator-selected model annotation of current documents and named-mention paths
+from eligible conversation entity labels to current company sources. Every read
+rechecks native source relationships, bytes, span and revision. These associations
+do not resolve semantic identity, create reviewed facts or approve constraints.
+Selected sharing preserves the selected record's literal entity labels locally;
+portable semantic annotations in `.abhi/2` remain future work.
