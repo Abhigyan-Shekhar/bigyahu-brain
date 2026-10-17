@@ -14,7 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from ..config import load_config
 from ..graph import GraphStore, GraphUnavailable
-from . import personal, team
+from . import exchange, personal, team
 from .actions import active_actions, approve, checked_action, execute, prepare_plan
 from .agent import run_turn
 from .enrichment import active_ingestions, run_enrichment
@@ -77,6 +77,24 @@ class ShareInput(PersonalInput):
     uid: str = Field(min_length=1, max_length=200)
     expected_hash: str = Field(pattern="^[a-f0-9]{64}$")
     expected_target: str = Field(default="", pattern="^(?:[a-f0-9]{64})?$")
+
+
+class ExchangeExport(PersonalInput):
+    selections: dict[str, str] = Field(min_length=1, max_length=50)
+    collection: str = Field(pattern="^[A-Za-z0-9_-]{1,64}$")
+    links: list[str] = Field(default_factory=list, max_length=100)
+    expected_digest: str = Field(default="", pattern="^(?:[a-f0-9]{64})?$")
+
+
+class ExchangeImport(PersonalInput):
+    text: str = Field(min_length=1, max_length=1000000)
+    consent_digest: str = Field(default="", pattern="^(?:[a-f0-9]{64})?$")
+
+
+class LinkReview(PersonalInput):
+    expected_state: str
+    action: str
+    reason: str = Field(min_length=1, max_length=1000)
 
 
 class ConversationSelection(PersonalInput):
@@ -162,11 +180,12 @@ def create_app(state, token, origin, assets=None):
                 "company_chat",
                 "personal_memory_review",
                 "authorized_team_sharing_navigation",
+                "selected_abhi_exchange",
                 "reviewed_lesson_recall",
                 "source_inspection",
                 "approved_isolated_patch_tests",
             ],
-            "deferred": ["abhi_ui"],
+            "deferred": ["hosted_identity"],
         }
 
     @app.get("/api/repositories")
@@ -466,6 +485,47 @@ def create_app(state, token, origin, assets=None):
                 body.expected_state,
                 body.action,
                 body.reason,
+            )
+
+    @app.post("/api/repositories/{project}/teams/{name}/abhi/export")
+    def abhi_export(project: str, name: str, body: ExchangeExport):
+        project_ready(project)
+        with lock:
+            return exchange.export(
+                state.config(project),
+                name,
+                body.selections,
+                body.collection,
+                body.links,
+                body.expected_digest,
+            )
+
+    @app.post("/api/repositories/{project}/teams/{name}/abhi/preview")
+    def abhi_preview(project: str, name: str, body: ExchangeImport):
+        project_ready(project)
+        with lock:
+            return exchange.preview_import(state.config(project), name, body.text)
+
+    @app.post("/api/repositories/{project}/teams/{name}/abhi/import", status_code=201)
+    def abhi_import(project: str, name: str, body: ExchangeImport):
+        project_ready(project)
+        with lock:
+            return exchange.apply_import(
+                state.config(project), name, body.text, body.consent_digest
+            )
+
+    @app.get("/api/repositories/{project}/teams/{name}/relationships")
+    def team_relationships(project: str, name: str):
+        project_ready(project)
+        with lock:
+            return exchange.relationships(state.config(project), name)
+
+    @app.post("/api/repositories/{project}/teams/{name}/relationships/{uid}/review")
+    def team_relationship_review(project: str, name: str, uid: str, body: LinkReview):
+        project_ready(project)
+        with lock:
+            return exchange.review_relationship(
+                state.config(project), name, uid, body.expected_state, body.action, body.reason
             )
 
     @app.get("/api/repositories/{project}/graph")

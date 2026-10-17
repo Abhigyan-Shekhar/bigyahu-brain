@@ -1,0 +1,38 @@
+import React, { useEffect, useState } from "react";
+import { api, send } from "./api";
+
+export default function AbhiPanel({base, items, role, onChanged}) {
+  const [records,setRecords]=useState({}), [links,setLinks]=useState([]), [selectedLinks,setSelectedLinks]=useState([]), [collection,setCollection]=useState("portable-memory");
+  const [exported,setExported]=useState(null), [text,setText]=useState(""), [imported,setImported]=useState(null), [filename,setFilename]=useState("");
+  const [reason,setReason]=useState(""), [error,setError]=useState(""), [notice,setNotice]=useState(""), [working,setWorking]=useState(false);
+  const accepted=items.filter(r=>r.state==="accepted");
+  const visible=new Set(items.map(r=>r.uid));
+  const displayedLinks=links.filter(l=>visible.has(l.source_uid) && visible.has(l.target_uid));
+  async function loadLinks(){setLinks(await api(`${base}/relationships`));}
+  useEffect(()=>{loadLinks().catch(e=>setError(e.message));},[base,items]);
+  async function perform(fn){setWorking(true);setError("");setNotice("");try{return await fn();}catch(e){setError(e.message);return null;}finally{setWorking(false);}}
+  async function previewExport(e){e.preventDefault();const value=await perform(()=>send(`${base}/abhi/export`,{selections:records,collection,links:selectedLinks}));if(value)setExported(value);}
+  async function download(){await perform(async()=>{
+    const value=await send(`${base}/abhi/export`,{selections:records,collection,links:selectedLinks,expected_digest:exported.consent_digest});
+    const blob=new Blob([JSON.stringify(value.payload,null,2)+"\n"],{type:"application/json"});const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");a.href=url;a.download=`${collection}.abhi`;a.click();URL.revokeObjectURL(url);setNotice("Selected .abhi/2 graph downloaded. Keep it private until you choose a recipient.");
+  });}
+  async function chooseFile(e){const file=e.target.files?.[0];setImported(null);setText("");setFilename("");setError("");
+    if(!file)return;try{if(file.size>1000000)throw Error("Choose a UTF-8 .abhi file up to 1 MB.");const value=new TextDecoder("utf-8",{fatal:true}).decode(await file.arrayBuffer());setText(value);setFilename(file.name);}catch(err){setError(err.message);}}
+  async function previewImport(e){e.preventDefault();const value=await perform(()=>send(`${base}/abhi/preview`,{text}));if(value)setImported(value);}
+  async function importFile(){const value=await perform(()=>send(`${base}/abhi/import`,{text,consent_digest:imported.consent_digest}));if(value){setImported(null);await onChanged();await loadLinks();setNotice((value.unchanged ? "Identical import replayed; existing reviews preserved." : "Imported records and relationships remain proposals. Review records first, then relationships.")+" "+(value.projection?.notice||""));}}
+  async function review(link,action){const value=await perform(()=>send(`${base}/relationships/${encodeURIComponent(link.uid)}/review`,{expected_state:link.state,action,reason}));if(value){setReason("");await onChanged();await loadLinks();setNotice("Relationship review saved. "+(value.projection?.notice||""));}}
+  return <details className="memory-create abhi-panel"><summary>Portable memory · .abhi import and export</summary>
+    <p>Export only selected accepted team records and relationships. Files preserve evidence topology, not memberships or acceptance. Checksums verify integrity; they do not authenticate origin.</p>
+    {error && <p className="failure" role="alert">{error}</p>}{notice && <p className="coverage" role="status">{notice}</p>}
+    <form onSubmit={previewExport}><h4>Export selected graph</h4><label htmlFor="abhi-collection">Portable collection</label><input id="abhi-collection" required pattern="[A-Za-z0-9_-]{1,64}" maxLength={64} value={collection} onChange={e=>{setCollection(e.target.value);setExported(null);}} />
+      <div className="source-selections">{accepted.map(r=><label key={r.uid}><input type="checkbox" checked={!!records[r.uid]} onChange={e=>{setRecords(v=>{const next={...v};if(e.target.checked)next[r.uid]=r.hash;else delete next[r.uid];return next;});setSelectedLinks([]);setExported(null);}} /><span>{r.uid.startsWith("abhi:") ? "Imported record" : "Shared record"} · {r.text}<small>{r.uid}</small></span></label>)}</div>
+      {displayedLinks.filter(l=>l.state==="accepted" && records[l.source_uid] && records[l.target_uid]).map(l=><label className="abhi-link-option" key={l.uid}><input type="checkbox" checked={selectedLinks.includes(l.uid)} onChange={e=>{setSelectedLinks(v=>e.target.checked ? [...v,l.uid] : v.filter(id=>id!==l.uid));setExported(null);}} />{l.relation}: {l.source_uid} → {l.target_uid}</label>)}
+      <button disabled={working || !Object.keys(records).length || Object.keys(records).length>50}>Preview selected export</button>
+    </form>
+    {exported && <div className="share-preview"><h4>Export preview · {exported.payload.records.length} records · {exported.payload.graph.nodes.length} nodes · {exported.payload.graph.edges.length} edges</h4><p>Inspect the exact selected text, citation references and topology below. This file has no grants, acceptance or origin signature.</p><pre>{JSON.stringify(exported.payload,null,2)}</pre><button className="primary" disabled={working} onClick={download}>Download reviewed selection as .abhi</button></div>}
+    {role!=="reader" && <form onSubmit={previewImport}><h4>Import into this team</h4><p>The file must name this configured tenant and team. Imported text is untrusted evidence. No source identity, membership or approval is imported.</p><label htmlFor="abhi-file">Choose .abhi file</label><input id="abhi-file" type="file" accept=".abhi,application/json" onChange={chooseFile} /><small>{filename}</small><button disabled={working || !text}>Validate and preview import</button></form>}
+    {imported && <div className="share-preview"><h4>Validated import · {imported.payload.records.length} records · {imported.payload.graph.nodes.length} nodes · {imported.payload.graph.edges.length} edges</h4><p>Destination: {imported.payload.team} · Collection: {imported.payload.collection}. File integrity checked; origin is unauthenticated. Acceptance requires separate local review.</p>{imported.conflict && <p className="failure">Collection conflict. Reconcile the parent digest before importing.</p>}{imported.unchanged && <p>Identical replay: existing review states will be preserved.</p>}<pre>{JSON.stringify(imported.payload,null,2)}</pre><button className="primary" disabled={working || imported.conflict} onClick={importFile}>Confirm exact import as proposals</button></div>}
+    {displayedLinks.length>0 && <section className="abhi-relationships"><h4>Source-backed memory relationships</h4><p>Imported relationships require independent review after both endpoint records are accepted.</p>{role==="reviewer" && <><label htmlFor="abhi-link-reason">Relationship review reason</label><textarea id="abhi-link-reason" maxLength={1000} value={reason} onChange={e=>setReason(e.target.value)} /></>}{displayedLinks.map(l=><article key={l.uid}><strong>{l.relation} · {l.state}</strong><p>{l.source_uid} → {l.target_uid}</p><pre>{JSON.stringify(l.sources,null,2)}</pre>{role==="reviewer" && (l.state==="proposed" ? <><button disabled={working || !reason.trim()} onClick={()=>review(l,"accept")}>Accept relationship</button><button disabled={working || !reason.trim()} onClick={()=>review(l,"reject")}>Reject relationship</button></> : l.state==="accepted" && <button disabled={working || !reason.trim()} onClick={()=>review(l,"rollback")}>Revoke relationship acceptance</button>)}</article>)}</section>}
+  </details>;
+}

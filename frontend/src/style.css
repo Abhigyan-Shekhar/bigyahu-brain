@@ -1270,3 +1270,9 @@ h2 {
 .share-preview { padding: 16px; background: #f1edf4; margin-top: 16px; overflow-wrap: anywhere; }
 .share-preview pre { overflow-wrap: anywhere; white-space: pre-wrap; font-size: 12px; }
 .team-brain .private-graph > button { margin: 12px 0; }
+.abhi-panel form { margin: 22px 0; }
+.abhi-panel pre { max-height: 320px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; }
+.abhi-panel .source-selections input,.abhi-link-option input { width: auto; display: inline; }
+.abhi-link-option { display: block; overflow-wrap: anywhere; }
+.abhi-relationships article { margin: 12px 0; padding: 14px; border: 1px solid #ded6e5; border-radius: 5px; overflow-wrap: anywhere; }
+.abhi-panel button { margin: 6px 8px 6px 0; }

@@ -129,9 +129,11 @@ application does not collect model credentials.
   Passing coding actions can propose lessons for review; accepted lessons are
   retrieved and cited through native FalkorDB tools in fresh conversations. Team
   [sharing/navigation](team-brain-app.md) now supports selected proposals, separate
-  review, catalog membership and permitted member views. `.abhi` controls remain
-  future UI work. The full ten-step
-  product acceptance test is consequently **not complete**.
+  review, catalog membership and permitted member views. [Portable `.abhi` controls](abhi-app.md)
+  now cover selected graph export, strict import and independent relationship review.
+  The [integrated synthetic demo](application-integrated-demo.md) verifies memory,
+  company evidence, approved patch/tests and later lesson recall together. Hosted
+  identity and cross-repository private-brain federation remain outside this app.
 
 Local jobs, sessions, managed repositories, snapshots, uploads, model traces and
 per-turn source-hash manifests stay beneath the selected `--data` directory. Keep
@@ -153,7 +155,7 @@ uv run --frozen --extra app --extra lite --extra graphify --extra ingestion pyth
 The application tests exercise URL rejection, authentication/Origin/Host checks,
 read-only runner configuration, restart recovery, readiness gates, native code and
 uploaded-document evidence, invented quotes/IDs, citation access and stale source
-rejection. Live suite: **345 passed**. Browser acceptance uses a real public
+rejection. Live suite: **350 passed**. Browser acceptance uses a real public
 repository and actual Codex tool calls; see the [milestone report](application-milestone-verification.json).
 
 The [coding action report](application-action-verification.json) records a separate
@@ -172,3 +174,7 @@ plus rejection and revocation on a disposable synthetic fixture.
 The [Team Brain report](application-team-verification.json) verifies selected
 sharing, reader proposal exclusion, membership revocation, permitted member slices
 and fresh real-agent recall with a checked team citation.
+
+The [exchange/integrated report](application-exchange-verification.json) records
+actual browser round-trip files, a new policy-and-import-backed coding run,
+15 held-out patch replay cases and fresh recall of the newly reviewed lesson.

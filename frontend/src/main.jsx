@@ -714,6 +714,8 @@ function App() {
                       {selected.verification ===
                       "recorded_snapshot_and_native_graph"
                         ? "Recorded historical snapshot"
+                        : selected.verification === "accepted_imported_memory_and_native_graph"
+                          ? "Reviewed import · file integrity and graph checked · origin unauthenticated"
                         : selected.verification === "accepted_team_memory_and_native_graph"
                           ? "Accepted team memory · source and access checked"
                         : selected.verification === "accepted_private_memory_and_native_graph"

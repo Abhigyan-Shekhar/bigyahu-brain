@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { api, send } from "./api";
+import AbhiPanel from "./AbhiPanel";
 
 export default function TeamBrain({ project, renderGraph }) {
   const base = `/repositories/${project}`;
@@ -90,11 +91,12 @@ export default function TeamBrain({ project, renderGraph }) {
         </select><button disabled={working || !shareId} onClick={() => setPreview(privateItems.find(m => m.uid === shareId))}>Preview sharing</button>
         {preview && <div className="share-preview"><h4>Selected memory → {selected}</h4><p>{preview.text}</p><p>Author: {principal} · Expiry: {preview.expires || "none"}</p><pre>{JSON.stringify(preview.sources,null,2)}</pre><button className="primary" disabled={working} onClick={share}>Propose selected memory to team</button></div>}
       </details>}
+      <AbhiPanel key={selected} base={teamBase} items={items} role={info.role} onChanged={load} />
       <div className="memory-layout"><div><h3>{member ? `${member} · shared memories` : "Team memories"}</h3>
         {truncated && <p>Showing the latest 100 visible memories.</p>}{!items.length && <p>No visible shared contributions in this view.</p>}
-        <div className="memory-list">{items.map(m => <button key={m.uid} className={detail?.uid === m.uid ? "selected" : ""} onClick={() => inspect(m)}><span className={`memory-state ${m.state}`}>{m.state}</span><span>{m.text}</span><small>Shared by {m.author}</small></button>)}</div>
+        <div className="memory-list">{items.map(m => <button key={m.uid} className={detail?.uid === m.uid ? "selected" : ""} onClick={() => inspect(m)}><span className={`memory-state ${m.state}`}>{m.state}</span><span>{m.text}</span><small>{m.uid.startsWith("abhi:") ? "Imported by" : "Shared by"} {m.author}</small></button>)}</div>
       </div>{detail ? <article className="memory-inspector"><span className="eyebrow">REVIEW SHARED MEMORY</span><h3>{detail.state}</h3><p>{detail.text}</p>
-        <h4>Selected shared source</h4>{detail.source_error ? <p className="failure">{detail.source_error}</p> : <><p>Shared by {detail.source.author}. Only this selected text and its citation references were copied.</p><pre>{JSON.stringify(detail.source.sources,null,2)}</pre></>}
+        <h4>Selected shared source</h4>{detail.source_error ? <p className="failure">{detail.source_error}</p> : <><p>{detail.source.kind === "abhi_import" ? "Imported by" : "Shared by"} {detail.source.author}. {detail.source.kind === "abhi_import" ? "File integrity checked; origin and original citation contents are not authenticated by import." : "Only this selected text and its citation references were copied."}</p><pre>{JSON.stringify(detail.source.sources,null,2)}</pre></>}
         {info.role === "reviewer" && ["proposed","accepted"].includes(detail.state) && <div className="memory-review"><label htmlFor="team-review-reason">Review reason</label><textarea id="team-review-reason" maxLength={1000} value={reason} onChange={e => setReason(e.target.value)} />
           {detail.state === "proposed" ? <><button disabled={working || !reason.trim() || !!detail.source_error} onClick={() => review("accept")}>Accept team memory</button><button disabled={working || !reason.trim()} onClick={() => review("reject")}>Reject team memory</button></> : <button disabled={working || !reason.trim()} onClick={() => review("rollback")}>Revoke team acceptance</button>}
         </div>}<details><summary>Team review history</summary><pre>{JSON.stringify(detail.reviews,null,2)}</pre></details>

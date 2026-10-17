@@ -1,5 +1,9 @@
 # .abhi interchange
 
+The local application now exposes selected abhi/2 export/import and independent
+assertion review in [Team Brain](abhi-app.md); the CLI contracts below remain
+unchanged.
+
 ## Version 2: selected current-memory graphs
 
 `.abhi/2` exports a bounded graph slice from explicitly selected, current,

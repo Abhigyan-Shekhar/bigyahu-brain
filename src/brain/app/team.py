@@ -6,6 +6,7 @@ shared contributions only; it never changes the configured identity.
 
 import json
 import re
+from datetime import UTC, datetime
 from pathlib import Path
 
 from ..graph import GraphStore, GraphUnavailable
@@ -173,12 +174,43 @@ def source_details(cfg, memory, r):
         or value["author"] != r["author"]
     ):
         raise ValueError("Shared source snapshot changed")
+    if value.get("kind") == "abhi_import":
+        from ..abhi_graph import validate
+
+        envelope_raw = (
+            cfg.repo_root.parent / "memory-sources" / value["envelope_snapshot"]
+        ).read_text(encoding="utf-8")
+        if digest(envelope_raw) != value["envelope_snapshot"]:
+            raise ValueError("Imported envelope snapshot changed")
+        envelope = json.loads(envelope_raw)
+        validate(envelope)
+        if (
+            envelope["digest"] != value["envelope_digest"]
+            or envelope["tenant"] != memory.identity.tenant
+            or "team:" + envelope["team"] != r["brain"]
+        ):
+            raise ValueError("Imported source envelope does not match this destination")
+        original = next(
+            (item for item in envelope["records"] if item["id"] == value["record_id"]), None
+        )
+        if not original:
+            raise ValueError("Imported source record is missing")
+        expiry = (
+            datetime.fromisoformat(original["expires"]).astimezone(UTC).isoformat()
+            if original["expires"]
+            else ""
+        )
+        expected = digest(
+            canonical({"text": original["text"], "sources": original["sources"], "expires": expiry})
+        )
+        if expected != r["hash"]:
+            raise ValueError("Imported record differs from its source envelope")
     return {
         "text": value["text"],
         "sources": value["sources"],
         "author": value["author"],
         "digest": proof[0],
-        "kind": "selected_shared_memory",
+        "kind": value.get("kind", "selected_shared_memory"),
     }
 
 
@@ -281,7 +313,7 @@ def memory_evidence(cfg, name, uid, expected_hash):
             or (r["expires"] and r["expires"] <= now())
         ):
             raise ValueError("Shared memory changed, expired or revoked")
-        source_details(cfg, memory, r)
+        source = source_details(cfg, memory, r)
         view = graph(cfg, memory, projection, [scope(name)])
         if view["status"] != "ok":
             raise ValueError("Shared graph is unavailable or stale")
@@ -306,7 +338,9 @@ def memory_evidence(cfg, name, uid, expected_hash):
             "digest": digest(r["text"]),
             "revision": "memory:" + expected_hash,
             "uri": json.loads(r["sources"])[0]["uri"],
-            "verification": "accepted_team_memory_and_native_graph",
+            "verification": "accepted_imported_memory_and_native_graph"
+            if source["kind"] == "abhi_import"
+            else "accepted_team_memory_and_native_graph",
             "graph": personal.graph_view(
                 {
                     "nodes": [n for n in native["nodes"] if n["uid"] in ids],

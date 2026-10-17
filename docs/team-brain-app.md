@@ -64,8 +64,8 @@ retain the existing bounded projection and 150-node/300-edge display limits.
 This remains a trusted loopback operator application. Catalog principals are not
 hosted login accounts; creating a member does not connect another person's device.
 There is no private-brain federation, automatic company semantic bridge, hosted
-identity provider or enterprise-scale claim. `.abhi` interchange remains available
-through the existing CLI; app import/export controls remain future work.
+identity provider or enterprise-scale claim. [`.abhi` app controls](abhi-app.md) now expose selected export, strict import and
+independent assertion review. Existing CLI interchange is also preserved.
 
 ## Executed verification
 

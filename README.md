@@ -78,7 +78,7 @@ associations with checked source spans; no identity or policy authority is infer
 
 ## Validation and measured results
 
-The current full isolated memory/graph/application suite passed **345 tests**, including real
+The current full isolated memory/graph/application suite passed **350 tests**, including real
 FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
 pass. The portability workflow includes live Docker graph/memory regression
 checks and installs the optional Graphify extractor there. CI for these new changes
@@ -174,8 +174,13 @@ selected-turn proposals, source review, acceptance/rejection/revocation and revi
 coding lesson recall through FalkorDB. A fresh real-agent chat returned two checked
 claims citing an accepted lesson. [Team Brain](docs/team-brain-app.md) now supports
 selected sharing, separate team review, catalog roles and member views of permitted shared contributions.
-Fresh Codex chat can cite accepted team evidence. `.abhi` UI controls and the
-complete integrated ten-step product demonstration remain outstanding.
+Fresh Codex chat can cite accepted team evidence. [Portable `.abhi` controls](docs/abhi-app.md)
+now preview selected exports, validate imports and keep record/assertion review
+independent. The [integrated synthetic demonstration](docs/application-integrated-demo.md)
+combines a reviewed import with company policy, approves and tests an isolated
+fix, then reviews its new lesson and recalls it in a fresh chat. Five regression
+tests and 15 held-out replay cases pass. Public onboarding and PDF/Word semantic
+ingestion retain their separate verification reports.
 
 ## Graphify, semantic extraction and graph viewing
 

@@ -52,7 +52,8 @@ remain untrusted advisory evidence; they cannot grant permissions, approve an
 execution or replace explicit user instructions and current code checks.
 
 Each managed repository currently has a separate private catalog. This screen
-does not federate personal brains across repositories or expose `.abhi` exchange.
+does not federate personal brains across repositories. `.abhi` exchange is
+available through the separate [Team Brain controls](abhi-app.md).
 Team membership and selected sharing now live in the separate Team Brain screen. Semantic correction/link proposals can
 be inspected here, but their separate relationship review remains a backend
 workflow. There is no hosted multi-user identity or automatic transcript scraping.

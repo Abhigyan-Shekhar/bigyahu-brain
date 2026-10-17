@@ -110,7 +110,10 @@ the reproduced downloadable patch passed all 15 oracle cases. The original
 checkout stayed clean. This demonstrates the approval-to-report plumbing on this
 fixture, not general coding quality. The separate
 [Personal Brain verification](application-personal-verification.json) now checks
-private lesson review and fresh-chat recall; team sharing remains future UI work.
+private lesson review and fresh-chat recall; [Team Brain](team-brain-app.md)
+provides selected sharing and separate review. The
+[integrated synthetic demo](application-integrated-demo.md) now combines imported
+team memory, company policy, approved coding and later reviewed-lesson recall.
 
 Validation also includes approval tampering/replay/concurrency, authentication,
 path and command injection rejection, ignored-file scope violations, actual macOS

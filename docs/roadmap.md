@@ -22,7 +22,7 @@ It does not replace FalkorDB relationships or promote memory to binding policy.
 | Document concepts | Explicit model-selected literal spans; checked named-mention paths to company sources; labels survive selected sharing | No inferred aliases/identity or model-backed code constraints; current-view bounds remain |
 | Graphify | Pinned structural runtime adapter plus selected-document semantic API in the app, with cited advisory relationships | No automatic whole-repository semantic scan; Python AST call authority is preserved |
 | PDF/Word and GraphRAG SDK | PDF/DOCX uploads with immutable extraction snapshots; actual FalkorDB SDK ingestion pipeline and validated native relationship publication | No OCR, legacy .doc, layout fidelity, SDK vectors or general extraction-quality claim; see [semantic ingestion](semantic-document-ingestion.md) |
-| Application | Public repository onboarding, cited chat, graph/source inspection, approved isolated patch/test reports, selected semantic ingestion and Personal/Team Brain review, sharing, member navigation and lesson recall | `.abhi` UI and integrated product demonstration remain next; local operator only |
+| Application | Public repository onboarding, cited chat, graph/source inspection, approved isolated patch/test reports, selected semantic ingestion and Personal/Team Brain review, sharing, member navigation, abhi/2 exchange and lesson recall | Integrated synthetic coding/learning loop verified; local operator only; public onboarding and semantic ingestion have separate reports |
 | Company access | Server tenant identity, tenant-specific FalkorDB names and company grants | Legacy default demo mode is single-user and must not be exposed as a tenant service |
 | Retrieval | Graph mode defaults to native Falkor exact/full-text plus authorized four-hop frontier expansion; explicit catalog lexical/vector baseline retained | Native views bounded at 1,000 eligible nodes; vectors remain catalog-based; no general quality/scaling advantage claimed |
 | Embeddings | Optional pinned all-MiniLM-L6-v2, CPU/offline, 384 dimensions | English short-text model; domain/multilingual evaluation remains planned |
@@ -64,4 +64,14 @@ Selected sharing, separate team review, catalog membership and member-filtered
 shared graph views are implemented. App agent reads accepted authorized team
 evidence through FalkorDB. Fresh real Codex chat cited the shared lesson; full
 isolated suite passed 345 tests. See [Team Brain](team-brain-app.md). Member views
-never open another private brain. `.abhi` UI remains outstanding.
+never open another private brain. See the subsequent portable exchange milestone.
+
+## Portable exchange and integrated application milestone
+
+The app now supports selected abhi/2 previews/downloads, strict exact-consent
+imports, source-envelope checks and independent assertion review. The recorded
+synthetic journey combines a reviewed imported team lesson with company policy,
+a cited approved patch, five regression tests, 15 independent replay cases,
+review of the new lesson and two checked fresh-chat recall claims. The isolated
+suite passed 350 tests. See [portable exchange](abhi-app.md) and the
+[integrated demo](application-integrated-demo.md) for reproduction and limits.
