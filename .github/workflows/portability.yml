@@ -30,6 +30,14 @@ jobs:
             sleep 1
           done
           exit 1
+      - name: Start isolated regression database
+        run: |
+          docker run -d --name brain-regression-db -p 127.0.0.1:6396:6379 falkordb/falkordb:v4.14.7
+          for attempt in {1..30}; do
+            if docker exec brain-regression-db redis-cli ping | grep -q PONG; then exit 0; fi
+            sleep 1
+          done
+          exit 1
       - name: Live graph and memory regression suite
         env:
           BRAIN_INTEGRATION: '1'
@@ -44,6 +52,7 @@ jobs:
               "repo_id": "fixture:ci",
               "repo_url": "https://github.com/example/fixture",
               "principal": "fixture",
+              "port": 6396,
           }))
           PY
           uv run --frozen pytest -q
