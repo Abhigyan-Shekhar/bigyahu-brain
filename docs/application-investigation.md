@@ -128,7 +128,30 @@ An earlier real-agent attempt failed closed when graph metadata was quoted as
 memory prose; the dedicated native-path evidence fixes that citation mismatch.
 The [sanitized report](application-investigation-verification.json) records the
 completed run and limitations. Raw fixtures, traces, snapshots and local state
-remain ignored. Browser acceptance of the new controls was blocked because local
-browser use is disabled in Work settings. API tests and the production build are
-verified; browser interaction and a new public GitHub history demonstration remain
-unverified. Previous public-ingestion and coding reports retain their own scope.
+remain ignored. Browser acceptance was initially blocked by a Work browser-access
+setting/runtime mismatch. After the desktop app restarted, scoped computer-use
+acceptance passed as recorded below. A new public GitHub history demonstration
+remains unverified. Previous public-ingestion and coding reports retain their
+own scope.
+
+### Browser acceptance follow-up
+
+The actual Codex built-in browser now opens the app and its historical Git patch
+and native team-memory path citations. A `delay_ms` filter returned one symbol;
+expansion showed its file and policy (3 nodes/2 relationships), then the file’s
+historical commits (7 nodes/6 relationships). The onboarding dialog’s required
+GitHub history checkbox is selected by default.
+
+Using only authored synthetic fixtures, browser controls selected an accepted
+private note in one repository, previewed its exact source/version, copied it as
+a destination proposal, inspected its source and separately accepted it with a
+review reason. A fresh browser-submitted Codex conversation made two successful
+`memory_search` calls and published three provenance-checked, model-reviewed
+claims. Its transferred-memory citation opened successfully and displayed the
+accepted advisory source with its native evidence path. The accepted copy remains
+in the destination synthetic fixture for inspection.
+
+No company grants were changed during this browser pass. Permission/revocation
+boundaries and multi-page neighbor results retain their backend regression
+coverage; the browser fixture exercised an already-connected company projection
+and two ordinary expansion steps. No production source or test suite was edited.

@@ -208,7 +208,6 @@
     "failed": 0,
     "skipped": 0
   },
-  "browser_acceptance": "blocked_local_browser_use_disabled_in_Work_settings",
   "limitations": [
     "Synthetic fixture; no new public GitHub issue/PR acquisition demonstration.",
     "Lexical history ranking; no general semantic bug similarity benchmark.",
@@ -217,5 +216,61 @@
     "One procedural claim was withheld as uncertain by the relevance reviewer; model review is conservative and fallible.",
     "Independent oracle tested authored synthetic fixed/regressed functions, not a newly approved app patch execution.",
     "Explicit memory transfer is a reviewed independent copy, not organization federation."
-  ]
+  ],
+  "browser_acceptance_at_initial_recording": "blocked_local_browser_use_disabled_in_Work_settings",
+  "browser_acceptance": {
+    "date": "2026-10-17",
+    "method": "Codex built-in browser through CUA computer use",
+    "implementation_commit": "5db484b",
+    "status": "passed_scoped_synthetic_acceptance",
+    "settings_recovery": "Local browser use was On in settings; access became available after restarting the desktop app. App HTTP server was restarted using the existing Redis owner.",
+    "checks": [
+      "Historical fix patch citation opens with original Git diff.",
+      "Native team-memory path citation opens with MENTIONS, RESOLVES_TO and native DECLARES relationships to the current company symbol.",
+      "Filtering delay_ms returns one symbol; expanding the symbol yields 3 nodes/2 relationships, then expanding retry.py yields 7 nodes/6 relationships including historical MODIFIES edges.",
+      "Personal Brain shows company evidence already connected in the historical fixture; no grants were changed during browser acceptance.",
+      "Selected accepted private memory transfer shows exact origin, target, record version and source snapshot preview.",
+      "Confirmed transfer creates a destination proposal; source acceptance does not carry over.",
+      "Destination source inspection requires a separate review reason before acceptance.",
+      "After destination acceptance, a fresh browser-submitted agent question recalls and cites the transferred memory with advisory status.",
+      "Transferred-memory citation opens with accepted state, checked source and native graph.",
+      "Connect repository dialog defaults to requiring GitHub issue/PR history."
+    ],
+    "source_project": "32fe1258456245cfbe4b5a8ecd8067e3",
+    "destination_project": "51e16f57db6b4538be015c6f11abee2c",
+    "recall_turn": "7844761c3174429588fdf7c15b61c6ce",
+    "recall_claims": 3,
+    "recall_tools": [
+      {
+        "tool": "memory_search",
+        "status": "completed"
+      },
+      {
+        "tool": "memory_search",
+        "status": "completed"
+      }
+    ],
+    "relevance_assessments": [
+      {
+        "claim": 0,
+        "reason": "Source cf02416144952eff3003bfc9 explicitly recommends inspecting historical cap removal in retry.delay_ms and preserving negative-input regression checks; its metadata identifies an accepted transferred memory.",
+        "verdict": "supported"
+      },
+      {
+        "claim": 1,
+        "reason": "Source 014ac9d22cb69f4c498e8089 explicitly recommends validating negative retry inputs before delay calculation and regression tests for exponential growth, cap boundaries, and integer zero cases. Its metadata records accepted status.",
+        "verdict": "supported"
+      },
+      {
+        "claim": 2,
+        "reason": "Source cf02416144952eff3003bfc9 explicitly calls the guidance advisory and requires verifying current code and policy; its binding field is false.",
+        "verdict": "supported"
+      }
+    ],
+    "limits": [
+      "Synthetic fixtures; no new public GitHub acquisition or causal bug benchmark.",
+      "Multi-page More neighbors was covered by backend tests, not this browser fixture.",
+      "Company grant/revocation boundaries were covered by backend tests; the browser observed an already-connected fixture."
+    ]
+  }
 }
