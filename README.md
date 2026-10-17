@@ -1,46 +1,98 @@
 # Company Brain
 
-Current scope and next-phase status: [roadmap](docs/roadmap.md). The five-tool
-FalkorDB prototype remains the default. The opt-in [local memory extension](docs/memory-architecture.md)
-adds personal/team proposals, scoped hybrid retrieval and incremental ingestion;
-hosted identity, federation and production-scale retrieval remain planned.
-
 A local MCP server that connects a planned code change to incoming callers,
-source-backed constraints, and maintainer evidence in FalkorDB. Codex remains the
-code-editing agent. Source prose is untrusted evidence; remembering something
-creates a proposal, never an approved rule.
+source-backed constraints and maintainer evidence in FalkorDB. Codex remains the
+code-editing agent. An opt-in memory extension connects personal, team and company
+knowledge through scoped graph paths. Source prose is untrusted evidence;
+remembering something creates a proposal, never an approved rule.
 
-**Status: graph-aware Codex coding demonstration validated; no baseline coding improvement demonstrated.**
-The fresh approved-v5 comparison completed **3 baseline + 3 graph sessions**:
-every run passed **12/12 independent oracle cases** and its selected upstream
-suite. Both conditions succeeded 3/3; no correctness advantage was observed.
-The approved rule reached graph-2/3 before edits. See the
-[complete results and limitations](docs/v5-evaluation.md).
+## Current architecture and status
 
-FalkorDBLite 0.10.0 runs on this Mac with Redis 8.6.2 and graph module 4.18.3.
-Preserved v5/Browser validation: **144 passed, 0 failed, 0 skipped**, with real graph
-and Lite lifecycle integration enabled. Ruff passes for `src`, `tests`, and
-`scripts`. Earlier merge checks and their overlapping STDIO/security selections
-are retained in [backend verification](docs/backend-verification.md). Both graph
-rebuilds also pass; see [combined merge verification](docs/merge-verification.md).
-The opt-in memory foundation now passes **183 tests** with live graph/lifecycle
-checks, including tenant isolation and deletion. The [new verification report](docs/memory-verification.md)
-separates retrieval measurements, coding outcomes and remaining production work.
-Codex has independently selected MCP tools, received historical graph evidence,
-and produced independently tested code changes. Some coding attempts failed;
-successful retrieval does not establish improved coding performance. The final
-[agent demonstration](docs/agent-demo-results.md) passed 12/12 independent socket
-cases and 200 selected upstream tests on the earlier graph.
-Use the [runner and reproduction commands](docs/agent-workflow.md).
+The default server exposes five company-code tools. Configuring a memory catalog
+adds `memory_search` and `memory_propose`; enabling native memory graphs adds
+`memory_graph`, for eight tools in total.
 
-The v5 additions support deterministic RST/Markdown documentation and exact
-document → PR → file → symbol traversal, plus conservative public symbol
-re-exports. [Rebuild the eligible urllib3 graph](docs/v5-reproduction.md) from
-included filtered snapshots; no pre-existing demo database is required. Human
-approval remains a separate interactive step. The earlier 12/12 run predates
-these additions and is not evidence of their effect. See the
-[fixed paired protocol](docs/v5-evaluation-protocol.md) and
-[execution status](docs/v5-execution.md).
+```mermaid
+flowchart TD
+    A[Selected conversation turns] --> B[Consent and deterministic candidate extraction]
+    B --> C[SQLite memory catalog]
+    D[Reviewed sharing and .abhi/2 import/export] <--> C
+    C -->|Explicit operator sync| E[FalkorDB tenant memory graph]
+    F[Repository, Markdown/RST and PR snapshots] --> G[FalkorDB company graph]
+    G -->|Optional verified source and symbol bridge| E
+    E --> H[Exact/full-text search and authorized graph paths]
+    C -->|Current permission, review and expiry checks| H
+    H --> I[Company Brain MCP]
+    G --> I
+    I <--> J[Codex agent]
+```
+
+SQLite remains authoritative for records, permissions, reviews and audit history.
+FalkorDB stores the projected memory topology in a separate tenant namespace and
+performs native exact/full-text retrieval and bounded graph traversal. This route
+requires **no embedding model**. The explicit catalog backend retains optional
+local vectors stored and scored in SQLite. Projections must be refreshed by an
+operator; stale or unavailable native retrieval is reported without silent fallback.
+
+| Component | Implemented behavior |
+| --- | --- |
+| Personal memory | Exact-consent selected-turn import, deterministic user-line candidates, citations and private proposals |
+| Team/company sharing | Selected reviewed records, current scope grants and destination proposals |
+| Portable memory | `.abhi/2` selected current topology and optional reviewed assertions, with validated import/export round trips |
+| Memory relationships | Separately reviewed, version-pinned `UPDATES`, `EXTENDS` and `RELATES_TO` assertions |
+| Native memory graph | Brain, person, team, memory, source, entity and version nodes; authorized cross-scope citation paths |
+| Company bridge | Exact verified citations and unambiguous lexical code identifiers connected to existing company evidence |
+| Native retrieval | Exact/full-text seeds, scope-safe ranking, up to four graph hops, citations and supporting paths |
+
+See [memory architecture](docs/memory-architecture.md),
+[three-brain graphs](docs/three-brain-graphs.md),
+[reviewed relationships](docs/memory-relationships.md),
+[company bridge](docs/memory-company-bridge.md) and
+[native retrieval](docs/falkor-memory-retrieval.md) for contracts and limitations.
+
+**Still planned:** semantic fact/entity extraction from evolving conversations,
+a Graphify runtime adapter, the FalkorDB GraphRAG SDK/PDF semantic pipeline,
+full-history graph portability, a permission-aware three-brain browser and an
+integrated three-brain coding demonstration. Graphify has only been compared on
+small deterministic samples; it is **not integrated into the runtime**. Hosted
+identity, application encryption, distributed synchronization and production-scale
+retrieval also remain outstanding. See the [roadmap](docs/roadmap.md).
+
+## Validation and measured results
+
+The current full isolated memory/graph suite passed **249 tests**, including real
+FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
+pass. The portability workflow now includes live Docker graph/memory regression
+checks; the local result does not establish that the updated CI has passed.
+
+A small synthetic retrieval comparison separates natural-language queries from
+three deliberately authored graph-path acceptance cases:
+
+| Retrieval backend | Natural-language Hit@3 (9 queries) | Graph-path Hit@3 (3 queries) |
+| --- | --- | --- |
+| Catalog exact/full-text | 6/9 | 0/3 |
+| Native FalkorDB exact/full-text + paths | 6/9 | 3/3 |
+| Catalog with optional local vectors | 8/9 | 1/3 |
+
+These fixtures show complementary strengths: graph links recover related evidence,
+while vectors help paraphrases. They do not establish production quality, a speed
+advantage or improved coding outcomes. See the
+[retrieval report](docs/falkor-memory-evaluation.json),
+[vector comparison](docs/falkor-memory-vector-comparison.json) and
+[methodology](docs/falkor-memory-retrieval.md).
+
+The earlier approved-v5 coding comparison completed **3 baseline + 3 graph
+sessions**: every run passed **12/12 independent oracle cases** and its selected
+upstream suite. Both conditions succeeded 3/3; **no correctness advantage was
+observed**. These historical company-graph experiments do not evaluate the new
+three-brain memory workflow. See [results and limitations](docs/v5-evaluation.md).
+
+The preserved v5/Browser verification passed 144 tests; the earlier
+[memory verification report](docs/memory-verification.md) records its separate
+183-test milestone. The [agent demonstration](docs/agent-demo-results.md),
+[runner](docs/agent-workflow.md) and [v5 reproduction](docs/v5-reproduction.md)
+retain the historical evidence and reproduction instructions. Human approval
+remains a separate interactive step.
 
 ## Docker-free local setup (verified)
 
@@ -54,6 +106,31 @@ See [Lite integration results and commands](docs/lite-integration.md). Install
 Sync and MCP connect to that engine through the existing loopback configuration.
 Keep the entire ignored runtime directory for persistence. No paid Cloud resource
 or global Codex configuration change is required.
+
+## Enable optional memory graphs
+
+Copy `config/brain.memory.example.yaml` to an ignored local config and set the
+absolute checkout/catalog paths, tenant, principal and engine port. Uncomment
+`memory_graph_enabled: true`; omit `embedding_model_dir` for native retrieval.
+Use a separate runtime/catalog rather than the preserved approved demo database.
+
+Follow [memory operations](docs/memory-operations.md) to import consented turns,
+review records and configure sharing. After those records exist, refresh the
+projection and query it:
+
+```sh
+.venv/bin/python -m brain.memory_cli --config /ABSOLUTE/PATH/memory.local.yaml \
+  sync-graph --brain private:alice
+.venv/bin/python -m brain.memory_cli --config /ABSOLUTE/PATH/memory.local.yaml \
+  search --query 'upload replay' --backend falkor
+```
+
+Replace `alice` with the configured principal. Launch MCP with the same
+`BRAIN_CONFIG`. In graph mode, `memory_search` defaults to FalkorDB; select
+`backend="catalog"` explicitly to compare the optional vector baseline. Company
+paths require current company access and `sync-graph --include-company`, followed
+by search with `--include-graph`. See [portable exchange](docs/abhi-format.md) for
+selected `.abhi/2` export/import.
 
 ## Optional Cloud setup (not live-verified)
 
@@ -89,7 +166,7 @@ client to launch the absolute `.venv/bin/python` path with arguments
 `["-m", "brain.mcp_server"]` and an absolute `BRAIN_CONFIG` environment value.
 Set `PYTHONPATH` to the absolute `src` directory in the MCP launcher as well, so
 module discovery remains reliable even if an editable-install path file is ignored.
-The server discovers its five tools even while the database is down; dependent
+The server discovers its configured tools even while the database is down; dependent
 calls return `status: unavailable`.
 
 The local development checkout at `.checkouts/requests` is ignored. Recreate it:
@@ -109,6 +186,15 @@ git -C .checkouts/requests checkout 611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60
 | find_owner | Explicit file CODEOWNERS, otherwise inferred Git maintainers |
 | check_change | Intended symbols, incoming callers, constraints and source-backed file history |
 | remember | A new non-binding proposal in org or configured private scope |
+
+Optional memory tools:
+
+| Tool | Enabled by | Purpose |
+| --- | --- | --- |
+| memory_search | Memory catalog configuration | Scoped native or catalog retrieval with citations |
+| memory_propose | Memory catalog configuration | Create a non-binding memory proposal |
+| memory_graph | `memory_graph_enabled: true` | Browse bounded authorized memory/evidence paths |
+
 
 The key relationship is `(caller)-[:CALLS]->(target)`. Decisions constrain symbols;
 Sources preserve provenance. Files declare Symbols, Projects contain Files,
@@ -173,9 +259,19 @@ verified in Browser. The runbook includes reproduction commands and final footag
 ```sh
 uv run pytest -q
 uv run ruff check src tests scripts
+# Disposable Lite owner, isolated catalog and full memory/graph/lifecycle suite:
+.venv/bin/python scripts/validate_memory_foundation.py
 # Only against a local disposable/test database:
 BRAIN_TEST_CONFIG=/absolute/path/to/isolated-test.yaml \
   BRAIN_INTEGRATION=1 BRAIN_LITE_TESTS=1 uv run pytest -q
+```
+
+The disposable runner requires the `lite` extra installed in the local environment.
+Reproduce the synthetic native retrieval benchmark without a model using:
+
+```sh
+PYTHONPATH=src .venv/bin/python scripts/benchmark_falkor_memory.py \
+  --output "$PWD/data/validation/native-retrieval.json"
 ```
 
 Unit/contract checks cover poisoning proposals, private routing, scope/path

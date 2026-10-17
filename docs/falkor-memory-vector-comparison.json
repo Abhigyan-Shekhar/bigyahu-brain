@@ -1,0 +1,716 @@
+{
+  "format": "falkor-memory-evaluation/1",
+  "corpus": "synthetic",
+  "corpus_sha256": "9efcebb4352edc8b8f0f497c89de6c006c2a3149d3f9ed3d46f577a34874f8bf",
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2@9cf8ce8fba6ff86a0dc9fe957dcc2e8f80b7388bbc797e4dc4fa7dca0647be91",
+  "implementation_sha256": {
+    "scripts/benchmark_falkor_memory.py": "d5c3fbc82bb5e6e1d97fb1f509da21588ff10f73c564a96b6770ab5e69442e59",
+    "src/brain/memory.py": "1e37a7a6625161592488d74649ce0889effbfdaf613bfda1cd4522b0122c75c9",
+    "src/brain/memory_search.py": "c7ac418265c1d69aa8e42fffb48cbd57ad3e5ff85a77025d1c28d0514c9546a7",
+    "src/brain/memory_graph.py": "355089b121f03e42c943e6a745fbaa3d12743a28407cfb3230930ceac16807ec",
+    "src/brain/memory_tools.py": "dd4a4fde140a9f1842833afa281a8c603d1e37c3688ea49afdef6e1b729a90b0",
+    "src/brain/memory_links.py": "ca83c7b8960f540cb6d63fc40531056bbf5897f61b99218571d6f32879694d5b"
+  },
+  "natural_language": {
+    "queries": 9,
+    "results": {
+      "catalog_exact_fulltext": {
+        "hit_at_3": 0.6666666666666666,
+        "recall_at_3": 0.6666666666666666,
+        "mrr_at_3": 0.6111111111111112,
+        "latency_ms_p50": 0.2004590005526552,
+        "details": [
+          {
+            "query": "upload replay 307",
+            "relevant": [
+              "upload"
+            ],
+            "retrieved": [
+              "upload",
+              "operations"
+            ],
+            "relationships": [
+              [],
+              []
+            ]
+          },
+          {
+            "query": "Can a stream without a usable position be transmitted the first time?",
+            "relevant": [
+              "upload"
+            ],
+            "retrieved": [
+              "pagination",
+              "upload",
+              "decisions"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "How should authentication credentials be removed from remembered conversations?",
+            "relevant": [
+              "secrets"
+            ],
+            "retrieved": [
+              "pagination",
+              "documents"
+            ],
+            "relationships": [
+              [],
+              []
+            ]
+          },
+          {
+            "query": "What happens to the sync checkpoint when an API page fails?",
+            "relevant": [
+              "pagination"
+            ],
+            "retrieved": [
+              "pagination",
+              "membership",
+              "documents"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "Can someone kicked out of a group still read its saved notes?",
+            "relevant": [
+              "membership"
+            ],
+            "retrieved": [
+              "membership",
+              "secrets",
+              "decisions"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "Who can turn a suggested rule into an enforceable constraint?",
+            "relevant": [
+              "decisions"
+            ],
+            "retrieved": [
+              "operations",
+              "limits",
+              "upload"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "Do section identities change when preceding document lines are inserted?",
+            "relevant": [
+              "documents"
+            ],
+            "retrieved": [
+              "documents",
+              "limits"
+            ],
+            "relationships": [
+              [],
+              []
+            ]
+          },
+          {
+            "query": "How do we recover saved data without overwriting the live system?",
+            "relevant": [
+              "operations"
+            ],
+            "retrieved": [
+              "upload",
+              "membership",
+              "pagination"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "Does a missing dependency connection imply the change has no callers?",
+            "relevant": [
+              "limits"
+            ],
+            "retrieved": [
+              "limits",
+              "upload",
+              "pagination"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          }
+        ]
+      },
+      "falkor_exact_fulltext_graph": {
+        "hit_at_3": 0.6666666666666666,
+        "recall_at_3": 0.6666666666666666,
+        "mrr_at_3": 0.6111111111111112,
+        "latency_ms_p50": 3.7960410008963663,
+        "details": [
+          {
+            "query": "upload replay 307",
+            "relevant": [
+              "upload"
+            ],
+            "retrieved": [
+              "upload",
+              "operations"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                []
+              ]
+            ]
+          },
+          {
+            "query": "Can a stream without a usable position be transmitted the first time?",
+            "relevant": [
+              "upload"
+            ],
+            "retrieved": [
+              "limits",
+              "upload",
+              "membership"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                []
+              ],
+              [
+                []
+              ]
+            ]
+          },
+          {
+            "query": "How should authentication credentials be removed from remembered conversations?",
+            "relevant": [
+              "secrets"
+            ],
+            "retrieved": [
+              "documents",
+              "pagination",
+              "decisions"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                []
+              ],
+              [
+                []
+              ]
+            ]
+          },
+          {
+            "query": "What happens to the sync checkpoint when an API page fails?",
+            "relevant": [
+              "pagination"
+            ],
+            "retrieved": [
+              "pagination",
+              "decisions",
+              "membership"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                []
+              ],
+              [
+                []
+              ]
+            ]
+          },
+          {
+            "query": "Can someone kicked out of a group still read its saved notes?",
+            "relevant": [
+              "membership"
+            ],
+            "retrieved": [
+              "membership",
+              "secrets",
+              "limits"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                []
+              ],
+              [
+                []
+              ]
+            ]
+          },
+          {
+            "query": "Who can turn a suggested rule into an enforceable constraint?",
+            "relevant": [
+              "decisions"
+            ],
+            "retrieved": [
+              "limits",
+              "operations",
+              "documents"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                []
+              ],
+              [
+                []
+              ]
+            ]
+          },
+          {
+            "query": "Do section identities change when preceding document lines are inserted?",
+            "relevant": [
+              "documents"
+            ],
+            "retrieved": [
+              "documents",
+              "limits",
+              "pagination"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                []
+              ],
+              [
+                []
+              ]
+            ]
+          },
+          {
+            "query": "How do we recover saved data without overwriting the live system?",
+            "relevant": [
+              "operations"
+            ],
+            "retrieved": [
+              "pagination",
+              "decisions",
+              "upload"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                []
+              ],
+              [
+                []
+              ]
+            ]
+          },
+          {
+            "query": "Does a missing dependency connection imply the change has no callers?",
+            "relevant": [
+              "limits"
+            ],
+            "retrieved": [
+              "limits",
+              "pagination",
+              "decisions"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                []
+              ],
+              [
+                []
+              ]
+            ]
+          }
+        ]
+      },
+      "catalog_hybrid_vectors": {
+        "hit_at_3": 0.8888888888888888,
+        "recall_at_3": 0.8888888888888888,
+        "mrr_at_3": 0.7592592592592593,
+        "latency_ms_p50": 3.849749999062624,
+        "details": [
+          {
+            "query": "upload replay 307",
+            "relevant": [
+              "upload"
+            ],
+            "retrieved": [
+              "upload",
+              "operations",
+              "pagination"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "Can a stream without a usable position be transmitted the first time?",
+            "relevant": [
+              "upload"
+            ],
+            "retrieved": [
+              "upload",
+              "pagination",
+              "membership"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "How should authentication credentials be removed from remembered conversations?",
+            "relevant": [
+              "secrets"
+            ],
+            "retrieved": [
+              "pagination",
+              "documents",
+              "secrets"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "What happens to the sync checkpoint when an API page fails?",
+            "relevant": [
+              "pagination"
+            ],
+            "retrieved": [
+              "pagination",
+              "upload",
+              "documents"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "Can someone kicked out of a group still read its saved notes?",
+            "relevant": [
+              "membership"
+            ],
+            "retrieved": [
+              "membership",
+              "secrets",
+              "operations"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "Who can turn a suggested rule into an enforceable constraint?",
+            "relevant": [
+              "decisions"
+            ],
+            "retrieved": [
+              "limits",
+              "decisions",
+              "operations"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "Do section identities change when preceding document lines are inserted?",
+            "relevant": [
+              "documents"
+            ],
+            "retrieved": [
+              "documents",
+              "limits",
+              "secrets"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "How do we recover saved data without overwriting the live system?",
+            "relevant": [
+              "operations"
+            ],
+            "retrieved": [
+              "upload",
+              "membership",
+              "pagination"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "Does a missing dependency connection imply the change has no callers?",
+            "relevant": [
+              "limits"
+            ],
+            "retrieved": [
+              "limits",
+              "pagination",
+              "decisions"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "graph_acceptance": {
+    "queries": 3,
+    "results": {
+      "catalog_exact_fulltext": {
+        "hit_at_3": 0,
+        "recall_at_3": 0.0,
+        "mrr_at_3": 0,
+        "latency_ms_p50": 0.20729200150526594,
+        "details": [
+          {
+            "query": "amber beacon",
+            "relevant": [
+              "correction",
+              "detail"
+            ],
+            "retrieved": [
+              "incident"
+            ],
+            "relationships": [
+              []
+            ]
+          },
+          {
+            "query": "correction",
+            "relevant": [
+              "detail"
+            ],
+            "retrieved": [
+              "correction"
+            ],
+            "relationships": [
+              []
+            ]
+          },
+          {
+            "query": "Quasar",
+            "relevant": [
+              "entity-detail"
+            ],
+            "retrieved": [
+              "entity-seed"
+            ],
+            "relationships": [
+              []
+            ]
+          }
+        ]
+      },
+      "falkor_exact_fulltext_graph": {
+        "hit_at_3": 1,
+        "recall_at_3": 1.0,
+        "mrr_at_3": 0.5,
+        "latency_ms_p50": 3.4290839994355338,
+        "details": [
+          {
+            "query": "amber beacon",
+            "relevant": [
+              "correction",
+              "detail"
+            ],
+            "retrieved": [
+              "incident",
+              "correction",
+              "detail"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                [
+                  "UPDATES"
+                ]
+              ],
+              [
+                [
+                  "UPDATES",
+                  "EXTENDS"
+                ]
+              ]
+            ]
+          },
+          {
+            "query": "correction",
+            "relevant": [
+              "detail"
+            ],
+            "retrieved": [
+              "correction",
+              "detail",
+              "incident"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                [
+                  "EXTENDS"
+                ]
+              ],
+              [
+                [
+                  "UPDATES"
+                ]
+              ]
+            ]
+          },
+          {
+            "query": "Quasar",
+            "relevant": [
+              "entity-detail"
+            ],
+            "retrieved": [
+              "entity-seed",
+              "entity-detail"
+            ],
+            "relationships": [
+              [
+                []
+              ],
+              [
+                [
+                  "MENTIONS",
+                  "MENTIONS"
+                ]
+              ]
+            ]
+          }
+        ]
+      },
+      "catalog_hybrid_vectors": {
+        "hit_at_3": 0.3333333333333333,
+        "recall_at_3": 0.16666666666666666,
+        "mrr_at_3": 0.16666666666666666,
+        "latency_ms_p50": 3.923582999050268,
+        "details": [
+          {
+            "query": "amber beacon",
+            "relevant": [
+              "correction",
+              "detail"
+            ],
+            "retrieved": [
+              "incident",
+              "detail",
+              "operations"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "correction",
+            "relevant": [
+              "detail"
+            ],
+            "retrieved": [
+              "correction",
+              "decisions",
+              "membership"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          },
+          {
+            "query": "Quasar",
+            "relevant": [
+              "entity-detail"
+            ],
+            "retrieved": [
+              "entity-seed",
+              "incident",
+              "detail"
+            ],
+            "relationships": [
+              [],
+              [],
+              []
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "limits": [
+    "Small authored synthetic corpus; no production relevance or coding advantage claim",
+    "Graph acceptance questions deliberately require authored reviewed links or shared identifiers",
+    "Natural-language group evaluated before graph fixtures are added",
+    "Single query timing includes authorized graph validation; model loading/indexing excluded",
+    "Falkor mode uses no embeddings; optional vector baseline remains catalog-based"
+  ]
+}

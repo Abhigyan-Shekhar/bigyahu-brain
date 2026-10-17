@@ -23,6 +23,7 @@ class Config:
     tenant_id: str = ""
     memory_db: str | None = None
     embedding_model_dir: str | None = None
+    memory_graph_enabled: bool = False
 
     def connection_options(self):
         options = {
@@ -89,6 +90,10 @@ class Config:
                 raise ValueError("Memory and model paths must be absolute")
         if self.memory_db and not self.tenant_id:
             raise ValueError("Memory extension requires an explicit tenant identity")
+        if type(self.memory_graph_enabled) is not bool:
+            raise ValueError("memory_graph_enabled must be a boolean")
+        if self.memory_graph_enabled and not self.memory_db:
+            raise ValueError("Memory graph requires an authorization catalog")
         if self.repo_url and not self.repo_url.startswith("https://github.com/"):
             raise ValueError("repo_url must identify a public GitHub repository")
 

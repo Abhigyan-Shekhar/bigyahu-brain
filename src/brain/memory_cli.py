@@ -22,6 +22,13 @@ def operator(action):
         raise ValueError("Operation cancelled")
 
 
+def selections(entries):
+    pairs = [entry.split("=", 1) for entry in entries]
+    if any(len(pair) != 2 for pair in pairs) or len({p[0] for p in pairs}) != len(pairs):
+        raise ValueError("Select unique UID=HASH pairs")
+    return dict(pairs)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
@@ -43,11 +50,53 @@ def main():
         "--action", choices=["accept", "reject", "expire", "rollback"], required=True
     )
     review.add_argument("--reason", required=True)
-    for name in ("import-abhi", "import-session"):
+    share = sub.add_parser("share")
+    share.add_argument("--uid", required=True)
+    share.add_argument("--hash", required=True)
+    share.add_argument("--target", required=True)
+    share.add_argument("--expected-target", default="")
+    export = sub.add_parser("export-abhi")
+    export.add_argument("target", type=Path)
+    export.add_argument("--brain", required=True)
+    export.add_argument("--record", action="append", required=True, metavar="UID=HASH")
+    export.add_argument("--team", required=True)
+    export.add_argument("--collection", required=True)
+    export.add_argument("--link", action="append", default=[], help="Explicit accepted link UID")
+    propose_link = sub.add_parser("propose-link")
+    propose_link.add_argument("--brain", required=True)
+    propose_link.add_argument("--source", required=True)
+    propose_link.add_argument("--source-hash", required=True)
+    propose_link.add_argument("--target", required=True)
+    propose_link.add_argument("--target-hash", required=True)
+    propose_link.add_argument("--relation", choices=["UPDATES", "EXTENDS", "RELATES_TO"], required=True)
+    propose_link.add_argument("--sources", type=Path, required=True)
+    suggest_links = sub.add_parser("suggest-links")
+    suggest_links.add_argument("--brain", required=True)
+    suggest_links.add_argument("--record", action="append", required=True, metavar="UID=HASH")
+    review_link = sub.add_parser("review-link")
+    review_link.add_argument("--brain", required=True)
+    review_link.add_argument("--uid", required=True)
+    review_link.add_argument("--expected-state", choices=["proposed", "accepted", "rejected"], required=True)
+    review_link.add_argument("--action", choices=["accept", "reject", "rollback"], required=True)
+    review_link.add_argument("--reason", required=True)
+    for name in ("import-abhi", "import-session", "import-conversation"):
         cmd = sub.add_parser(name)
         cmd.add_argument("path", type=Path)
-        if name == "import-session":
+        if name in {"import-session", "import-conversation"}:
             cmd.add_argument("--consent-digest", required=True)
+    for name in ("sync-graph", "graph-view"):
+        cmd = sub.add_parser(name)
+        cmd.add_argument("--brain", required=True)
+        cmd.add_argument("--include-company", action="store_true")
+        if name == "graph-view":
+            cmd.add_argument("--include-proposals", action="store_true")
+    search = sub.add_parser("search")
+    search.add_argument("--query", required=True)
+    search.add_argument("--brain", action="append")
+    search.add_argument("--backend", choices=["auto", "falkor", "catalog"], default="auto")
+    search.add_argument("--limit", type=int, default=10)
+    search.add_argument("--include-graph", action="store_true")
+    search.add_argument("--include-proposals", action="store_true")
     docs = sub.add_parser("ingest-docs")
     docs.add_argument("--brain", required=True)
     docs.add_argument("--source-base", required=True)
@@ -78,6 +127,17 @@ def main():
     try:
         if args.command == "health":
             result = memory.health()
+        elif args.command == "search":
+            from .graph import GraphStore
+            from .memory_graph import MemoryGraph
+            from .memory_tools import MemoryTools
+            from .services import Services
+
+            store = GraphStore(cfg)
+            projection = MemoryGraph(memory, store) if cfg.memory_graph_enabled else None
+            result = MemoryTools(memory, Services(store), projection).memory_search(
+                args.query, args.brain, args.include_graph,
+                args.include_proposals, args.limit, args.backend)
         elif args.command == "reindex":
             memory.authorize(args.brain, review=True)
             if not memory.embedder:
@@ -132,6 +192,53 @@ def main():
                     )
                 memory._event(args.brain, args.principal, "membership", args.role)
             result = {"membership": args.role}
+        elif args.command == "export-abhi":
+            from .abhi_graph import export_graph, write_graph
+
+            payload = export_graph(memory, args.brain, selections(args.record),
+                                   args.team, args.collection, args.link)
+            print(json.dumps(payload, indent=2, ensure_ascii=False))
+            operator("EXPORT GRAPH " + payload["digest"])
+            write_graph(args.target, payload)
+            result = {"exported": "abhi/2", "digest": payload["digest"],
+                      "records": len(payload["records"]), "binding": False}
+        elif args.command in {"propose-link", "review-link", "suggest-links"}:
+            from .memory_links import MemoryLinks
+
+            links = MemoryLinks(memory)
+            if args.command == "propose-link":
+                result = links.propose(args.brain, args.source, args.source_hash, args.relation,
+                                       args.target, args.target_hash, read_json(args.sources))
+            elif args.command == "suggest-links":
+                result = links.suggest(args.brain, selections(args.record))
+            else:
+                memory.authorize(args.brain, review=True)
+                row = memory.db.execute(
+                    "SELECT * FROM memory_links WHERE tenant=? AND brain=? AND uid=?",
+                    (cfg.tenant_id, args.brain, args.uid),
+                ).fetchone()
+                print(json.dumps(dict(row) if row else {}, indent=2))
+                if row:
+                    endpoints = memory.db.execute(
+                        "SELECT uid,hash,state,text,sources FROM records WHERE tenant=? AND brain=? "
+                        "AND uid IN (?,?)",
+                        (cfg.tenant_id, args.brain, row["source_uid"], row["target_uid"]),
+                    ).fetchall()
+                    print(json.dumps([dict(r) for r in endpoints], indent=2))
+                operator(args.action.upper() + " LINK " + args.uid + " " + args.expected_state)
+                result = links.review(args.brain, args.uid, args.action,
+                                      args.expected_state, args.reason)
+        elif args.command == "share":
+            from .memory_ingest import share_memory
+
+            memory.authorize(args.target, write=True)
+            record = memory.db.execute(
+                "SELECT text,sources,hash FROM records WHERE tenant=? AND brain=? AND uid=?",
+                (cfg.tenant_id, "private:" + cfg.principal, args.uid),
+            ).fetchone()
+            print(json.dumps(dict(record) if record else {}, indent=2))
+            operator("SHARE " + args.uid + " " + args.target + " " + args.hash)
+            result = share_memory(memory, args.uid, args.hash, args.target, args.expected_target)
         elif args.command == "review":
             # Print the exact private/team record and citations only in the operator terminal.
             memory.authorize(args.brain, review=True)
@@ -164,7 +271,7 @@ def main():
             with sqlite3.connect(args.backup.resolve().as_uri() + "?mode=ro", uri=True) as source:
                 if (
                     source.execute("PRAGMA integrity_check").fetchone()[0] != "ok"
-                    or source.execute("PRAGMA user_version").fetchone()[0] != 1
+                    or source.execute("PRAGMA user_version").fetchone()[0] not in {1, 2}
                 ):
                     raise ValueError("Backup integrity or schema check failed")
                 with args.target.open("x"):
@@ -177,11 +284,26 @@ def main():
             }
         elif args.command == "import-abhi":
             result = import_abhi(memory, read_json(args.path))
-        elif args.command == "import-session":
+        elif args.command in {"sync-graph", "graph-view"}:
+            from .graph import GraphStore
+            from .memory_graph import MemoryGraph
+
+            projection = MemoryGraph(memory, GraphStore(cfg))
+            if args.command == "sync-graph":
+                operator("SYNC MEMORY GRAPH " + args.brain)
+                result = projection.sync(args.brain, args.include_company)
+            else:
+                result = projection.read([args.brain], args.include_proposals, args.include_company)
+        elif args.command in {"import-session", "import-conversation"}:
             payload = read_json(args.path)
-            print("Curated export digest:", digest(canonical(payload)))
+            print("Export digest:", digest(canonical(payload)))
             operator("CONSENT " + args.consent_digest)
-            result = ingest_session(memory, payload, args.consent_digest)
+            if args.command == "import-conversation":
+                from .conversation import ingest_conversation
+
+                result = ingest_conversation(memory, payload, args.consent_digest)
+            else:
+                result = ingest_session(memory, payload, args.consent_digest)
         elif args.command == "ingest-docs":
             result = ingest_local_documents(
                 memory, args.brain, cfg.repo_root, args.paths, args.source_base

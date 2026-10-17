@@ -24,6 +24,19 @@ approved decisions. SQLite is a sidecar authority for memory ownership, proposal
 membership, source text, audit, refresh transactions and derived vector data.
 There is no claim of an atomic distributed transaction between the two stores.
 
+An optional [native memory graph projection](three-brain-graphs.md) now adds
+source-backed personal/team/company memory paths in a separate tenant graph.
+Enable it explicitly with `memory_graph_enabled: true`; this adds the read-only
+`memory_graph` tool. It does not change the existing code/decision graph authority.
+Schema version 2 additionally stores version-pinned
+[memory relationship assertions](memory-relationships.md), with independent
+review and optional `.abhi/2` exchange. Automatic shared-identifier suggestions
+remain non-binding proposals; semantic correction inference is not implemented.
+An [optional company bridge](memory-company-bridge.md) adds native, verified
+source/document and explicit lexical code paths to the projection. Both sync
+and `memory_graph(include_company=true)` require current company membership;
+plain memory views cannot expose these company proxies.
+
 ## Ingestion
 
 Native graph document versions preserve revision/line-bound UIDs and immutable
@@ -59,12 +72,22 @@ Periodic `--reconcile` is required for child edits/deletions not reflected in pa
 timestamps. API caps and incomplete changed-file counts fail closed. Private repo
 capture requires a tenant namespace; raw captures must stay ignored and private.
 
-Session imports accept only `session/1` curated memory strings with a consent
+Curated session imports accept `session/1` memory strings with a consent
 digest covering the exact export. No raw trace reader or background collector
 is installed. Imported entries remain private proposals. Team `.abhi` files can
 propose content, but cannot assert membership, accepted state or approval.
+The separate `import-conversation` command accepts consented `conversation/1`
+turns and extracts verbatim user lines automatically as private candidate
+assertions. It is deterministic extraction, not a semantic inference model.
 
 ## Retrieval
+
+Graph-enabled servers now default to [native FalkorDB retrieval](falkor-memory-retrieval.md):
+exact and native full-text seeds followed by authorized graph paths. This mode
+does not require embeddings. The following model/vector/FTS5 description remains
+the explicit `backend="catalog"` baseline and the default when graph mode is off.
+Native vector search is not yet implemented; existing optional vectors remain
+catalog-based for comparison.
 
 The selected model is
 [sentence-transformers/all-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2),

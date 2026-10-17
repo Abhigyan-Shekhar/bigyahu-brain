@@ -4,12 +4,32 @@ Default five MCP tools: get_context, trace_decision, find_owner, check_change, r
 No administrative tool or arbitrary Cypher endpoint exists.
 
 Opt-in extension: `memory_db` plus `tenant_id` enables memory_search(query, brains?,
-include_graph?, include_proposals?, limit?) and memory_propose(text, sources,
+include_graph?, include_proposals?, limit?, backend?) and memory_propose(text, sources,
 brain?, expires?). Principal/tenant come only from server config. Shared brains
 require operator-owned membership. Source/memory acceptance is never a binding
 code decision. Default graphs are preserved; an explicit tenant prefixes graph
 names into new namespaces. See docs/memory-architecture.md for the new contract,
 docs/memory-governance.md for trust/retention, and docs/roadmap.md for actual status.
+
+With `memory_graph_enabled: true`, the catalog extension additionally registers
+read-only memory_graph(brains?, include_proposals?, include_company?). It reads a separate
+tenant-derived memory projection, requires current catalog authorization, returns
+`incomplete` for stale/missing projections and never establishes binding rules.
+This opt-in graph response uses nodes/edges/warnings/binding/trust_status rather
+than the legacy code-evidence envelope. See docs/three-brain-graphs.md for its
+explicit sync, privacy, provenance and size-bound contract.
+`include_company=true` additionally requires a current company grant and a
+completed company index. It returns verified source/lexical code bridge paths
+from a refreshed projection; it never approves a code constraint. Plain memory
+views cannot expose company proxies. See docs/memory-company-bridge.md.
+
+`memory_search` backend `auto` now selects FalkorDB in graph mode and the existing
+catalog route otherwise. `falkor` is embedding-free exact/full-text plus authorized
+native path expansion; it does not silently fall back on stale/unavailable data.
+`catalog` explicitly preserves the optional-vector baseline. Native response
+`graph` is a bounded nodes/edges evidence view. Company joins in native search use
+`include_graph=true` and require current company access. See
+docs/falkor-memory-retrieval.md for ranking, index refresh and bounds.
 
 Operation `status` is ok/error/unavailable/unknown/incomplete. Decision lifecycle
 uses the separate `decision_status` field: proposed, active, superseded.

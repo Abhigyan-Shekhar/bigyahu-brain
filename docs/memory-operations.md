@@ -36,11 +36,21 @@ uv run --frozen --extra lite --extra memory python -m brain health
 uv run --frozen --extra lite --extra memory python -m brain.memory_cli --config "$BRAIN_CONFIG" health
 ```
 
-The catalog creates schema version 1 only for a new database. Unsupported schema
-versions fail rather than guessing or silently rewriting records. The optional
-server exposes seven tools; omitting `memory_db` keeps five. The MCP process must
+The catalog uses schema version 2. Opening a version-1 catalog transactionally
+adds an empty relationship-assertion table and advances its schema marker; existing
+records, grants, imports, vectors and audit events are preserved. Unsupported
+schema versions fail. Backups/restores accept versions 1 and 2; opening a restored
+version-1 copy applies the same additive migration. Keep a backup before upgrades.
+The optional catalog server exposes seven tools; graph mode adds an eighth,
+`memory_graph`. Omitting `memory_db` keeps five. The MCP process must
 not receive `BRAIN_OPERATOR_SESSION`. Keep configuration and catalog inaccessible
 to unrelated OS users; no Windows ACL or multi-host identity isolation is implied.
+
+Graph-enabled `memory_search` now defaults to the native Falkor engine. Run the
+existing operator `sync-graph` once after upgrading to create/repair its full-text
+index. The read-only CLI `search --query 'upload replay' --backend falkor` exercises
+the same path; `--backend catalog` preserves the earlier optional-vector baseline.
+See [native retrieval](falkor-memory-retrieval.md) for scope/company flags and bounds.
 
 ## Separate human operator actions
 

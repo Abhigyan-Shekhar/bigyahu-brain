@@ -22,10 +22,17 @@ def create_server(services, memory=None):
     if memory is not None:
         from .memory_tools import MemoryTools, authorized_services
 
+        projection = None
+        if cfg.memory_graph_enabled:
+            from .memory_graph import MemoryGraph
+
+            projection = MemoryGraph(memory, services.store)
         services = authorized_services(services, memory)
-        extension = MemoryTools(memory, services)
+        extension = MemoryTools(memory, services, projection)
         for name in ("memory_search", "memory_propose"):
             mcp.tool(name=name)(getattr(extension, name))
+        if projection is not None:
+            mcp.tool(name="memory_graph")(extension.memory_graph)
     for name in ("get_context", "trace_decision", "find_owner", "check_change", "remember"):
         mcp.tool(name=name)(getattr(services, name))
     return mcp
