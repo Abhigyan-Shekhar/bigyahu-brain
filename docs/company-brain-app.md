@@ -63,8 +63,9 @@ served by FastAPI is the supported authenticated workflow.
    the existing Python AST/Git indexer. It never imports the repository's Python,
    installs its dependencies or runs its scripts during onboarding.
 2. Bounded existing GitHub sync acquires accessible issue/PR snapshots. Acquisition
-   fails before mutation on pagination/request limits. If unavailable, the UI
-   reports missing GitHub coverage; code and Git commit history remain available.
+   fails before mutation on pagination/request limits. By default, unavailable
+   acquisition stops onboarding. The connect dialog can explicitly permit
+   code/Git-only indexing instead, with missing coverage reported.
    A failed graph mutation/readiness fence fails the onboarding job instead.
 3. Existing Markdown/RST ingestion indexes at most 12 repository documents,
    256 KB/file and 1 MB total. Coverage limits are visible. Uploaded UTF-8
@@ -155,7 +156,7 @@ uv run --frozen --extra app --extra lite --extra graphify --extra ingestion pyth
 The application tests exercise URL rejection, authentication/Origin/Host checks,
 read-only runner configuration, restart recovery, readiness gates, native code and
 uploaded-document evidence, invented quotes/IDs, citation access and stale source
-rejection. Live suite: **361 passed**. Browser acceptance uses a real public
+rejection. Live suite: **369 passed**. Browser acceptance uses a real public
 repository and actual Codex tool calls; see the [milestone report](application-milestone-verification.json).
 
 The [coding action report](application-action-verification.json) records a separate
@@ -187,3 +188,7 @@ for selected Documents, with at most 300 relationships and explicit truncation.
 Semantic edges display their extracted relation. Click an edge or use **Inspect
 relationship** to see its stored type, confidence, literal quote and source UID.
 See [PR #7 review fixes](pr7-review-fixes.md) for validation and remaining limits.
+
+See [historical investigation and connected memory](application-investigation.md)
+for ranked history/patch evidence, explicit company links, citation relevance
+review, paged neighbor expansion and selected cross-repository memory transfers.

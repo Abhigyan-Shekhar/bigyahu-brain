@@ -23,9 +23,22 @@ from .sources import onboard, repository_url, upload_binary, upload_document
 from .state import State
 
 
+class TransferInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    origin: str = Field(min_length=32, max_length=32)
+    records: list[str] = Field(min_length=1, max_length=10)
+    consent_digest: str = Field(default="", pattern="^(?:[a-f0-9]{64})?$")
+
+
+class CompanyBridgeInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    enabled: bool
+
+
 class RepositoryInput(BaseModel):
     url: str = Field(min_length=1, max_length=300)
     history: bool = True
+    history_required: bool = True
 
 
 class QuestionInput(BaseModel):
@@ -208,7 +221,7 @@ def create_app(state, token, origin, assets=None):
                 stage="Queued",
                 warnings=[],
             )
-            workers.submit(onboard, state, project["id"], body.history)
+            workers.submit(onboard, state, project["id"], body.history, body.history_required)
         return project
 
     @app.get("/api/repositories/{project}")
@@ -232,6 +245,7 @@ def create_app(state, token, origin, assets=None):
                 "truncated": truncated,
                 "binding": False,
                 "initialized": True,
+                "company_enabled": personal.company_enabled(memory),
                 "relationships": [dict(r) for r in links],
             }
 
@@ -252,12 +266,36 @@ def create_app(state, token, origin, assets=None):
                 "warnings": ["Add a memory to initialize this Personal Brain"],
             }
         with lock, personal.catalog(cfg) as (memory, projection):
-            view = projection.read([personal.brain(memory)], include_proposals=True)
+            view = projection.read(
+                [personal.brain(memory)],
+                include_proposals=True,
+                include_company=personal.company_enabled(memory),
+            )
             return {
                 "status": view["status"],
                 "graph": personal.graph_view(view),
                 "warnings": view["warnings"],
             }
+
+    @app.post("/api/repositories/{project}/memory/transfers/preview")
+    def transfer_preview(project: str, body: TransferInput):
+        from .transfers import preview
+
+        with lock:
+            return preview(state, project, body.origin, body.records)
+
+    @app.post("/api/repositories/{project}/memory/transfers")
+    def transfer_import(project: str, body: TransferInput):
+        from .transfers import import_selected
+
+        with lock:
+            return import_selected(state, project, body.origin, body.records, body.consent_digest)
+
+    @app.post("/api/repositories/{project}/memory/company-bridge")
+    def company_bridge(project: str, body: CompanyBridgeInput):
+        project_ready(project)
+        with lock:
+            return personal.connect_company(state.config(project), body.enabled)
 
     @app.post("/api/repositories/{project}/memory/refresh")
     def personal_refresh(project: str):
@@ -555,6 +593,33 @@ def create_app(state, token, origin, assets=None):
             "revision": sha,
             "truncated": truncated,
             "limits": {"nodes": 150, "edges": 300, "roots": 100, "source_neighbors": 50},
+        }
+
+    @app.get("/api/repositories/{project}/graph/neighbors")
+    def graph_neighbors(project: str, uid: str, offset: int = 0):
+        project_ready(project)
+        if not 1 <= len(uid) <= 2000 or not 0 <= offset <= 5000:
+            raise HTTPException(400, "Invalid node or neighbor page")
+        store = GraphStore(state.config(project))
+        ready(store)
+        params = {"repo": store.cfg.repo_id, "uid": uid, "offset": offset}
+        root = store.query(
+            "MATCH (n {repo_id:$repo,uid:$uid}) WHERE coalesce(n.current,true) RETURN n.uid AS uid LIMIT 1",
+            params,
+        )
+        if not root:
+            raise HTTPException(404, "Current repository node unavailable")
+        rows = store.query(
+            "MATCH (n {repo_id:$repo,uid:$uid})-[r]-(m {repo_id:$repo}) WHERE coalesce(m.current,true) RETURN DISTINCT m.uid AS uid ORDER BY uid SKIP $offset LIMIT 51",
+            params,
+        )
+        graph = native_graph(store, [uid, *[r["uid"] for r in rows[:50]]])
+        return {
+            **graph,
+            "edges": graph["edges"][:300],
+            "root": uid,
+            "next_offset": offset + 50 if len(rows) > 50 else None,
+            "truncated": len(rows) > 50 or len(graph["edges"]) > 300,
         }
 
     @app.post("/api/repositories/{project}/documents")

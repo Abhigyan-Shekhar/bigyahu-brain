@@ -8,6 +8,7 @@ from ..config import load_config
 from ..graph import GraphStore
 from ..services import Services
 from .evidence import code_evidence, register, source_evidence
+from .memory_paths import path_evidence
 
 
 def create_server(cfg, folder):
@@ -53,6 +54,11 @@ def create_server(cfg, folder):
                             else memory_evidence(cfg, item["uid"], item["hash"]),
                         )
                     )
+                    checked.append(
+                        register(
+                            folder, path_evidence(cfg, item["brain"], item["uid"], item["hash"])
+                        )
+                    )
                 except (ValueError, OSError, PermissionError):
                     return {
                         "status": "incomplete",
@@ -70,7 +76,7 @@ def create_server(cfg, folder):
         from pathlib import Path
 
         from . import team
-        from .personal import catalog, config, graph_view, row, source_details
+        from .personal import catalog, company_enabled, config, graph_view, row, source_details
 
         if not Path(config(cfg).memory_db).exists():
             return {"status": "unavailable", "warnings": ["personal_brain_not_initialized"]}
@@ -89,7 +95,7 @@ def create_server(cfg, folder):
                     "warnings": ["memory_scope_bound"],
                     "graph": {"nodes": [], "edges": []},
                 }
-            view = projection.read(brains)
+            view = projection.read(brains, include_company=company_enabled(memory))
             if view["status"] == "ok":
                 try:
                     for node in view["nodes"]:
@@ -114,10 +120,27 @@ def create_server(cfg, folder):
                     "warnings": view["warnings"],
                     "graph": {"nodes": [], "edges": []},
                 }
+            checked = []
+            for node in [n for n in view["nodes"] if n["kind"] == "Memory"][:8]:
+                try:
+                    checked.append(
+                        register(
+                            folder,
+                            path_evidence(cfg, node["brain"], node["record_uid"], node["hash"]),
+                        )
+                    )
+                except (ValueError, OSError, PermissionError):
+                    return {
+                        "status": "incomplete",
+                        "warnings": ["memory_path_evidence_unavailable"],
+                        "graph": {"nodes": [], "edges": []},
+                        "checked_evidence": [],
+                    }
             return {
                 "status": view["status"],
                 "warnings": view["warnings"],
                 "graph": graph_view(view),
+                "checked_evidence": checked,
                 "binding": False,
             }
 
@@ -150,30 +173,13 @@ def create_server(cfg, folder):
         return {"items": rows[:20], "truncated": len(rows) > 20}
 
     @mcp.tool
-    def search_history(query: str = "") -> dict:
-        """Search recorded Git commit messages and accessible issue/PR bodies. Not complete web history."""
-        if len(query) > 100:
-            return {"status": "error", "error": "Use a shorter history query"}
-        rows = store.query(
-            "MATCH (w {repo_id:$repo})-[:SUPPORTS]->(s:Source {repo_id:$repo}) "
-            "WHERE (w:Commit OR w:PR OR w:Issue) AND "
-            "($q='' OR toLower(coalesce(s.excerpt,'')) CONTAINS toLower($q)) "
-            "RETURN w.uid AS uid,s.uid AS source_uid,coalesce(w.timestamp,'') AS timestamp "
-            "ORDER BY timestamp DESC,uid LIMIT 11",
-            {"repo": cfg.repo_id, "q": query},
-        )
-        checked = []
-        for row in rows[:10]:
-            try:
-                checked.append(register(folder, source_evidence(store, row["source_uid"])))
-            except (ValueError, OSError, UnicodeError):
-                pass
-        return {
-            "items": rows[:10],
-            "truncated": len(rows) > 10,
-            "checked_evidence": checked,
-            "coverage": "indexed_history_only",
-        }
+    def search_history(
+        query: str = "", files: list[str] | None = None, symbols: list[str] | None = None
+    ) -> dict:
+        """Rank indexed historical bugs by failure terms and changed-file associations. Returns checked messages/patches and coverage gaps; patch relevance/root cause still needs evaluation."""
+        from .history import search
+
+        return search(store, folder, query, files, symbols)
 
     @mcp.tool
     def read_code(path: str, start: int = 1, end: int = 80) -> dict:

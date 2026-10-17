@@ -191,6 +191,14 @@ def resolve(store, evidence):
         from .personal import memory_evidence
 
         return memory_evidence(store.cfg, **evidence["ref"])
+    if evidence["kind"] == "memory_path":
+        from .memory_paths import path_evidence
+
+        return path_evidence(store.cfg, **evidence["ref"])
+    if evidence["kind"] == "history_diff":
+        from .history import patch_evidence
+
+        return patch_evidence(store, **evidence["ref"])
     if evidence["kind"] == "code":
         return code_evidence(store, **evidence["ref"])
     return source_evidence(store, **evidence["ref"])

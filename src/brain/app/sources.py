@@ -109,7 +109,7 @@ class BoundedGitHub(GitHub):
         return result
 
 
-def onboard(state, project, history=True):
+def onboard(state, project, history=True, history_required=True):
     try:
         state.update(project, status="running", stage="Cloning public repository")
         folder = state.folder(project)
@@ -128,6 +128,10 @@ def onboard(state, project, history=True):
                 if store.revision()["syncing"]:
                     raise ValueError(
                         "GitHub graph refresh interrupted; reconnect this source"
+                    ) from None
+                if history_required:
+                    raise ValueError(
+                        "Required GitHub issue/PR history acquisition failed; reconnect or explicitly allow code/Git-only indexing"
                     ) from None
                 warnings.append(
                     "GitHub history unavailable or exceeds this milestone’s limits; code and Git history are indexed."

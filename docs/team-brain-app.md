@@ -63,7 +63,10 @@ retain the existing bounded projection and 150-node/300-edge display limits.
 
 This remains a trusted loopback operator application. Catalog principals are not
 hosted login accounts; creating a member does not connect another person's device.
-There is no private-brain federation, automatic company semantic bridge, hosted
+The local operator can explicitly connect verified company evidence for agent
+traversal through the Personal Brain control. This preserves existing grants; it
+does not grant company access to team readers. There is no private-brain federation,
+automatic arbitrary semantic bridge, hosted
 identity provider or enterprise-scale claim. [`.abhi` app controls](abhi-app.md) now expose selected export, strict import and
 independent assertion review. Existing CLI interchange is also preserved.
 

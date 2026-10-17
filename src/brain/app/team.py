@@ -94,7 +94,7 @@ def refresh(memory, projection, name):
             "notice": "Catalog saved; a team reviewer must refresh the shared graph before retrieval.",
         }
     try:
-        projection.sync(scope(name))
+        projection.sync(scope(name), include_company=personal.company_enabled(memory))
         return {"status": "ok"}
     except (ValueError, GraphUnavailable):
         return {
@@ -257,7 +257,11 @@ def review(cfg, name, uid, expected_hash, expected_state, action, reason):
 
 
 def graph(cfg, memory, projection, brains, *, include_proposals=False, member=""):
-    view = projection.read(brains, include_proposals=include_proposals)
+    view = projection.read(
+        brains,
+        include_proposals=include_proposals,
+        include_company=personal.company_enabled(memory),
+    )
     if view["status"] == "ok":
         for node in view["nodes"]:
             if node["kind"] == "Memory":
@@ -317,7 +321,7 @@ def memory_evidence(cfg, name, uid, expected_hash):
         view = graph(cfg, memory, projection, [scope(name)])
         if view["status"] != "ok":
             raise ValueError("Shared graph is unavailable or stale")
-        native = projection.read([scope(name)])
+        native = projection.read([scope(name)], include_company=personal.company_enabled(memory))
         selected = [
             n
             for n in native["nodes"]
@@ -325,11 +329,6 @@ def memory_evidence(cfg, name, uid, expected_hash):
         ]
         if len(selected) != 1:
             raise ValueError("Shared memory is absent from native graph")
-        roots = {selected[0]["uid"]}
-        ids = set(roots)
-        for e in native["edges"]:
-            if e["source"] in roots or e["target"] in roots:
-                ids.update([e["source"], e["target"]])
         return {
             "kind": "team_memory",
             "ref": {"name": name, "uid": uid, "expected_hash": expected_hash},
@@ -341,14 +340,7 @@ def memory_evidence(cfg, name, uid, expected_hash):
             "verification": "accepted_imported_memory_and_native_graph"
             if source["kind"] == "abhi_import"
             else "accepted_team_memory_and_native_graph",
-            "graph": personal.graph_view(
-                {
-                    "nodes": [n for n in native["nodes"] if n["uid"] in ids],
-                    "edges": [
-                        e for e in native["edges"] if e["source"] in ids and e["target"] in ids
-                    ],
-                }
-            ),
+            "graph": personal.evidence_slice(native, selected[0]["uid"]),
             "binding": False,
         }
 
@@ -378,7 +370,9 @@ def search(cfg, query):
             }
         result = MemoryTools(
             memory, Services(GraphStore(personal.config(cfg))), projection
-        ).memory_search(query, brains, backend="falkor", limit=8)
+        ).memory_search(
+            query, brains, backend="falkor", limit=8, include_graph=personal.company_enabled(memory)
+        )
         if result.get("status") != "ok":
             return {**result, "items": [], "graph": {"nodes": [], "edges": []}}
         try:
