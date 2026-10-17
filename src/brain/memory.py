@@ -208,10 +208,20 @@ class Memory:
         for brain in brains:
             # ACL + state + expiry filter occurs before vector scoring or lexical ranking.
             states = ("accepted", "proposed") if include_proposals else ("accepted",)
+            reviewer = self._role(brain) in {"owner", "reviewer"}
             rows = self.db.execute(
                 "SELECT * FROM records WHERE tenant=? AND brain=? AND state IN (?,?) "
+                "AND (state='accepted' OR author=? OR ?) "
                 "AND (expires='' OR expires>?) ORDER BY uid LIMIT 10001",
-                (self.identity.tenant, brain, states[0], states[-1], now()),
+                (
+                    self.identity.tenant,
+                    brain,
+                    states[0],
+                    states[-1],
+                    self.identity.principal,
+                    reviewer,
+                    now(),
+                ),
             ).fetchall()
             if len(rows) > 10000:
                 raise ValueError("Scope exceeds flat-index bound; partition before searching")

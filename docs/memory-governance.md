@@ -16,6 +16,12 @@ application rules. No hosted/OIDC security or hostile-local-user isolation is cl
 The catalog is not encrypted by this application. Use the operator's encrypted
 storage and backup controls where encryption at rest is required.
 
+Accepted shared records are visible to current readers. Pending proposals are
+visible only to their author (while they retain read membership) and authorized
+reviewers; `include_proposals=true` does not grant access to others' drafts.
+Writers cannot read other authors' pending proposals. State, author, membership
+and expiry filters run before lexical indexing and vector scoring.
+
 Session exports must be curated and redacted before consent. Do not ingest raw
 agent logs, shell history, credentials, personal messages or other people's data
 without permission. The importer is not a secret detector, consent oracle or

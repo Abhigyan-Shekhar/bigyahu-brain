@@ -47,7 +47,14 @@ the prior cursor by five minutes, polls issues and updated PRs, and captures ful
 comment/review/changed-file lists for touched parents. It downloads everything
 before publishing. A failed graph write keeps `github_syncing=true`; retry
 reconciles the same parents before advancing the cursor. New Sources have content
-hash suffixes, so refreshed prose cannot overwrite previously reviewed evidence.
+hash suffixes derived from owning work/comment ID, citation URI and exact text,
+so refreshed prose cannot overwrite previously reviewed evidence. Collection time,
+checkout revision and work status are acquisition properties, updated on observation,
+not part of content identity. Identical content from a later capture reuses its Source.
+Current Comment projections and their links are rebuilt for each touched parent;
+removed comments cannot be retrieved by UID. Historical Source nodes and independent
+Decision citations survive edits/deletion. Pre-existing timestamp-derived Source IDs
+are retained as historical evidence; this change does not migrate reviewed citations.
 Periodic `--reconcile` is required for child edits/deletions not reflected in parent
 timestamps. API caps and incomplete changed-file counts fail closed. Private repo
 capture requires a tenant namespace; raw captures must stay ignored and private.
@@ -77,7 +84,12 @@ the flat-ranking code is implemented in this repository, without a separate ANN 
 Authorization, tenant, state and expiry filtering happen before scoring. Each
 request builds an eligible-only [FTS5](https://sqlite.org/fts5.html) view so hidden
 or expired text cannot affect candidate cutoffs or BM25 statistics. RRF combines
-exact, full-text and vector rankings; optional graph evidence joins by cited URI.
+exact, full-text and vector rankings. Memory records retain their scoped record
+identities even when citations share a URI. Optional graph evidence coalesces only
+with a unique complete verbatim memory record whose single citation URI and SHA-256
+digest match the complete returned source bytes. Truncated, ambiguous, differently
+worded or differently versioned evidence remains separate; matched graph Source
+UIDs are retained in the result. A URI alone never establishes evidence equivalence.
 The graph's existing full-text term semantics differ from catalog OR queries,
 so a graph-vs-hybrid difference is not attributed solely to embeddings.
 

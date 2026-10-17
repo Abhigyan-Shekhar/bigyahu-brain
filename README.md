@@ -23,7 +23,7 @@ and Lite lifecycle integration enabled. Ruff passes for `src`, `tests`, and
 `scripts`. Earlier merge checks and their overlapping STDIO/security selections
 are retained in [backend verification](docs/backend-verification.md). Both graph
 rebuilds also pass; see [combined merge verification](docs/merge-verification.md).
-The opt-in memory foundation now passes **177 tests** with live graph/lifecycle
+The opt-in memory foundation now passes **183 tests** with live graph/lifecycle
 checks, including tenant isolation and deletion. The [new verification report](docs/memory-verification.md)
 separates retrieval measurements, coding outcomes and remaining production work.
 Codex has independently selected MCP tools, received historical graph evidence,

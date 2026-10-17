@@ -1,0 +1,341 @@
+{
+  "corpus": "synthetic",
+  "queries": 9,
+  "repeats": 5,
+  "model": "sentence-transformers/all-MiniLM-L6-v2@9cf8ce8fba6ff86a0dc9fe957dcc2e8f80b7388bbc797e4dc4fa7dca0647be91",
+  "model_revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+  "corpus_sha256": "9efcebb4352edc8b8f0f497c89de6c006c2a3149d3f9ed3d46f577a34874f8bf",
+  "metrics": {
+    "no_retrieval": {
+      "hit_at_3": 0.0,
+      "mrr_at_3": 0.0,
+      "citation_coverage": null,
+      "returned_source_integrity": null,
+      "returned_items_checked": 0,
+      "latency_ms_p50": 8.300048648379743e-05,
+      "latency_ms_p95": 0.00037500012695090845
+    },
+    "graph_only": {
+      "hit_at_3": 0.1111111111111111,
+      "mrr_at_3": 0.1111111111111111,
+      "citation_coverage": 1.0,
+      "returned_source_integrity": 1.0,
+      "returned_items_checked": 1,
+      "latency_ms_p50": 0.991416000033496,
+      "latency_ms_p95": 3.1574160002492135
+    },
+    "exact_fulltext": {
+      "hit_at_3": 0.6666666666666666,
+      "mrr_at_3": 0.6111111111111112,
+      "citation_coverage": 1.0,
+      "returned_source_integrity": 1.0,
+      "returned_items_checked": 24,
+      "latency_ms_p50": 0.21491600000445032,
+      "latency_ms_p95": 0.344959000358358
+    },
+    "hybrid": {
+      "hit_at_3": 0.8888888888888888,
+      "mrr_at_3": 0.7592592592592593,
+      "citation_coverage": 1.0,
+      "returned_source_integrity": 1.0,
+      "returned_items_checked": 27,
+      "latency_ms_p50": 5.73729200004891,
+      "latency_ms_p95": 25.119667000581103
+    }
+  },
+  "details": [
+    {
+      "mode": "no_retrieval",
+      "query": "upload replay 307",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "no_retrieval",
+      "query": "Can a stream without a usable position be transmitted the first time?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "no_retrieval",
+      "query": "How should authentication credentials be removed from remembered conversations?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "no_retrieval",
+      "query": "What happens to the sync checkpoint when an API page fails?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "no_retrieval",
+      "query": "Can someone kicked out of a group still read its saved notes?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "no_retrieval",
+      "query": "Who can turn a suggested rule into an enforceable constraint?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "no_retrieval",
+      "query": "Do section identities change when preceding document lines are inserted?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "no_retrieval",
+      "query": "How do we recover saved data without overwriting the live system?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "no_retrieval",
+      "query": "Does a missing dependency connection imply the change has no callers?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "graph_only",
+      "query": "upload replay 307",
+      "retrieved": [
+        "upload"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "graph_only",
+      "query": "Can a stream without a usable position be transmitted the first time?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "graph_only",
+      "query": "How should authentication credentials be removed from remembered conversations?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "graph_only",
+      "query": "What happens to the sync checkpoint when an API page fails?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "graph_only",
+      "query": "Can someone kicked out of a group still read its saved notes?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "graph_only",
+      "query": "Who can turn a suggested rule into an enforceable constraint?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "graph_only",
+      "query": "Do section identities change when preceding document lines are inserted?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "graph_only",
+      "query": "How do we recover saved data without overwriting the live system?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "graph_only",
+      "query": "Does a missing dependency connection imply the change has no callers?",
+      "retrieved": [],
+      "hit": false
+    },
+    {
+      "mode": "exact_fulltext",
+      "query": "upload replay 307",
+      "retrieved": [
+        "upload",
+        "operations"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "exact_fulltext",
+      "query": "Can a stream without a usable position be transmitted the first time?",
+      "retrieved": [
+        "pagination",
+        "upload",
+        "decisions"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "exact_fulltext",
+      "query": "How should authentication credentials be removed from remembered conversations?",
+      "retrieved": [
+        "pagination",
+        "documents"
+      ],
+      "hit": false
+    },
+    {
+      "mode": "exact_fulltext",
+      "query": "What happens to the sync checkpoint when an API page fails?",
+      "retrieved": [
+        "pagination",
+        "membership",
+        "documents"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "exact_fulltext",
+      "query": "Can someone kicked out of a group still read its saved notes?",
+      "retrieved": [
+        "membership",
+        "secrets",
+        "decisions"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "exact_fulltext",
+      "query": "Who can turn a suggested rule into an enforceable constraint?",
+      "retrieved": [
+        "operations",
+        "limits",
+        "upload"
+      ],
+      "hit": false
+    },
+    {
+      "mode": "exact_fulltext",
+      "query": "Do section identities change when preceding document lines are inserted?",
+      "retrieved": [
+        "documents",
+        "limits"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "exact_fulltext",
+      "query": "How do we recover saved data without overwriting the live system?",
+      "retrieved": [
+        "upload",
+        "membership",
+        "pagination"
+      ],
+      "hit": false
+    },
+    {
+      "mode": "exact_fulltext",
+      "query": "Does a missing dependency connection imply the change has no callers?",
+      "retrieved": [
+        "limits",
+        "upload",
+        "pagination"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "hybrid",
+      "query": "upload replay 307",
+      "retrieved": [
+        "upload",
+        "operations",
+        "pagination"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "hybrid",
+      "query": "Can a stream without a usable position be transmitted the first time?",
+      "retrieved": [
+        "upload",
+        "pagination",
+        "membership"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "hybrid",
+      "query": "How should authentication credentials be removed from remembered conversations?",
+      "retrieved": [
+        "pagination",
+        "documents",
+        "secrets"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "hybrid",
+      "query": "What happens to the sync checkpoint when an API page fails?",
+      "retrieved": [
+        "pagination",
+        "upload",
+        "documents"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "hybrid",
+      "query": "Can someone kicked out of a group still read its saved notes?",
+      "retrieved": [
+        "membership",
+        "secrets",
+        "operations"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "hybrid",
+      "query": "Who can turn a suggested rule into an enforceable constraint?",
+      "retrieved": [
+        "limits",
+        "decisions",
+        "operations"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "hybrid",
+      "query": "Do section identities change when preceding document lines are inserted?",
+      "retrieved": [
+        "documents",
+        "limits",
+        "secrets"
+      ],
+      "hit": true
+    },
+    {
+      "mode": "hybrid",
+      "query": "How do we recover saved data without overwriting the live system?",
+      "retrieved": [
+        "upload",
+        "membership",
+        "pagination"
+      ],
+      "hit": false
+    },
+    {
+      "mode": "hybrid",
+      "query": "Does a missing dependency connection imply the change has no callers?",
+      "retrieved": [
+        "limits",
+        "pagination",
+        "decisions"
+      ],
+      "hit": true
+    }
+  ],
+  "limits": [
+    "Small authored corpus, not independent production relevance judgments",
+    "No coding-agent improvement inferred from retrieval results",
+    "Latency excludes model loading and indexing"
+  ],
+  "implementation": "PR #4 review fixes based on 51b3c22; measured before commit"
+}

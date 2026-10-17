@@ -302,3 +302,84 @@ def test_tenant_server_cannot_bypass_catalog_authorization(tmp_path):
     graph = Mock(cfg=Config(tmp_path, "fixture", tenant_id="fixture"))
     with pytest.raises(ValueError, match="authorization catalog"):
         create_server(Services(graph))
+
+
+@pytest.mark.parametrize("role", ["reader", "writer", "reviewer"])
+def test_team_pending_visibility_is_author_or_reviewer(memory, tmp_path, role):
+    brain = "team:backend"
+    grant(memory, "alice", brain, "reviewer")
+    grant(memory, "bob", brain, role)
+    proposal = memory.propose("pending upload marker", source("pending"), brain)
+    other = Memory(tmp_path / "fixture.db", Identity("fixture", "bob"), Encoder())
+    try:
+        grant(memory, "alice", brain, "reader")
+        assert memory.search("upload", [brain], include_proposals=True)["items"]
+        grant(memory, "alice", brain, "reviewer")
+        assert bool(other.search("upload", [brain], include_proposals=True)["items"]) == (
+            role == "reviewer"
+        )
+        memory.review(brain, proposal["uid"], "accept", proposal["hash"], "Fixture review")
+        assert other.search("upload", [brain])["items"][0]["state"] == "accepted"
+    finally:
+        other.close()
+
+
+def test_fusion_preserves_records_and_verifies_evidence_versions(memory):
+    grant(memory, "alice", "company", "reader")
+    accepted(memory, "upload old evidence", uid="old")
+    accepted(memory, "upload new evidence", uid="new")
+    # A separate note can cite identical source bytes without being that source.
+    with memory.db:
+        note = memory.put(
+            "private:alice", "upload interpretation", source("upload new evidence"), "note"
+        )
+    memory.review("private:alice", note["uid"], "accept", note["hash"], "Fixture review")
+    graph = Mock()
+    graph.get_context.return_value = {
+        "status": "ok",
+        "untrusted_source_excerpts": [
+            {
+                "source_uid": "graph-new",
+                "uri": "urn:synthetic:source",
+                "text": "upload new evidence",
+                "original_chars": 19,
+                "truncated": False,
+            }
+        ],
+    }
+    tools = MemoryTools(memory, graph)
+    items = {x["uid"]: x for x in tools.memory_search("upload", include_graph=True)["items"]}
+    assert set(items) == {"old", "new", "note"}
+    assert items["new"]["retrieval_channels"] == ["memory", "graph"]
+    assert items["old"]["retrieval_channels"] == ["memory"]
+    assert items["note"]["retrieval_channels"] == ["memory"]
+    # Unverifiable/truncated graph bytes must remain separate.
+    graph.get_context.return_value["untrusted_source_excerpts"][0]["truncated"] = True
+    items = tools.memory_search("upload", include_graph=True)["items"]
+    assert {x["uid"] for x in items} == {"old", "new", "note", "graph-new"}
+
+
+def test_fusion_keeps_ambiguous_records_and_distinct_graph_versions(memory):
+    grant(memory, "alice", "company", "reader")
+    accepted(memory, "upload evidence", uid="first")
+    accepted(memory, "upload evidence", uid="second")
+    graph = Mock()
+    graph.get_context.return_value = {
+        "status": "ok",
+        "untrusted_source_excerpts": [
+            {
+                "source_uid": uid,
+                "uri": "urn:synthetic:source",
+                "text": text,
+                "original_chars": len(text),
+                "truncated": False,
+            }
+            for uid, text in [
+                ("graph-current", "upload evidence"),
+                ("graph-old", "upload prior version"),
+            ]
+        ],
+    }
+    items = MemoryTools(memory, graph).memory_search("upload", include_graph=True)["items"]
+    assert {x["uid"] for x in items} == {"first", "second", "graph-current", "graph-old"}
+    assert all(len(x["retrieval_channels"]) == 1 for x in items)

@@ -6,7 +6,7 @@ implemented/planned scope; this report records checks actually executed.
 
 ## Current backend checks
 
-- **177 passed, zero failures/skips**, with real FalkorDB and Lite lifecycle
+- **183 passed, zero failures/skips**, with real FalkorDB and Lite lifecycle
   flags enabled against a fresh disposable engine. Tests include SQL and physical
   graph tenant isolation, membership revocation, private proposals, MCP STDIO,
   atomic imports, CAS conflicts, session consent, document retirement/deletion,
@@ -16,13 +16,30 @@ implemented/planned scope; this report records checks actually executed.
   remain; they do not fail the suite.
 - A fresh locked Python 3.12 environment installed both Lite and memory extras
   and passed its offline selection (126 passed/35 live skips at `26cd6ab`). Later
-  hardening adds tests and is covered by the final 177-test live run.
+  hardening adds tests and is covered by the current 183-test live run.
 - Both old Browser and v5 reconstruction workflows passed on new empty engines.
   All eleven Browser database queries passed; all new demo rules remained
   proposed. No real approval phase or saved approved database was used.
 - Frozen v5 snapshots, six patches, evaluation manifests, protocol, lifecycle/
   document exports and original demo patch are byte-identical to merged master
   `97a0974`. Their historical results are not reassigned to this new backend.
+
+## PR review regressions
+
+The four review findings against `51b3c22` are fixed. Real graph tests cover edited
+and deleted comments, repair of old orphan Comment projections, unchanged re-import
+at a later acquisition time, and preservation of independently reviewed Source
+citations. Shared proposals are visible only to their author and authorized reviewers
+before acceptance; readers can retrieve accepted evidence. Fusion retains separate
+memory identities and source versions sharing a URI, including ambiguous and
+truncated evidence. These tests use only disposable synthetic state.
+
+A [post-fix retrieval rerun](memory-review-benchmark.json) on the same nine-query
+corpus again measured graph 1/9, full-text 6/9 and hybrid 8/9 Hit@3, with 100% returned
+source integrity. Hybrid p50 was 5.74 ms; this excludes model loading/indexing and
+remains a small synthetic measurement. The earlier benchmark table and coding
+experiments below are historical; no new coding-agent experiment was run for these
+fixes and no coding advantage is inferred.
 
 ## Live acquisition and offline model
 

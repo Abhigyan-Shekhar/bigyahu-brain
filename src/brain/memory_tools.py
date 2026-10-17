@@ -1,5 +1,6 @@
 """Two opt-in MCP operations. No identity, ACL or administration tool inputs."""
 
+import hashlib
 import inspect
 import sqlite3
 from functools import wraps
@@ -81,12 +82,7 @@ class MemoryTools:
                 # RRF across memory and graph source evidence; never flatten binding rules.
                 combined = {}
                 for rank, item in enumerate(result["items"], 1):
-                    cited = item.get("sources", [])
-                    key = (
-                        ("citation", cited[0]["uri"])
-                        if len(cited) == 1
-                        else (item["brain"], item["uid"])
-                    )
+                    key = (item["brain"], item["uid"])
                     combined[key] = {
                         **item,
                         "fusion_score": 1 / (60 + rank),
@@ -95,14 +91,27 @@ class MemoryTools:
                 for rank, source in enumerate(graph.get("untrusted_source_excerpts", []), 1):
                     uid = source.get("source_uid")
                     if uid:
-                        key = (
-                            ("citation", source["uri"])
-                            if source.get("uri")
-                            else ("company_graph", uid)
-                        )
-                        if key in combined:
-                            combined[key]["fusion_score"] += 1 / (60 + rank)
-                            combined[key]["retrieval_channels"].append("graph")
+                        key = ("company_graph", uid)
+                        # A shared URI is not a version identity. Coalesce only a
+                        # unique, complete verbatim record with a verified digest.
+                        text = source.get("text", "")
+                        fingerprint = hashlib.sha256(text.encode("utf-8")).hexdigest()
+                        matches = [
+                            item
+                            for item in combined.values()
+                            if item.get("brain") != "company_graph"
+                            and not source.get("truncated", True)
+                            and source.get("original_chars") == len(text)
+                            and not item.get("truncated", True)
+                            and item.get("text") == text
+                            and item.get("sources")
+                            == [{"uri": source.get("uri"), "digest": fingerprint}]
+                        ]
+                        if len(matches) == 1:
+                            matches[0]["fusion_score"] += 1 / (60 + rank)
+                            if "graph" not in matches[0]["retrieval_channels"]:
+                                matches[0]["retrieval_channels"].append("graph")
+                            matches[0].setdefault("graph_source_uids", []).append(uid)
                             continue
                         combined[key] = {
                             **source,
