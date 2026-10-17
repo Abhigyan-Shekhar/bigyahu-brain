@@ -32,6 +32,17 @@ def test_readonly_codex_configuration(tmp_path):
     assert '--ignore-user-config' in command and '--ephemeral' in command
 
 
+def test_hybrid_runner_adds_only_readonly_memory_search(tmp_path):
+    runner=module('run_codex_agent')
+    args=SimpleNamespace(model='example',reasoning='medium',work=tmp_path,
+        brain_config=tmp_path/'config',brain_python=tmp_path/'python',brain_src=tmp_path/'src',
+        memory_search=True)
+    command=runner.build_command(args,tmp_path/'out')
+    config=dict(value.split('=',1) for i,value in enumerate(command) if i and command[i-1]=='-c')
+    assert json.loads(config['mcp_servers.company-brain.enabled_tools'])==runner.READONLY+['memory_search']
+    assert json.loads(config['mcp_servers.company-brain.disabled_tools'])==['remember','memory_propose']
+
+
 @pytest.mark.parametrize('oracle_exit,upstream_exit,passed,oracle_cases,upstream_tests,skipped,expected', [
     (0, 0, True, 12, 200, 0, 0), (1, 0, False, 12, 200, 0, 1),
     (0, 1, True, 12, 200, 0, 1), (0, 0, False, 12, 200, 0, 1),

@@ -18,15 +18,47 @@ def read_snapshot(directory):
     return manifest, json.loads(raw)
 
 
-def ingest_snapshots(store, directory):
+def ingest_snapshots(store, directory, authorized_private=False):
     manifest, records = read_snapshot(directory)
-    if manifest["repo_id"] != store.cfg.repo_id or manifest["visibility"] != "public":
+    if manifest["repo_id"] != store.cfg.repo_id or (
+        manifest["visibility"] != "public"
+        and not (authorized_private and store.cfg.tenant_id and manifest["visibility"] == "private")
+    ):
         raise ValueError("Snapshot scope does not match configured public repository")
     references = []
     source_urls = {}
+
+    def source_id(uid, text, uri):
+        # Acquisition time and checkout/status metadata do not identify content.
+        content = json.dumps({"text": text or "", "uri": uri}, sort_keys=True)
+        suffix = (
+            ":" + hashlib.sha256(content.encode()).hexdigest()
+            if manifest.get("immutable_sources")
+            else ""
+        )
+        return uid + ":source" + suffix
+
     for record in records:
         label = "PR" if "pull_request" in record else "Issue"
         uid = f"{store.cfg.repo_id}:{label.lower()}:{record['number']}"
+        if manifest.get("immutable_sources"):
+            # Reconcile this parent's authoritative child lists. Old immutable
+            # Sources remain if a reviewed Decision cites them, but not as current work.
+            # Comments are current projections, not historical evidence. Detaching
+            # them preserves Source nodes and independent Decision citations.
+            store.query(
+                "MATCH (c:Comment {repo_id:$repo}) "
+                "WHERE c.uid STARTS WITH $prefix DETACH DELETE c",
+                {"prefix": uid + ":comment:", "repo": store.cfg.repo_id},
+            )
+            store.query(
+                "MATCH (w {uid:$uid, repo_id:$repo})-[r:SUPPORTS|DISCUSSED_IN|CHANGES]->() DELETE r",
+                {"uid": uid, "repo": store.cfg.repo_id},
+            )
+            store.query(
+                "MATCH (:Person {repo_id:$repo})-[r:REVIEWED]->(w:PR {uid:$uid}) DELETE r",
+                {"uid": uid, "repo": store.cfg.repo_id},
+            )
         # API metadata, never claims in the body/review prose. A merge is not decision approval.
         pull = record.get("pull_request") or {}
         state = record.get("state")
@@ -61,7 +93,7 @@ def ingest_snapshots(store, directory):
                 **provenance,
             },
         )
-        source = uid + ":source"
+        source = source_id(uid, record["body"], record["html_url"])
         source_urls[source] = record["html_url"]
         if label == "PR":
             references.extend(
@@ -89,7 +121,7 @@ def ingest_snapshots(store, directory):
         for comment in record.get("comments_snapshot", []) + record.get("reviews_snapshot", []):
             cid = f"{uid}:comment:{comment['id']}"
             store.upsert("Comment", cid, {"repo_id": store.cfg.repo_id, "url": comment["html_url"]})
-            sid = cid + ":source"
+            sid = source_id(cid, comment.get("body"), comment["html_url"])
             source_urls[sid] = comment["html_url"]
             store.upsert(
                 "Source",

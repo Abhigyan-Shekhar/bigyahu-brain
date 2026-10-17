@@ -24,16 +24,17 @@ def build_command(args, output):
     config = {'model_reasoning_effort': args.reasoning, 'approval_policy': 'never',
               'project_doc_max_bytes': 0, 'web_search': 'disabled'}
     if args.brain_config:
+        readonly = READONLY + (["memory_search"] if getattr(args, "memory_search", False) else [])
         prefix = 'mcp_servers.company-brain.'
         config.update({prefix + 'command': str(args.brain_python),
                        prefix + 'args': ['-m', 'brain.mcp_server'],
                        prefix + 'env.BRAIN_CONFIG': str(args.brain_config),
                        prefix + 'env.PYTHONPATH': str(args.brain_src),
-                       prefix + 'enabled_tools': READONLY,
-                       prefix + 'disabled_tools': ['remember'],
+                       prefix + 'enabled_tools': readonly,
+                       prefix + 'disabled_tools': ['remember'] + (['memory_propose'] if getattr(args, 'memory_search', False) else []),
                        prefix + 'default_tools_approval_mode': 'prompt'})
         config.update({prefix + f'tools.{name}.approval_mode': 'approve'
-                       for name in READONLY})
+                       for name in readonly})
     for key, value in config.items():
         command += ['-c', key + '=' + json.dumps(value)]
     return command + ['-C', str(args.work), '-o', str(output / 'agent-final.txt'), '-']
@@ -49,6 +50,7 @@ def main():
     parser.add_argument('--brain-config', type=Path)
     parser.add_argument('--brain-python', type=Path)
     parser.add_argument('--brain-src', type=Path)
+    parser.add_argument('--memory-search', action='store_true', help='Enable read-only memory search in the hybrid arm')
     parser.add_argument('--instructions', type=Path, required=True)
     parser.add_argument('--timeout', type=int, default=900)
     args = parser.parse_args()

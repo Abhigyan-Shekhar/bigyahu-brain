@@ -16,12 +16,17 @@ def sync(store):
     files = git(cfg.repo_root, "ls-files", "-z").split("\0")
     # Parse everything before modifying the graph, including encoding validation.
     modules, texts = {}, {}
+    code_bytes = 0
     for path in files:
         if not path.endswith(".py") or any(
             p in path.split("/") for p in ("vendor", "build", ".venv", "node_modules")
         ):
             continue
         cfg.path(path)
+        size = (cfg.repo_root / path).stat().st_size
+        code_bytes += size
+        if size > 1_000_000 or code_bytes > 20_000_000 or len(modules) >= 5000:
+            raise ValueError("Code indexing bound exceeded; partition the repository before sync")
         with tokenize.open(cfg.repo_root / path) as f:
             texts[path] = f.read()
             modules[path] = parse(texts[path], path, cfg.repo_id, sha)

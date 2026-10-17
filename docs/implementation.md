@@ -1,5 +1,9 @@
 # Company Brain — FINAL IMPLEMENTATION GUIDE (v3.0)
 
+Historical design/illustrative snippets, not the current implementation status.
+Use the [current roadmap](roadmap.md) and [memory architecture](memory-architecture.md)
+for implemented versus planned capabilities. This guide is retained for provenance.
+
 **Companion:** `plan.md` v3.0. **Event:** 15–18 Oct 2026 IST. **Use only code built during the event for the principal FalkorDB implementation.**  
 **Stack:** Python 3.11+, FalkorDB Docker/Browser, Python stdlib `ast`, local Git, public GitHub snapshots through `gh`, FastMCP, Codex CLI, pytest.  
 **State:** implementation contracts/illustrative snippets, **not** tested application code. Pin package/image versions after the first verified run.

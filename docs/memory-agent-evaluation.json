@@ -1,0 +1,392 @@
+{
+  "synthetic": true,
+  "trials_per_task_condition": 1,
+  "model_requested": "gpt-6.1-sol",
+  "reasoning": "high",
+  "protocol": "company-scope-v2",
+  "instructions_sha256": "47e1e3d4b9ec3951d86176b5d31af542100572c6b3fa924feba6a843dc28339a",
+  "model": "sentence-transformers/all-MiniLM-L6-v2@9cf8ce8fba6ff86a0dc9fe957dcc2e8f80b7388bbc797e4dc4fa7dca0647be91",
+  "backend_revision": "31b58dc53dcc6b0d98be7acfa7225ed32aa82453",
+  "backend_sources_sha256": {
+    "src/brain/__init__.py": "e095198960e46c973f7d07f3647c5e80e8df50a605feca7f7e30ccc806312e2b",
+    "src/brain/__main__.py": "64d7365db6d3186e65f8c3422e6b326784858177e35ed4a94b6d337027e3c2f6",
+    "src/brain/admin.py": "4a6f4242c492500846b998541a0bd4b4bf6f9749e34e6751b6c607c0ecedca6e",
+    "src/brain/config.py": "92a8826544b7fef4c3ab2b5e1f1d7588fa29a4a307975b5e1850f5782bb01a22",
+    "src/brain/graph.py": "474eee313396fa42e09bc1e802b03fc223ded7cec0dbcd6dc12c6020a02be660",
+    "src/brain/ingest/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/brain/ingest/ast_parser.py": "ca354b5771434d3343be2155783a15a2e8e49d296dd0e4d43324277b9c78bd08",
+    "src/brain/ingest/bindings.py": "91a87e756a40737678c541818d963431e4a8a3290a2313f301c5469ca525c1e0",
+    "src/brain/ingest/codeowners.py": "cc3dc37020508115c2f9d5572a9d0959a512c5ac956625c9dee15bef7695583e",
+    "src/brain/ingest/documents.py": "e0eb77827f30c45989a28c7849ba71e6f1f02aeead65b93a92d324c8027be478",
+    "src/brain/ingest/git_parser.py": "7663d52950bd2e1b118321f4c94d98b39e4226f2b79c0ca70f630ed76f859b50",
+    "src/brain/ingest/github_sync.py": "439b5013055cfedf4ea6551b5a81a76a71e53d2b34096385f4e2face038ac99f",
+    "src/brain/ingest/identity.py": "2a6ab3a5b13f20e9054da9aad2ffd5a5a33b76d285fbae5405cb6822f122952a",
+    "src/brain/ingest/imports.py": "baadd2a994a0df325a39ba789823d3d9b2f7cd4c576ff86aeddefd831b926e2d",
+    "src/brain/ingest/references.py": "a05713d14e774a3c4d79da99823cc88831e6f0ffb782002cf1ea986c5d95d8bc",
+    "src/brain/ingest/snapshots.py": "39149c12da1f64a4f7634506188efc7a4ee3871724c6add05cdf9f6e32b48646",
+    "src/brain/ingest/sync.py": "c53be5a0c90bafe852a50f90baa15fb5c69badc8b97cc26432d026a7937b42d0",
+    "src/brain/mcp_server.py": "d6db56a8efbbeddfcdc38d95f06ec4ed0d981e28c7188af4269fd137b6c58926",
+    "src/brain/memory.py": "eaa278ae7613da29254d7f4716df1e5231e059faf1141c21f5e061e470da0cc3",
+    "src/brain/memory_cli.py": "d96bcdaed96f679ce27b921653470821c8ff52f24233df57523fb8932dea352c",
+    "src/brain/memory_ingest.py": "aeb82ec1cb3b3c5f8ec8cc494c35e3c9eb8d350200810a3c8c77f5fe1d75c9e0",
+    "src/brain/memory_tools.py": "e43ecc7115bf94fddfdd2e1bfe7138adb58d490ac4acf023e1b0c50c4e2344a2",
+    "src/brain/services/__init__.py": "270426e2630456c0d525bb28e9de41f78800b18a8dd7780bbc6a01c33fe480f4",
+    "src/brain/services/core.py": "8ec2f2895ad6be18eb5472ba60bbf7ecaa9e5abcf7c35a1f0b58b03e8787ba5a",
+    "src/brain/services/evidence.py": "2300c2550dbd53fd06efce8e305debcb3500831db5f8a1a803cc544bc414bc22"
+  },
+  "trials": [
+    {
+      "task": "ttl",
+      "condition": "no_brain",
+      "session_exit": 0,
+      "oracle_exit": 0,
+      "passed": true,
+      "elapsed_seconds": 26.541505874999984,
+      "mcp_calls": [],
+      "patch_sha256": "75b647e856d44cf51d9df95ec50491a28a9550a878b2685e2db97854578838cc",
+      "policy_sha256": "d9a8dc2ed902f02e05bce2efa2fd13838d3a51f2dbf03c58887b918602510fc7"
+    },
+    {
+      "task": "ttl",
+      "condition": "graph_only",
+      "session_exit": 0,
+      "oracle_exit": 0,
+      "passed": true,
+      "elapsed_seconds": 37.09684245800008,
+      "mcp_calls": [
+        {
+          "tool": "check_change",
+          "status": "completed",
+          "response_status": "ok",
+          "arguments": {
+            "files": [
+              "app.py",
+              "test_app.py"
+            ],
+            "symbols": [
+              "cache_entry"
+            ]
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "error",
+          "arguments": {
+            "query": "cache_entry",
+            "keywords": [
+              "cache_entry"
+            ],
+            "scope": "company"
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "ok",
+          "arguments": {
+            "query": "cache_entry",
+            "keywords": [
+              "cache_entry"
+            ],
+            "scope": "org"
+          },
+          "items": 1,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "ok",
+          "arguments": {
+            "query": "TTL",
+            "keywords": [
+              "TTL"
+            ],
+            "scope": "org"
+          },
+          "items": 1,
+          "source_excerpts": 1,
+          "before_first_reported_file_change": true
+        }
+      ],
+      "patch_sha256": "8bcb0250eb0e423ba7eb3e3445966e319619cf71a46a2d2045e855876e2e1b2d",
+      "policy_sha256": "d9a8dc2ed902f02e05bce2efa2fd13838d3a51f2dbf03c58887b918602510fc7"
+    },
+    {
+      "task": "ttl",
+      "condition": "hybrid",
+      "session_exit": 0,
+      "oracle_exit": 0,
+      "passed": true,
+      "elapsed_seconds": 36.42664804099968,
+      "mcp_calls": [
+        {
+          "tool": "memory_search",
+          "status": "completed",
+          "response_status": "ok",
+          "arguments": {
+            "brains": [
+              "company"
+            ],
+            "query": "cache_entry TTL",
+            "limit": 10,
+            "include_graph": true
+          },
+          "items": 1,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "error",
+          "arguments": {
+            "query": "cache_entry",
+            "scope": "organization",
+            "keywords": [
+              "cache_entry",
+              "TTL"
+            ]
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "check_change",
+          "status": "completed",
+          "response_status": "ok",
+          "arguments": {
+            "files": [
+              "app.py",
+              "test_app.py"
+            ],
+            "symbols": [
+              "cache_entry"
+            ],
+            "diff": "Proposed: preserve cache_entry(value, created, now, ttl); raise ValueError for ttl < 0, return None for ttl == 0, expire positive TTL when now - created >= ttl. Return original value for fresh positive TTL, including future created timestamps. Add regression tests for boundaries, zero TTL, negative TTL, and future timestamps according to POLICIES.md."
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "ok",
+          "arguments": {
+            "query": "TTL",
+            "scope": "org"
+          },
+          "items": 1,
+          "source_excerpts": 1,
+          "before_first_reported_file_change": true
+        }
+      ],
+      "patch_sha256": "958e5e6278c35a8b959e11c64206803415a319b9aeb0e6da921bf42e8ea65e42",
+      "policy_sha256": "d9a8dc2ed902f02e05bce2efa2fd13838d3a51f2dbf03c58887b918602510fc7"
+    },
+    {
+      "task": "retry",
+      "condition": "no_brain",
+      "session_exit": 0,
+      "oracle_exit": 0,
+      "passed": true,
+      "elapsed_seconds": 57.65512666599989,
+      "mcp_calls": [],
+      "patch_sha256": "404cb33eff19ab4c4214eeb48fa0c6cec8a5a1825338bcecf6c6ade7bf154681",
+      "policy_sha256": "c2cd369dc5d893eb3b65805f7e1467c82c6b2917877c0c614f2721f050f7cdff"
+    },
+    {
+      "task": "retry",
+      "condition": "graph_only",
+      "session_exit": 0,
+      "oracle_exit": 0,
+      "passed": true,
+      "elapsed_seconds": 43.841112791999876,
+      "mcp_calls": [
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "error",
+          "arguments": {
+            "query": "parse_delay",
+            "keywords": [
+              "parse_delay"
+            ],
+            "scope": "organization"
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "ok",
+          "arguments": {
+            "query": "parse_delay",
+            "keywords": [
+              "parse_delay"
+            ],
+            "scope": "org"
+          },
+          "items": 1,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "unknown",
+          "arguments": {
+            "query": "Retry-After",
+            "keywords": [
+              "Retry-After"
+            ],
+            "scope": "org"
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "unknown",
+          "arguments": {
+            "query": "POLICIES.md",
+            "keywords": [
+              "POLICIES.md"
+            ],
+            "scope": "org"
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "check_change",
+          "status": "completed",
+          "response_status": "ok",
+          "arguments": {
+            "files": [
+              "app.py",
+              "test_app.py"
+            ],
+            "symbols": [
+              "parse_delay"
+            ],
+            "diff": "Proposed change: preserve parse_delay(value, default=1, cap=60). Require a string; strip surrounding whitespace; reject empty or any non-ASCII digit and return default unchanged. Clamp valid nonnegative delta-seconds to cap, including arbitrarily long digit strings without converting the entire string with int(). Add regression tests for missing/non-string values, signed values, Unicode digits, floats, malformed strings, HTTP dates, whitespace, zero, cap boundaries, custom default/cap and long valid strings. Policy source: POLICIES.md line 2."
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        }
+      ],
+      "patch_sha256": "3d65e062f91b4b463e6c094e1f23cf423381770095a65e2b19740348bd576625",
+      "policy_sha256": "c2cd369dc5d893eb3b65805f7e1467c82c6b2917877c0c614f2721f050f7cdff"
+    },
+    {
+      "task": "retry",
+      "condition": "hybrid",
+      "session_exit": 0,
+      "oracle_exit": 0,
+      "passed": true,
+      "elapsed_seconds": 56.84942091699986,
+      "mcp_calls": [
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "error",
+          "arguments": {
+            "query": "parse_delay",
+            "scope": "organizational",
+            "keywords": [
+              "Retry-After",
+              "delta-seconds"
+            ]
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "memory_search",
+          "status": "completed",
+          "response_status": "ok",
+          "arguments": {
+            "brains": [
+              "company"
+            ],
+            "query": "parse_delay Retry-After",
+            "include_graph": true,
+            "limit": 5
+          },
+          "items": 1,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "check_change",
+          "status": "completed",
+          "response_status": "ok",
+          "arguments": {
+            "files": [
+              "app.py",
+              "test_app.py"
+            ],
+            "symbols": [
+              "parse_delay"
+            ]
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "unknown",
+          "arguments": {
+            "query": "Retry-After",
+            "scope": "org",
+            "keywords": [
+              "delta-seconds"
+            ]
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        },
+        {
+          "tool": "get_context",
+          "status": "completed",
+          "response_status": "unknown",
+          "arguments": {
+            "query": "POLICIES.md",
+            "scope": "org"
+          },
+          "items": 0,
+          "source_excerpts": 0,
+          "before_first_reported_file_change": true
+        }
+      ],
+      "patch_sha256": "a78d13ccfd45cc90b09c3d8986004951839d65b17be6add628e9bc83f9218bf8",
+      "policy_sha256": "c2cd369dc5d893eb3b65805f7e1467c82c6b2917877c0c614f2721f050f7cdff"
+    }
+  ],
+  "limits": [
+    "Two authored small tasks, one run per condition, anecdotal only",
+    "All conditions can read identical policy and source files",
+    "No claim of statistical significance, production quality or causal reasoning improvement"
+  ]
+}

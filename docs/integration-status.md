@@ -1,5 +1,8 @@
 # Integration gates — 15 October 2026
 
+Historical checkpoint. The later [combined merge verification](merge-verification.md)
+and [current roadmap](roadmap.md) supersede the pending statuses below.
+
 Local Lite integration is verified. See [measured results and startup](lite-integration.md).
 
 | Gate | Status | Evidence |

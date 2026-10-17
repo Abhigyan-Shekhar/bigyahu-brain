@@ -1,0 +1,25 @@
+{
+  "repository": "Abhigyan-Shekhar/bigyahu-brain",
+  "read_only_api": true,
+  "dedicated_disposable_engine": true,
+  "first": {
+    "records": 3,
+    "references": 0,
+    "missing_issue_references": [],
+    "cursor": "2026-10-17T01:15:46.545024+00:00",
+    "reconcile": false,
+    "warnings": [
+      "periodic_full_reconciliation_required_for_child_deletions"
+    ]
+  },
+  "incremental": {
+    "records": 0,
+    "references": 0,
+    "missing_issue_references": [],
+    "cursor": "2026-10-17T01:15:57.047320+00:00",
+    "reconcile": false,
+    "warnings": [
+      "periodic_full_reconciliation_required_for_child_deletions"
+    ]
+  }
+}

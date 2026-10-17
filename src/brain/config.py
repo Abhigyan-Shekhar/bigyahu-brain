@@ -1,3 +1,4 @@
+import hashlib
 import os
 import re
 import stat
@@ -19,6 +20,9 @@ class Config:
     password_file: str | None = None
     tls: bool = False
     ca_file: str | None = None
+    tenant_id: str = ""
+    memory_db: str | None = None
+    embedding_model_dir: str | None = None
 
     def connection_options(self):
         options = {
@@ -78,14 +82,22 @@ class Config:
             raise ValueError("Invalid trusted principal")
         if not self.repo_id or len(self.repo_id) > 200:
             raise ValueError("Invalid repo_id")
+        if self.tenant_id and not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", self.tenant_id):
+            raise ValueError("Invalid tenant identity")
+        for value in (self.memory_db, self.embedding_model_dir):
+            if value is not None and (not isinstance(value, str) or not Path(value).is_absolute()):
+                raise ValueError("Memory and model paths must be absolute")
+        if self.memory_db and not self.tenant_id:
+            raise ValueError("Memory extension requires an explicit tenant identity")
         if self.repo_url and not self.repo_url.startswith("https://github.com/"):
             raise ValueError("repo_url must identify a public GitHub repository")
 
     def graph_name(self, scope):
+        prefix = ("tenant_" + hashlib.sha256(self.tenant_id.encode()).hexdigest()[:24] + "_") if self.tenant_id else ""
         if scope == "org":
-            return "org_demo"
+            return prefix + "org_demo"
         if scope == "private":
-            return "private_" + self.principal
+            return prefix + "private_" + self.principal
         raise ValueError("scope must be org or private")
 
     def path(self, value):

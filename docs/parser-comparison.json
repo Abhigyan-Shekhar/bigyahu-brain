@@ -1,0 +1,67 @@
+{
+  "scope": "deterministic_parser_components_only",
+  "inputs": {
+    "base.py": "ed46bee17d50f547e2f565289a8e1322952a0076e3c6c8c111192a7b8628d1eb",
+    "caller.py": "ab666082a025cf2435c1a67b1ff481556b7cb93d5fb628dce3b754661c4addc2",
+    "guide.md": "9599abb06726c37f9713efeee905f4d45a6e46fc97c06b4b8fe62fce1ee43009",
+    "guide.rst": "9e2afc4721a668011034af2cd004c42098661f1d114a005d212d14872b564b70",
+    "pr-5161.md": "b14b736896266f191974f982a4b41d2d5c37b83d038cd12a1f9394598d1f7263",
+    "pr-3780.md": "9bbde12d2737e4e0af70c6815960c40b1f62e07e04325aefa91934cef23f967f"
+  },
+  "graphify_revision": "86c57be8204673c2a1b9849a3292a7dd3ab373d8",
+  "graphrag_revision": "5faaaf4f5685fa2056fa8c3bf9342cb089f2942f",
+  "results": {
+    "company_brain": {
+      "symbols": 6,
+      "resolved_calls": 2,
+      "unresolved_calls": 1,
+      "document_sections": {
+        "guide.md": 1,
+        "guide.rst": 1,
+        "pr-5161.md": 8,
+        "pr-3780.md": 1
+      },
+      "elapsed_ms": 1.2236659999871335
+    },
+    "graphify": {
+      "nodes": 21,
+      "edges": 25,
+      "relations": {
+        "contains": 14,
+        "method": 2,
+        "calls": 3,
+        "imports_from": 1,
+        "inherits": 1,
+        "imports": 2,
+        "uses": 1,
+        "references": 1
+      },
+      "source_files": [
+        "base.py",
+        "caller.py",
+        "guide.md",
+        "pr-3780.md",
+        "pr-5161.md"
+      ],
+      "elapsed_ms": 47.84299999982977
+    },
+    "graphrag_chunking": {
+      "chunks": {
+        "base.py": 1,
+        "caller.py": 1,
+        "guide.md": 1,
+        "guide.rst": 1,
+        "pr-5161.md": 6,
+        "pr-3780.md": 1
+      },
+      "elapsed_ms": 0.2011659998970572,
+      "semantic_extraction": "not_run"
+    }
+  },
+  "limits": [
+    "Small representative fixtures, not a parser accuracy benchmark",
+    "Graphify deterministic extraction only; semantic model pass not run",
+    "GraphRAG token chunking only; entity extraction and community summaries not run",
+    "Shared Unicode-codepoint tokenizer isolates chunking mechanics; not a model tokenizer comparison"
+  ]
+}

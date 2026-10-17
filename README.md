@@ -1,5 +1,10 @@
 # Company Brain
 
+Current scope and next-phase status: [roadmap](docs/roadmap.md). The five-tool
+FalkorDB prototype remains the default. The opt-in [local memory extension](docs/memory-architecture.md)
+adds personal/team proposals, scoped hybrid retrieval and incremental ingestion;
+hosted identity, federation and production-scale retrieval remain planned.
+
 A local MCP server that connects a planned code change to incoming callers,
 source-backed constraints, and maintainer evidence in FalkorDB. Codex remains the
 code-editing agent. Source prose is untrusted evidence; remembering something
@@ -13,11 +18,14 @@ The approved rule reached graph-2/3 before edits. See the
 [complete results and limitations](docs/v5-evaluation.md).
 
 FalkorDBLite 0.10.0 runs on this Mac with Redis 8.6.2 and graph module 4.18.3.
-Combined v5/Browser validation: **144 passed, 0 failed, 0 skipped**, with real graph
+Preserved v5/Browser validation: **144 passed, 0 failed, 0 skipped**, with real graph
 and Lite lifecycle integration enabled. Ruff passes for `src`, `tests`, and
 `scripts`. Earlier merge checks and their overlapping STDIO/security selections
 are retained in [backend verification](docs/backend-verification.md). Both graph
 rebuilds also pass; see [combined merge verification](docs/merge-verification.md).
+The opt-in memory foundation now passes **183 tests** with live graph/lifecycle
+checks, including tenant isolation and deletion. The [new verification report](docs/memory-verification.md)
+separates retrieval measurements, coding outcomes and remaining production work.
 Codex has independently selected MCP tools, received historical graph evidence,
 and produced independently tested code changes. Some coding attempts failed;
 successful retrieval does not establish improved coding performance. The final

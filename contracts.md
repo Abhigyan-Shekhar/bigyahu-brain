@@ -1,7 +1,15 @@
 # Company Brain contract — 0.1
 
-Five MCP tools: get_context, trace_decision, find_owner, check_change, remember.
+Default five MCP tools: get_context, trace_decision, find_owner, check_change, remember.
 No administrative tool or arbitrary Cypher endpoint exists.
+
+Opt-in extension: `memory_db` plus `tenant_id` enables memory_search(query, brains?,
+include_graph?, include_proposals?, limit?) and memory_propose(text, sources,
+brain?, expires?). Principal/tenant come only from server config. Shared brains
+require operator-owned membership. Source/memory acceptance is never a binding
+code decision. Default graphs are preserved; an explicit tenant prefixes graph
+names into new namespaces. See docs/memory-architecture.md for the new contract,
+docs/memory-governance.md for trust/retention, and docs/roadmap.md for actual status.
 
 Operation `status` is ok/error/unavailable/unknown/incomplete. Decision lifecycle
 uses the separate `decision_status` field: proposed, active, superseded.
@@ -11,6 +19,9 @@ only structured evidence metadata appears in must_preserve/review.
 
 Graphs are fixed to org_demo and private_<configured principal>. Scope arguments
 accept only org/private. Configuration, not MCP arguments, selects the repository.
+These are legacy demo defaults; tenant mode uses isolated derived names. Memory
+brains accept company/team:<authorized team>/private:<configured principal> and
+are separate from the legacy scope argument. No client can choose a tenant.
 Project UID is canonical repo_id. File/symbol UIDs include repo, SHA, path and
 qualified symbol; historical revision nodes remain available. Commit UIDs include
 repo and commit SHA. Git author identities are separate from GitHub identities.
@@ -36,3 +47,10 @@ It records source_uid, source_line, reference, confidence and binding=false.
 It is distinct from PR-to-Issue REFERENCES and never creates a Decision or
 CONSTRAINS edge. Public explicit re-exports resolve statically; abbreviated,
 ambiguous, inherited and dynamic references remain unresolved.
+
+Native document versions retain their old UID/citation shape and now carry a
+stable logical section ID and current marker. Refresh fences block readers after
+failure until retry; retirement hides old sections while retaining historical
+Source citations. Catalog refresh/deletion is transactional and separately erases
+searchable text/vectors. New GitHub syncing uses content-addressed Source versions
+and commits its cursor only after complete acquisition/publication.
