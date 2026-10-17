@@ -12,7 +12,7 @@ from ..config import load_config
 
 
 class State:
-    def __init__(self, root, base, model):
+    def __init__(self, root, base, model, *, recover=True):
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True, mode=0o700)
         self.base, self.model = base, model
@@ -20,7 +20,7 @@ class State:
             db.execute(
                 "CREATE TABLE IF NOT EXISTS objects (id TEXT PRIMARY KEY, kind TEXT, parent TEXT, body TEXT)"
             )
-            for row in db.execute("SELECT id,body FROM objects").fetchall():
+            for row in db.execute("SELECT id,body FROM objects").fetchall() if recover else []:
                 body = json.loads(row["body"])
                 if body.get("status") in {"queued", "running"}:
                     body.update(
@@ -57,6 +57,21 @@ class State:
             body = {**json.loads(row["body"]), **fields}
             db.execute("UPDATE objects SET body=? WHERE id=?", (json.dumps(body), uid))
         return body
+
+    def transition(self, uid, expected, **fields):
+        """Consume an exact lifecycle state once, including across concurrent HTTP retries."""
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute("SELECT body FROM objects WHERE id=?", (uid,)).fetchone()
+            if row is None:
+                raise KeyError("Unknown resource")
+            body = json.loads(row["body"])
+            if any(body.get(key) != value for key, value in expected.items()):
+                return False
+            db.execute(
+                "UPDATE objects SET body=? WHERE id=?", (json.dumps({**body, **fields}), uid)
+            )
+        return True
 
     def list(self, kind, parent=""):
         with self.connect() as db:

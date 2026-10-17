@@ -66,7 +66,7 @@ def test_local_auth_origin_and_no_unapproved_action_api(tmp_path):
                 client.get("/api/status", headers=headers).json()["mode"]
                 == "read_only_investigation"
             )
-            assert client.post("/api/actions/approve", headers=headers, json={}).status_code == 404
+            assert client.post("/api/actions/approve", headers=headers, json={}).status_code == 405
             assert (
                 client.post(
                     "/api/repositories", headers=headers, json={"url": "file:///tmp/repo"}

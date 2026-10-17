@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 
 from ..config import load_config
 from ..graph import GraphStore, GraphUnavailable
+from .actions import active_actions, approve, checked_action, execute, prepare_plan
 from .agent import run_turn
 from .evidence import native_graph, ready, resolve
 from .sources import onboard, repository_url, upload_document
@@ -27,6 +28,10 @@ class RepositoryInput(BaseModel):
 
 class QuestionInput(BaseModel):
     question: str = Field(min_length=1, max_length=8000)
+
+
+class ApprovalInput(BaseModel):
+    plan_digest: str = Field(min_length=64, max_length=64)
 
 
 class DocumentInput(BaseModel):
@@ -100,8 +105,9 @@ def create_app(state, token, origin, assets=None):
                 "markdown_rst_upload",
                 "company_chat",
                 "source_inspection",
+                "approved_isolated_patch_tests",
             ],
-            "deferred": ["approved_code_execution", "personal_team_controls", "pdf"],
+            "deferred": ["personal_team_controls", "pdf"],
         }
 
     @app.get("/api/repositories")
@@ -158,7 +164,7 @@ def create_app(state, token, origin, assets=None):
     def upload(project: str, body: DocumentInput):
         project_ready(project)
         with lock:
-            if any(
+            if active_actions(state, project) or any(
                 t["status"] in {"queued", "running"}
                 for s in state.list("session", project)
                 for t in state.list("turn", s["id"])
@@ -191,6 +197,8 @@ def create_app(state, token, origin, assets=None):
             raise ValueError("Enter a question")
         with lock:
             if any(
+                a["status"] in {"queued", "running"} for a in active_actions(state, chat["project"])
+            ) or any(
                 t["status"] in {"queued", "running"}
                 for s in state.list("session", chat["project"])
                 for t in state.list("turn", s["id"])
@@ -228,6 +236,95 @@ def create_app(state, token, origin, assets=None):
         if checked["digest"] != saved["digest"] or checked["graph"] != saved["graph"]:
             raise HTTPException(409, "Cited evidence changed; ask again")
         return {"id": evidence_id, **checked}
+
+    @app.get("/api/turns/{turn}/actions")
+    def turn_actions(turn: str):
+        value = state.get(turn, "turn")
+        return [
+            {key: action.get(key) for key in ("id", "status", "stage", "turn")}
+            for action in state.list("action", value["project"])
+            if action["turn"] == turn
+        ]
+
+    @app.post("/api/turns/{turn}/actions", status_code=202)
+    def propose_action(turn: str, body: QuestionInput):
+        value = state.get(turn, "turn")
+        project = value["project"]
+        project_ready(project)
+        if value["status"] != "complete" or not body.question.strip():
+            raise HTTPException(409, "Complete the investigation before requesting a plan")
+        with lock:
+            if active_actions(state, project) or any(
+                t["status"] in {"queued", "running"}
+                for chat in state.list("session", project)
+                for t in state.list("turn", chat["id"])
+            ):
+                raise HTTPException(409, "Finish or reject the active plan/investigation first")
+            if len(state.list("action", project)) >= 20:
+                raise HTTPException(409, "Local action history limit is 20 plans per repository")
+            action = state.create(
+                "action",
+                project,
+                project=project,
+                turn=turn,
+                objective=body.question,
+                status="queued",
+                phase="planning",
+                stage="Plan queued",
+            )
+            workers.submit(prepare_plan, state, action["id"])
+        return action
+
+    @app.get("/api/actions/{action_id}")
+    def action_detail(action_id: str):
+        return state.get(action_id, "action")
+
+    @app.post("/api/actions/{action_id}/approve", status_code=202)
+    def approve_action(action_id: str, body: ApprovalInput):
+        with lock:
+            action = state.get(action_id, "action")
+            project_ready(action["project"])
+            if any(
+                t["status"] in {"queued", "running"}
+                for chat in state.list("session", action["project"])
+                for t in state.list("turn", chat["id"])
+            ):
+                raise HTTPException(409, "Wait for the investigation before approving execution")
+            result = approve(state, action_id, body.plan_digest)
+            workers.submit(execute, state, action_id)
+        return result
+
+    @app.post("/api/actions/{action_id}/reject")
+    def reject_action(action_id: str):
+        if not state.transition(
+            action_id,
+            {"status": "awaiting_approval"},
+            status="rejected",
+            stage="Plan rejected; no execution",
+        ):
+            raise HTTPException(409, "Only a plan awaiting review can be rejected")
+        return state.get(action_id, "action")
+
+    @app.get("/api/actions/{action_id}/evidence/{evidence_id}")
+    def action_citation(action_id: str, evidence_id: str):
+        import re
+
+        value = state.get(action_id, "action")
+        if not re.fullmatch("[a-f0-9]{24}", evidence_id) or not any(
+            s["evidence_id"] == evidence_id for c in value.get("claims", []) for s in c["support"]
+        ):
+            raise HTTPException(404, "Citation is not part of this plan")
+        checked_action(state, value)
+        path = (
+            state.folder(value["project"])
+            / "actions"
+            / action_id
+            / "plan"
+            / "evidence"
+            / (evidence_id + ".json")
+        )
+        saved = json.loads(path.read_text(encoding="utf-8"))
+        return {"id": evidence_id, **resolve(GraphStore(state.config(value["project"])), saved)}
 
     assets = Path(assets) if assets else Path(__file__).parents[1] / "web" / "app"
     if (assets / "assets").is_dir() and (assets / "index.html").is_file():

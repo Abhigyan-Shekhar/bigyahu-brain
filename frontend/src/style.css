@@ -1093,3 +1093,141 @@ h2 {
   min-height: 260px;
   flex: none;
 }
+.action-panel {
+  border: 1px solid #ded5e5;
+  background: #faf7fc;
+  border-radius: 8px;
+  margin-top: 18px;
+  padding: 13px;
+  font-size: 11px;
+  line-height: 1.8;
+}
+.action-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #775d8d;
+}
+.action-heading strong {
+  font-size: 11px;
+  font-weight: 500;
+}
+.action-heading > button {
+  margin-left: auto;
+  font-size: 10px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.plan-form label {
+  display: block;
+  margin: 15px 0 6px;
+  color: #66516e;
+}
+.plan-form textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 10px;
+  border: 1px solid #d8ccdf;
+  border-radius: 5px;
+  background: #fffdfa;
+  font-size: 11px;
+  color: #5e5067;
+}
+.plan-form > div,
+.approval-controls > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  align-items: center;
+}
+.plan-form .primary,
+.approval-controls .primary {
+  margin: 0;
+  padding: 9px 12px;
+  font-size: 10px;
+}
+.plan-form p,
+.action-note {
+  color: #9a879e;
+  font-size: 10px;
+  line-height: 1.8;
+}
+.action-state {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #9278a4;
+  margin: 13px 0;
+}
+.plan-detail summary,
+.execution-report summary {
+  cursor: pointer;
+  color: #725486;
+  font-size: 11px;
+}
+.plan-detail h4 {
+  font-weight: 500;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+.plan-detail pre,
+.execution-report pre {
+  font-size: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 10px;
+  background: #f1eaf5;
+  border-radius: 5px;
+  color: #6f577c;
+}
+.plan-detail li {
+  padding-left: 2px;
+  margin-block: 5px;
+}
+.plan-detail ul,
+.plan-detail ol {
+  padding-left: 20px;
+}
+.plan-evidence {
+  border-top: 1px solid #e6deeb;
+  margin-top: 13px;
+  padding-top: 3px;
+}
+.approval-controls {
+  border-top: 1px solid #e2d7e8;
+  margin-top: 15px;
+  padding-top: 7px;
+}
+.approval-controls > div > button {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 10px;
+}
+.execution-report > details {
+  border-top: 1px solid #e6dfeb;
+  margin-top: 13px;
+  padding-top: 10px;
+}
+.execution-report details pre {
+  max-height: 260px;
+  overflow: auto;
+}
+.execution-report summary > button {
+  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  color: #8b65a3;
+}
+.test-pass {
+  color: #6b8c78;
+  font-weight: 500;
+}
+.execution-report code {
+  font-size: 10px;
+}
+.plan-evidence .citations button {
+  font-size: 9px;
+}

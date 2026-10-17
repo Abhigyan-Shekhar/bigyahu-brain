@@ -1,9 +1,11 @@
-# Company Brain application — first milestone
+# Company Brain application
 
 A local React/FastAPI application now connects public GitHub onboarding, real
 FalkorDB graph exploration, document upload, conversational Codex investigation,
-and source inspection. This is the first milestone from the application brief:
-**paste repository URL → index → ask → inspect cited source and native graph path**.
+source inspection, and approval-controlled isolated coding actions. The flow is
+**paste repository URL → index → ask → inspect source → plan → approve → patch/test report**.
+See [approved coding actions](company-brain-actions.md) for execution requirements
+and a reproducible synthetic acceptance check.
 
 ## Run
 
@@ -99,9 +101,12 @@ application does not collect model credentials.
 - This milestone is for one trusted local operator, bound to `127.0.0.1`, with
   bearer authentication and Host/Origin checks. It is not hosted multi-user auth.
   The UI makes the read-only investigation mode explicit.
-- The agent has no shell, editing, test execution, ingestion, credentials, review,
-  or approval tools. Plugins/apps/web search are disabled. Repository prose is
-  untrusted data; the agent cannot turn it into tool permissions.
+- Investigation and planning have read-only tools. After explicit approval, a
+  separate editor can read/write only approved paths in an isolated clone through
+  digest-checked MCP calls. The backend runs the exact approved Python test
+  commands through the Codex OS sandbox. No agent has approval, shell, ingestion,
+  credential or publication tools. Plugins/apps/web search are disabled.
+  Repository prose is untrusted evidence.
 - Citation checks establish source provenance and literal support quotations.
   They do **not** mathematically verify that a model's interpretation follows from
   the quote. The interface distinguishes these and exposes source text for review.
@@ -115,10 +120,9 @@ application does not collect model credentials.
   relationships; automatic cross-brain or document-to-symbol inference is not
   claimed. Repeating identical bytes is idempotent.
 - Personal/team brain controls, consented conversation review/sharing, `.abhi`
-  controls, approved isolated patch/test execution and the lesson-proposal loop
-  are the following milestones. The existing backend retains these capabilities;
-  this application does not yet expose them. The full ten-step product acceptance
-  test is consequently **not complete**.
+  controls and accepting reviewed lesson proposals remain future UI work. Coding
+  actions currently return an unaccepted draft lesson. The full ten-step product
+  acceptance test is consequently **not complete**.
 
 Local jobs, sessions, managed repositories, snapshots, uploads, model traces and
 per-turn source-hash manifests stay beneath the selected `--data` directory. Keep
@@ -140,5 +144,10 @@ uv run --frozen --extra app --extra lite --extra graphify python scripts/validat
 The application tests exercise URL rejection, authentication/Origin/Host checks,
 read-only runner configuration, restart recovery, readiness gates, native code and
 uploaded-document evidence, invented quotes/IDs, citation access and stale source
-rejection. Live suite: **299 passed**. Browser acceptance uses a real public
+rejection. Live suite: **320 passed**. Browser acceptance uses a real public
 repository and actual Codex tool calls; see the [milestone report](application-milestone-verification.json).
+
+The [coding action report](application-action-verification.json) records a separate
+synthetic fixture run: six agent-written tests fail on the original code and pass
+on the patch; a fresh clone with the downloaded patch passes 15 held-out oracle
+cases. This does not establish coding effectiveness on production repositories.

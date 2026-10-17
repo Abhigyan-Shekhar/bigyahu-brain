@@ -20,33 +20,14 @@ import {
 } from "lucide-react";
 import "@xyflow/react/dist/style.css";
 import "./style.css";
+import { api, send } from "./api";
+import ActionPanel from "./ActionPanel";
 
 const fragment = location.hash.slice(1);
 if (fragment) {
   sessionStorage.setItem("company-brain-token", fragment);
   history.replaceState(null, "", location.pathname);
 }
-async function api(path, options = {}) {
-  const response = await fetch("/api" + path, {
-    ...options,
-    headers: {
-      Authorization:
-        "Bearer " + (sessionStorage.getItem("company-brain-token") || ""),
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-  const value = await response.json();
-  if (!response.ok)
-    throw Error(
-      typeof value.detail === "string"
-        ? value.detail
-        : "Request could not be completed",
-    );
-  return value;
-}
-const send = (path, body) =>
-  api(path, { method: "POST", body: JSON.stringify(body) });
 function Graph({ graph, compact = false }) {
   const groups = {};
   const nodes = (graph?.nodes || []).map((n) => {
@@ -233,11 +214,11 @@ function App() {
       setError(e.message);
     }
   }
-  async function citation(turn, id) {
+  async function citation(turn, id, kind = "turns") {
     setLoadingEvidence(true);
     setSelected(null);
     try {
-      setSelected(await api(`/turns/${turn}/evidence/${id}`));
+      setSelected(await api(`/${kind}/${turn}/evidence/${id}`));
       if (matchMedia("(max-width:680px)").matches)
         requestAnimationFrame(() =>
           document
@@ -390,7 +371,7 @@ function App() {
             </button>
           </div>
           <span className="read-only">
-            <span className="dot ready" /> Read-only investigation
+            <span className="dot ready" /> Read-only chat · approved actions
           </span>
         </header>
         {error && (
@@ -625,6 +606,12 @@ function App() {
                                     {t.tools?.length || 0} tool calls ·{" "}
                                     {t.model} · Source provenance checked
                                   </div>
+                                  <ActionPanel
+                                    turn={t}
+                                    onEvidence={(id, evidence) =>
+                                      citation(id, evidence, "actions")
+                                    }
+                                  />
                                 </>
                               )}
                             </div>
