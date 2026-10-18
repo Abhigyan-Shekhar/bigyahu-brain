@@ -11,6 +11,16 @@ merge or memory-acceptance endpoint.
 2. Choose **Plan a change**, describe the desired result, and prepare a cited plan.
    A fresh read-only Codex process chooses its own investigation tools. The server
    checks source bytes, literal quotations and native graph evidence again.
+   One tool-free, fallible model assessment then reviews both claim support and
+   whether the entire action follows from the objective and evidence, including
+   its stated rationale, preservation requirements and test selections. All
+   material claims and the action must be supported; uncertain/conflicting or
+   unrelated evidence stops approval. The input is bounded to 150 KB UTF-8,
+   20 claims/eight citations each and one existing 180-second model invocation.
+   Provenance and authorization are rechecked after that invocation and again
+   at approval/execution. Preferences and imported statements remain advisory.
+   Legacy plans without this review must be regenerated before a new execution;
+   historical completed reports retain their original classification.
 3. Review the summary, steps, permitted files, exact test commands and citations.
    Reject the plan or choose **Approve isolated execution**. Approval consumes the
    exact plan digest once. Revision, evidence or plan changes require a new plan.
@@ -21,6 +31,12 @@ merge or memory-acceptance endpoint.
    evidence before publishing the report. A failing baseline helps demonstrate a
    regression, but baseline failure is not required for every legitimate change.
 6. Inspect baseline/patched output and the final diff; download the patch. The
+   backend also applies the byte-preserved UTF-8 artifact to a fresh base and
+   compares edited file bytes. This replay checks patch transport, not independent
+   test correctness, and does not rerun tests. Passing tests without a matched
+   regression use a qualified neutral status; a separate follow-up does not
+   rewrite the original action's automatic verification.
+   The
    implementation handoff is generated before backend test validation. The test
    report carries the execution result. Draft lessons remain proposals until separately accepted in
    [Personal Brain](personal-brain-app.md). The report can send a regression-backed lesson
@@ -127,11 +143,41 @@ extras for the full disposable graph suite.
 every approved patched command. `regression_demonstrated` additionally requires
 proposed tests on the baseline, matching command selections and reported case
 counts, and at least one original-code assertion failure resolved by the patch.
-Timeouts, runner errors, collection errors and a baseline that already passes do
-not provide this signal. The API exposes `fix_verification` and the report labels
+Timeouts, test errors / unexpected exceptions, collection errors and a baseline
+that already passes do not provide this signal. A unittest error can be the
+reported bug itself, not just infrastructure or setup failure. The gate excludes
+errors conservatively because it does not establish their cause. The API exposes `fix_verification` and the report labels
 a passing run without this signal **Tests passed · fix remains unverified**.
 
 Only a demonstrated regression can propose a new coding lesson. Explicit notes
 and existing accepted memories retain their normal review workflow. This checks
 test-run evidence; it cannot establish that agent-written tests cover the reported
 bug. Review coverage and independent acceptance evidence separately.
+
+
+## Historical retention and revocation boundary
+
+This application currently serves one trusted local operator. Action detail and
+turn history return stored report snapshots, including claim text, supporting
+quotes and review rationales. They do not reauthorize or redact every saved
+excerpt when displaying history. Action citation reopening, approval and execution
+recheck current evidence access and revision; revocation can block those operations
+while the previously recorded text remains in the historical report.
+
+Revocation is therefore prospective access control, **not retroactive erasure**.
+SQLite report bodies, local evidence/model-run files, previously issued patches,
+downloads and already delivered browser content may contain copies. Revoking a
+source or membership does not purge those copies. The API's operator token is not
+a per-user report authorization or redaction boundary.
+
+Before real multi-user access is supported, decide explicitly which historical
+excerpts may survive revocation, who can read each report, and what retention and
+erasure guarantees cover derived reports and local artifacts. Then implement and
+test current-reader authorization/redaction and the chosen retention/purge policy
+across these copies. The current snapshot behavior is documented and characterized
+by a test, not endorsed as a safe multi-user privacy model. No automated purge or
+multi-user support is introduced here.
+
+Evidence contribution explanations remain reviewed rationales for a proposed
+change. They are not measured causal improvement from using a graph; the frozen
+comparison's tied result is unchanged.

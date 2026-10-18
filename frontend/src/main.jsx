@@ -22,6 +22,7 @@ import "@xyflow/react/dist/style.css";
 import "./style.css";
 import { api, send } from "./api";
 import ActionPanel from "./ActionPanel";
+import { evidencePath } from "./graphPresentation";
 import IngestionPanel from "./IngestionPanel";
 import PersonalBrain from "./PersonalBrain";
 import TeamBrain from "./TeamBrain";
@@ -34,6 +35,9 @@ if (fragment) {
 function Graph({ graph, compact = false, onExpand }) {
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [expandTarget, setExpandTarget] = useState("");
+  const [pathTarget, setPathTarget] = useState("");
+  const [pathOnly, setPathOnly] = useState(false);
+  const path = pathOnly ? evidencePath(graph, expandTarget, pathTarget) : null;
   useEffect(() => setSelectedEdge(null), [graph]);
   const groups = {};
   const visibleIds = new Set();
@@ -46,8 +50,8 @@ function Graph({ graph, compact = false, onExpand }) {
     if (!visibleIds.size)
       (graph?.nodes || []).slice(0, 6).forEach((n) => visibleIds.add(n.id));
   }
-  const visibleNodes = (graph?.nodes || []).filter(
-    (n) => !compact || visibleIds.has(n.id),
+  const visibleNodes = (graph?.nodes || []).filter((n) =>
+    path ? path.nodes.includes(n.id) : !compact || visibleIds.has(n.id),
   );
   const kinds = [...new Set(visibleNodes.map((n) => n.labels?.[0] || "Node"))];
   const nodes = visibleNodes.map((n, nodeIndex) => {
@@ -60,9 +64,11 @@ function Graph({ graph, compact = false, onExpand }) {
       displayLabel: n.label,
       sourcePosition: "right",
       targetPosition: "left",
-      position: compact
-        ? { x: (nodeIndex % 2) * 180, y: Math.floor(nodeIndex / 2) * 95 }
-        : { x: key * 260, y: i * 95 },
+      position: path
+        ? { x: path.nodes.indexOf(n.id) * 280, y: 0 }
+        : compact
+          ? { x: (nodeIndex % 2) * 180, y: Math.floor(nodeIndex / 2) * 95 }
+          : { x: key * 260, y: i * 95 },
       data: {
         label: (
           <>
@@ -76,10 +82,16 @@ function Graph({ graph, compact = false, onExpand }) {
   });
   const ids = new Set(nodes.map((n) => n.id));
   const edges = (graph?.edges || [])
-    .filter((e) => ids.has(e.source) && ids.has(e.target))
-    .map((e, i) => ({
+    .map((e, i) => ({ ...e, recordedIndex: i }))
+    .filter(
+      (e) =>
+        ids.has(e.source) &&
+        ids.has(e.target) &&
+        (!path || path.edges.includes(e.recordedIndex)),
+    )
+    .map((e) => ({
       ...e,
-      id: String(i),
+      id: String(e.recordedIndex),
       label: e.relation,
       data: e,
       markerEnd: { type: MarkerType.ArrowClosed },
@@ -88,48 +100,99 @@ function Graph({ graph, compact = false, onExpand }) {
     }));
   return (
     <div className={"graph " + (compact ? "compact" : "")}>
-      {onExpand && !compact && (
-        <div className="graph-node-picker">
-          <select
-            aria-label="Node to expand"
-            value={expandTarget}
-            onChange={(e) => setExpandTarget(e.target.value)}
-          >
-            <option value="">Choose a node…</option>
-            {nodes.map((n) => (
-              <option key={n.id} value={n.id}>
-                {n.displayLabel}
-              </option>
-            ))}
-          </select>
-          <button
-            disabled={!expandTarget}
-            onClick={() => onExpand(expandTarget)}
-          >
-            Expand neighbors
-          </button>
+      {!compact && (
+        <div className="graph-toolbar" aria-label="Graph controls">
+          {onExpand && !compact && (
+            <div className="graph-node-picker">
+              <select
+                aria-label="Start node or node to expand"
+                value={expandTarget}
+                onChange={(e) => {
+                  setExpandTarget(e.target.value);
+                  setPathOnly(false);
+                }}
+              >
+                <option value="">Choose a node…</option>
+                {(graph?.nodes || []).map((n) => (
+                  <option key={n.id} value={n.id}>
+                    {n.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                disabled={!expandTarget}
+                onClick={() => onExpand(expandTarget)}
+              >
+                Expand neighbors
+              </button>
+            </div>
+          )}
+          {edges.length > 0 && !compact && (
+            <select
+              className="graph-edge-picker"
+              aria-label="Inspect relationship"
+              value={
+                edges.find(
+                  (e) => e.data.recordedIndex === selectedEdge?.recordedIndex,
+                )?.id ?? ""
+              }
+              onChange={(event) =>
+                setSelectedEdge(
+                  edges.find((e) => e.id === event.target.value)?.data ?? null,
+                )
+              }
+            >
+              <option value="">Inspect a relationship…</option>
+              {edges.map((edge) => (
+                <option key={edge.id} value={edge.id}>
+                  {nodes.find((n) => n.id === edge.source)?.displayLabel} →{" "}
+                  {edge.label} →{" "}
+                  {nodes.find((n) => n.id === edge.target)?.displayLabel}
+                </option>
+              ))}
+            </select>
+          )}
+          {onExpand && (
+            <div className="graph-path-controls">
+              <select
+                aria-label="Evidence path destination"
+                value={pathTarget}
+                onChange={(e) => {
+                  setPathTarget(e.target.value);
+                  setPathOnly(false);
+                }}
+              >
+                <option value="">Choose path destination…</option>
+                {(graph?.nodes || []).map((n) => (
+                  <option key={n.id} value={n.id}>
+                    {n.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                disabled={!expandTarget || !pathTarget}
+                onClick={() => {
+                  setSelectedEdge(null);
+                  setPathOnly(true);
+                }}
+              >
+                Focus evidence path
+              </button>
+              {pathOnly && (
+                <button onClick={() => setPathOnly(false)}>
+                  Show all loaded nodes
+                </button>
+              )}
+              {pathOnly && (
+                <small role="status">
+                  {path
+                    ? `${path.nodes.length} nodes · ${path.edges.length} stored relationships. Arrows retain recorded direction; connection does not prove causality.`
+                    : "No connecting path in the loaded graph. Load or expand more evidence."}
+                </small>
+              )}
+            </div>
+          )}
         </div>
-      )}
-      {edges.length > 0 && !compact && (
-        <select
-          className="graph-edge-picker"
-          aria-label="Inspect relationship"
-          value={edges.find((e) => e.data === selectedEdge)?.id ?? ""}
-          onChange={(event) =>
-            setSelectedEdge(
-              edges.find((e) => e.id === event.target.value)?.data ?? null,
-            )
-          }
-        >
-          <option value="">Inspect a relationship…</option>
-          {edges.map((edge) => (
-            <option key={edge.id} value={edge.id}>
-              {nodes.find((n) => n.id === edge.source)?.displayLabel} →{" "}
-              {edge.label} →{" "}
-              {nodes.find((n) => n.id === edge.target)?.displayLabel}
-            </option>
-          ))}
-        </select>
       )}
       {selectedEdge && (
         <aside className="graph-edge-detail">
@@ -150,25 +213,27 @@ function Graph({ graph, compact = false, onExpand }) {
           )}
         </aside>
       )}
-      <ReactFlow
-        key={nodes.map((n) => n.id).join("|")}
-        nodes={nodes}
-        edges={edges}
-        onNodeDoubleClick={(_, node) => onExpand?.(node.id)}
-        onEdgeClick={(_, edge) => setSelectedEdge(edge.data)}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable
-        fitView
-        fitViewOptions={{ padding: 0.25 }}
-        minZoom={0.02}
-        maxZoom={1.5}
-        deleteKeyCode={null}
-        proOptions={{ hideAttribution: false }}
-      >
-        <Background color="#dcd9e5" gap={22} />
-        <Controls showInteractive={false} />
-      </ReactFlow>
+      <div className="graph-canvas">
+        <ReactFlow
+          key={nodes.map((n) => n.id).join("|")}
+          nodes={nodes}
+          edges={edges}
+          onNodeDoubleClick={(_, node) => onExpand?.(node.id)}
+          onEdgeClick={(_, edge) => setSelectedEdge(edge.data)}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable
+          fitView
+          fitViewOptions={{ padding: 0.25 }}
+          minZoom={0.02}
+          maxZoom={1.5}
+          deleteKeyCode={null}
+          proOptions={{ hideAttribution: false }}
+        >
+          <Background color="#dcd9e5" gap={22} />
+          <Controls showInteractive={false} />
+        </ReactFlow>
+      </div>
     </div>
   );
 }
@@ -196,6 +261,9 @@ function App() {
     [ingesting, setIngesting] = useState(false);
   const repo = repos.find((r) => r.id === project),
     busy = turns.some((t) => ["running", "queued"].includes(t.status));
+  const entityCounts = graph?.entity_counts;
+  const countEntity = (kind) =>
+    entityCounts?.find((c) => c.kind === kind)?.count ?? 0;
   async function refresh() {
     try {
       const values = await api("/repositories");
@@ -270,7 +338,7 @@ function App() {
         throw new Error(
           "View limit reached; filter to start another investigation.",
         );
-      setGraph({ ...extra, nodes, edges });
+      setGraph({ ...graph, ...extra, nodes, edges });
       setExpansion(extra);
     } catch (e) {
       if (request === graphRequest.current && project === activeProject.current)
@@ -289,7 +357,7 @@ function App() {
         request === graphRequest.current &&
         project === activeProject.current
       ) {
-        setGraph(next);
+        setGraph((previous) => ({ ...previous, ...next }));
         setExpansion(next);
       }
     } catch (e) {
@@ -438,15 +506,12 @@ function App() {
           <Network size={17} /> Company graph
           {graph && <span className="count">{graph.nodes.length}</span>}
         </button>
-        <details className="secondary-tools">
-          <summary>More workspace tools</summary>
-          <button className="nav" onClick={() => setMode("memory")}>
-            <BrainCircuit size={17} /> Personal Brain
-          </button>
-          <button className="nav" onClick={() => setMode("team")}>
-            <Network size={17} /> Team Brain
-          </button>
-        </details>
+        <button className="nav" onClick={() => setMode("memory")}>
+          <BrainCircuit size={17} /> Personal Brain
+        </button>
+        <button className="nav" onClick={() => setMode("team")}>
+          <Network size={17} /> Team Brain
+        </button>
         <div className="section-label">
           CONNECTED SOURCES
           <button
@@ -551,14 +616,14 @@ function App() {
           <div className="welcome">
             <span className="eyebrow">A SHARED UNDERSTANDING</span>
             <h1>
-              One place to ask your code.
+              Investigate your code.
               <br />
-              And the people behind it.
+              Fix with context.
             </h1>
             <p>
-              Connect a repository, add your team’s documents, and ask why
-              things work the way they do. Follow every answer back to its graph
-              nodes.
+              Connect code, history, documents and reviewed team knowledge.
+              Investigate an issue, inspect its evidence, and approve an
+              isolated fix with an explicit test report.
             </p>
             <button className="primary" onClick={() => setAdding(true)}>
               <Plus size={17} /> Connect your first repository
@@ -570,11 +635,11 @@ function App() {
               </span>
               <span>
                 <MessageSquare />
-                Ask in your own words
+                Investigate with evidence
               </span>
               <span>
                 <BookOpen />
-                Follow the evidence
+                Review isolated fixes
               </span>
             </div>
           </div>
@@ -638,7 +703,7 @@ function App() {
                   </span>
                   <h2>
                     {mode === "chat"
-                      ? "What would you like to understand?"
+                      ? "Investigate your code. Understand its history. Fix with context."
                       : "The company graph"}
                   </h2>
                   {mode === "chat" && (
@@ -674,7 +739,58 @@ function App() {
                 </div>
               )}
               <details className="coverage-details">
-                <summary>Repository coverage & extraction</summary>
+                <summary>
+                  Knowledge coverage · indexed snapshot ·{" "}
+                  {repo.github_coverage?.mode === "not_requested"
+                    ? "GitHub history not requested"
+                    : repo.github_coverage?.imported != null
+                      ? "GitHub history partial sample"
+                      : "GitHub history unverified"}
+                </summary>
+                <dl className="coverage-summary">
+                  <div>
+                    <dt>Repository code snapshot</dt>
+                    <dd>
+                      {repo.revision
+                        ? `Revision ${repo.revision.slice(0, 8)} · manual refresh`
+                        : "Revision unavailable"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>GitHub history</dt>
+                    <dd>
+                      {repo.github_coverage?.mode === "not_requested"
+                        ? "Not requested"
+                        : repo.github_coverage?.imported != null
+                          ? `${repo.github_coverage.imported} complete work items in a partial selected sample · older history not covered`
+                          : "Coverage unavailable or unverified"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Document sections</dt>
+                    <dd>
+                      {entityCounts
+                        ? `${countEntity("RepositorySection")} repository · ${countEntity("UploadedSection")} uploaded`
+                        : "Counts unavailable"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Extracted entities</dt>
+                    <dd>
+                      {entityCounts
+                        ? `${countEntity("CodeEntity")} structural code entities · ${countEntity("ExtractedConcept")} advisory concepts`
+                        : "Counts unavailable"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Reviewed memory scopes</dt>
+                    <dd>
+                      Accepted Personal Brain and authorized Team Brain records
+                      in this repository; unreviewed records excluded from agent
+                      retrieval.
+                    </dd>
+                  </div>
+                </dl>
                 {repo.graphify && (
                   <p>
                     Graphify: {repo.graphify.files} files ·{" "}
@@ -753,20 +869,36 @@ function App() {
                         <div className="context-mark">
                           <BrainCircuit size={30} />
                         </div>
-                        <h3>Start with a question.</h3>
+                        <h3>Start an investigation.</h3>
                         <p>
-                          Investigate the repository and its decisions.
+                          Trace an issue, inspect the evidence, then review a
+                          proposed fix.
                           <br />
                           Every published claim includes a checked source.
                         </p>
                         <div className="suggestions">
                           {[
-                            "What does this project do, and where should I start?",
-                            "Which uploaded instructions explain how this code should behave?",
-                            "Investigate a change and compare it with previous approaches.",
-                          ].map((q) => (
-                            <button key={q} onClick={() => setQuestion(q)}>
-                              {q}
+                            [
+                              "Investigate a bug",
+                              "Investigate this bug: [describe the observed behavior and expected result]. Find the relevant code, history and reviewed lessons; cite evidence and identify coverage gaps.",
+                            ],
+                            [
+                              "Explain a decision",
+                              "Explain this engineering decision: [describe the behavior or decision]. Trace its code, documents, history and reviewed knowledge; distinguish requirements from advisory lessons.",
+                            ],
+                            [
+                              "Plan a change",
+                              "Investigate this change: [describe the intended outcome]. Identify affected files, preservation requirements and test coverage so I can use Plan a change to review a cited fix before isolated execution.",
+                            ],
+                          ].map(([label, q]) => (
+                            <button
+                              key={label}
+                              onClick={() => {
+                                setQuestion(q);
+                                document.getElementById("question")?.focus();
+                              }}
+                            >
+                              {label}
                               <ArrowUpRight size={16} />
                             </button>
                           ))}
@@ -774,7 +906,12 @@ function App() {
                       </div>
                     ) : (
                       turns.map((t) => (
-                        <article className="turn" key={t.id}>
+                        <article
+                          className="turn workflow-target"
+                          key={t.id}
+                          id={`investigation-${t.id}`}
+                          tabIndex={-1}
+                        >
                           <div className="question">
                             <span className="avatar">YOU</span>
                             <p>{t.question}</p>
@@ -796,9 +933,11 @@ function App() {
                                 <>
                                   <div className="answer-label">
                                     COMPANY BRAIN{" "}
-                                    <span>
-                                      <Check size={12} /> Source checked
-                                    </span>
+                                    {t.claims?.length > 0 && (
+                                      <span>
+                                        <Check size={12} /> Source checked
+                                      </span>
+                                    )}
                                     {t.claims?.length > 0 && (
                                       <button
                                         className="fix-jump"
@@ -914,7 +1053,7 @@ function App() {
                     <textarea
                       id="question"
                       placeholder="Ask a question, explore a past approach, or describe a change…"
-                      rows={2}
+                      rows={1}
                       value={question}
                       disabled={busy || ingesting}
                       onChange={(e) => setQuestion(e.target.value)}
@@ -1081,16 +1220,32 @@ function App() {
                   </div>
                   <p>Code, documents, and recorded history in FalkorDB.</p>
                   <div className="knowledge-counts">
-                    {graph?.counts
+                    {graph?.entity_counts
                       ?.filter((c) =>
-                        ["File", "Symbol", "Document", "Source"].includes(
-                          c.kind,
-                        ),
+                        [
+                          "File",
+                          "Symbol",
+                          "CodeEntity",
+                          "RepositorySection",
+                          "UploadedSection",
+                          "ExtractedConcept",
+                          "Source",
+                        ].includes(c.kind),
                       )
                       .map((c) => (
                         <span key={c.kind}>
                           <strong>{c.count}</strong>
-                          {c.kind}
+                          {
+                            {
+                              File: "Files",
+                              Symbol: "Symbols",
+                              CodeEntity: "Code entities",
+                              RepositorySection: "Repository sections",
+                              UploadedSection: "Uploaded sections",
+                              ExtractedConcept: "Extracted concepts",
+                              Source: "Evidence sources",
+                            }[c.kind]
+                          }
                         </span>
                       ))}
                   </div>

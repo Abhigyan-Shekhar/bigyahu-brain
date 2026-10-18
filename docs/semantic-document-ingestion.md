@@ -1,7 +1,8 @@
 # Semantic document ingestion
 
 The application accepts PDF and Word (`.docx`) uploads alongside Markdown/RST.
-**Add document → select source sections → choose an engine → Extract relationships**
+**Add document → automatic Graphify extraction**; optional retries use
+**select source sections → choose an engine → Extract relationships**
 builds advisory entity/relationship evidence in the same native FalkorDB company
 graph used by chat and the graph explorer.
 
@@ -17,8 +18,8 @@ Launch the app and its dedicated database as described in the
 [application guide](company-brain-app.md). The app's explicit `--model` is reused
 for semantic extraction. Existing Codex authentication/model access must work.
 Selecting **Extract relationships** sends only selected extracted text to that
-model and consumes account usage. Uploading alone performs local text extraction
-and source indexing, without a model call.
+model and consumes account usage. Uploading performs local text extraction and source indexing, then queues the
+automatic Graphify semantic pass. Uploads therefore consume model usage.
 
 Open **Document sources & semantic ingestion**, select up to eight sections from
 uploaded documents or indexed repository Markdown/RST, choose **FalkorDB GraphRAG

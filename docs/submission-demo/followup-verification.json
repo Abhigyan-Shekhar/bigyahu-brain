@@ -1,0 +1,185 @@
+{
+  "revision": "672971d66a2ef9f85151e53283113f33d642dabd",
+  "patch_sha256": "0b2937cbe3577e4a49bb35139cf6050d60ccb95fa936a5994d1906bf558a795f",
+  "environment": {
+    "python": "3.12.13",
+    "platform": "Darwin arm64",
+    "pytest": "8.4.2",
+    "freezegun": "1.5.5",
+    "same_interpreter_for_both_runs": true,
+    "network_disabled": true,
+    "plugins_autoload_disabled": true
+  },
+  "results": {
+    "original": {
+      "minimal": {
+        "argv": [
+          "<python>/bin/python3.12",
+          "-m",
+          "unittest",
+          "test_timestamp_regression.py",
+          "-v"
+        ],
+        "exit_code": 1,
+        "outcome": "exited",
+        "passed": false,
+        "output": "test_signed_out_of_range_timestamp_raises_bad_time_signature (test_timestamp_regression.TimestampRegression.test_signed_out_of_range_timestamp_raises_bad_time_signature) ... FAIL\n\n======================================================================\nFAIL: test_signed_out_of_range_timestamp_raises_bad_time_signature (test_timestamp_regression.TimestampRegression.test_signed_out_of_range_timestamp_raises_bad_time_signature)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"<audit>/original/test_timestamp_regression.py\", line 21, in test_signed_out_of_range_timestamp_raises_bad_time_signature\n    self.assertIs(type(caught.exception), BadTimeSignature)\nAssertionError: <class 'ValueError'> is not <class 'itsdangerous.exc.BadTimeSignature'>\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+        "tests_reported": 1
+      },
+      "signature_compatibility": {
+        "argv": [
+          "<python>/bin/python3.12",
+          "-m",
+          "unittest",
+          "test_signature_compatibility.py",
+          "-v"
+        ],
+        "exit_code": 0,
+        "outcome": "exited",
+        "passed": true,
+        "output": "test_invalid_signature_conversion_errors_keep_cause_identity (test_signature_compatibility.SignatureCompatibility.test_invalid_signature_conversion_errors_keep_cause_identity) ... ok\ntest_invalid_signature_without_timestamp_retains_bad_signature (test_signature_compatibility.SignatureCompatibility.test_invalid_signature_without_timestamp_retains_bad_signature) ... ok\ntest_tampered_extreme_token_is_already_normalized (test_signature_compatibility.SignatureCompatibility.test_tampered_extreme_token_is_already_normalized) ... ok\ntest_tampered_malformed_timestamp_keeps_signature_error (test_signature_compatibility.SignatureCompatibility.test_tampered_malformed_timestamp_keeps_signature_error) ... ok\ntest_tampered_normal_token_keeps_message_payload_and_utc_date (test_signature_compatibility.SignatureCompatibility.test_tampered_normal_token_keeps_message_payload_and_utc_date) ... ok\ntest_unrelated_conversion_exception_is_not_swallowed (test_signature_compatibility.SignatureCompatibility.test_unrelated_conversion_exception_is_not_swallowed) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.002s\n\nOK\n"
+      },
+      "conversion_inspection": {
+        "conversion_sites_in_unsign": 4,
+        "paths": {
+          "plain": {
+            "conversion_calls": 0,
+            "outcome": "returned"
+          },
+          "return_timestamp": {
+            "conversion_calls": 1,
+            "outcome": "returned"
+          },
+          "max_age_boundary": {
+            "conversion_calls": 0,
+            "outcome": "returned"
+          },
+          "expired": {
+            "conversion_calls": 1,
+            "outcome": "SignatureExpired"
+          },
+          "future": {
+            "conversion_calls": 1,
+            "outcome": "SignatureExpired"
+          },
+          "tampered": {
+            "conversion_calls": 1,
+            "outcome": "BadTimeSignature"
+          }
+        }
+      },
+      "upstream_full": {
+        "argv": [
+          "<python>/bin/python3.12",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests"
+        ],
+        "exit_code": 0,
+        "outcome": "exited",
+        "passed": true,
+        "output": "........................................................................ [ 24%]\n........................................................................ [ 48%]\n........................................................................ [ 72%]\n........................................................................ [ 96%]\n.........                                                                [100%]\n297 passed in 0.30s\n"
+      }
+    },
+    "patched": {
+      "minimal": {
+        "argv": [
+          "<python>/bin/python3.12",
+          "-m",
+          "unittest",
+          "test_timestamp_regression.py",
+          "-v"
+        ],
+        "exit_code": 0,
+        "outcome": "exited",
+        "passed": true,
+        "output": "test_signed_out_of_range_timestamp_raises_bad_time_signature (test_timestamp_regression.TimestampRegression.test_signed_out_of_range_timestamp_raises_bad_time_signature) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK\n",
+        "tests_reported": 1
+      },
+      "signature_compatibility": {
+        "argv": [
+          "<python>/bin/python3.12",
+          "-m",
+          "unittest",
+          "test_signature_compatibility.py",
+          "-v"
+        ],
+        "exit_code": 0,
+        "outcome": "exited",
+        "passed": true,
+        "output": "test_invalid_signature_conversion_errors_keep_cause_identity (test_signature_compatibility.SignatureCompatibility.test_invalid_signature_conversion_errors_keep_cause_identity) ... ok\ntest_invalid_signature_without_timestamp_retains_bad_signature (test_signature_compatibility.SignatureCompatibility.test_invalid_signature_without_timestamp_retains_bad_signature) ... ok\ntest_tampered_extreme_token_is_already_normalized (test_signature_compatibility.SignatureCompatibility.test_tampered_extreme_token_is_already_normalized) ... ok\ntest_tampered_malformed_timestamp_keeps_signature_error (test_signature_compatibility.SignatureCompatibility.test_tampered_malformed_timestamp_keeps_signature_error) ... ok\ntest_tampered_normal_token_keeps_message_payload_and_utc_date (test_signature_compatibility.SignatureCompatibility.test_tampered_normal_token_keeps_message_payload_and_utc_date) ... ok\ntest_unrelated_conversion_exception_is_not_swallowed (test_signature_compatibility.SignatureCompatibility.test_unrelated_conversion_exception_is_not_swallowed) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.002s\n\nOK\n"
+      },
+      "conversion_inspection": {
+        "conversion_sites_in_unsign": 1,
+        "paths": {
+          "plain": {
+            "conversion_calls": 1,
+            "outcome": "returned"
+          },
+          "return_timestamp": {
+            "conversion_calls": 1,
+            "outcome": "returned"
+          },
+          "max_age_boundary": {
+            "conversion_calls": 1,
+            "outcome": "returned"
+          },
+          "expired": {
+            "conversion_calls": 1,
+            "outcome": "SignatureExpired"
+          },
+          "future": {
+            "conversion_calls": 1,
+            "outcome": "SignatureExpired"
+          },
+          "tampered": {
+            "conversion_calls": 1,
+            "outcome": "BadTimeSignature"
+          }
+        }
+      },
+      "upstream_full": {
+        "argv": [
+          "<python>/bin/python3.12",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests"
+        ],
+        "exit_code": 0,
+        "outcome": "exited",
+        "passed": true,
+        "output": "........................................................................ [ 23%]\n........................................................................ [ 47%]\n........................................................................ [ 70%]\n........................................................................ [ 94%]\n.................                                                        [100%]\n305 passed in 0.30s\n"
+      },
+      "augmented_full": {
+        "argv": [
+          "<python>/bin/python3.12",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests",
+          "test_timestamp_regression.py",
+          "test_signature_compatibility.py"
+        ],
+        "exit_code": 0,
+        "outcome": "exited",
+        "passed": true,
+        "output": "........................................................................ [ 23%]\n........................................................................ [ 46%]\n........................................................................ [ 69%]\n........................................................................ [ 92%]\n........................                                                 [100%]\n312 passed in 0.31s\n"
+      }
+    }
+  },
+  "indexed_checkout_clean": true,
+  "clean_minimal_regression_signal": {
+    "tests_passed": true,
+    "regression_demonstrated": true,
+    "fix_verification": "baseline_failures_resolved"
+  },
+  "historical_action_unchanged": true
+}

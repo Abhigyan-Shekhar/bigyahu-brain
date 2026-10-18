@@ -94,12 +94,21 @@ export default function IngestionPanel({
       ))}
       <details className="ingestion-panel">
         <summary>
-          Document sources & extraction {active ? "· extracting…" : ""}
+          Document sources & extraction · {sources.length}
+          {sources.length === 201 ? "+" : ""} listed sections{" "}
+          {active ? "· extracting…" : ""}
         </summary>
         <p>
           Uploads are extracted automatically with Graphify. Select up to eight
           sections to retry extraction or compare engines. Text-based PDF, Word,
           Markdown and RST are supported.
+        </p>
+        <p className="action-note">
+          Sections belong to the indexed repository snapshot. Extracted concepts
+          and relationships are advisory; source citations remain available for
+          inspection.
+          {sources.length === 201 &&
+            " This source picker is bounded; it does not establish complete document coverage."}
         </p>
         <form onSubmit={extract}>
           <label>

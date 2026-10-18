@@ -6,6 +6,12 @@ code-editing agent. An opt-in memory extension connects personal, team and compa
 knowledge through scoped graph paths. Source prose is untrusted evidence;
 remembering something creates a proposal, never an approved rule.
 
+The [final hardening report](docs/final-hardening-2026-10-18.md) records byte-preserving
+patch replay, claim-and-action relevance review before approval, clearer evidence/coverage
+presentation and current release checks. The [submission draft](docs/submission-draft.md)
+now describes the current local React/FastAPI product and the separate demo follow-up.
+
+
 ## Latest application demo — 18 October 2026
 
 The signed-token demonstration now continues through an approved code change,
@@ -33,9 +39,14 @@ of improved coding performance.
 The app's strict automatic regression flag rejects baseline runner errors and
 remains false for this unittest run. The conversion errors were checked through
 the separate reproduction; the rule was not weakened. Neither patch was applied
-to the indexed checkout. The app now keeps extraction status visible during source
+to the indexed checkout. A [traceback and full-suite follow-up](docs/submission-demo/traceback-review.md)
+accounts for all 18 errors and demonstrates a clean minimal assertion failure on
+the original and a pass on the patch under the same environment. All **297**
+original tests, **305** patched tests and **312** tests including follow-up checks
+pass; the separate minimal result satisfies the existing regression rule.
+The app now keeps extraction status visible during source
 inspection, exposes readable evidence links and before/after results, and exports
-valid Git patches without stripping their final newline. The latest targeted
+valid Git patches without stripping their final newline. The demo’s targeted
 application check passed **36 tests** with a disposable FalkorDB instance, plus
 Ruff and the frontend production build. Use the
 [recording runbook](docs/submission-demo-runbook.md) for a new presentation.

@@ -1,5 +1,11 @@
 # Signed-token coding-action result
 
+The [traceback and full-suite follow-up](traceback-review.md) accounts for every
+original error, establishes a minimal **1-failure/0-error → 1-pass** regression,
+checks invalid-signature compatibility and runs the complete itsdangerous suite:
+**297 original / 305 patched / 312 with follow-up checks**, all passing.
+The original action and its conservative verification flag remain historical.
+
 On 18 October 2026 (IST), the human operator authorized completion of the
 previously guided `itsdangerous` plan. The real application agent generated the
 two-file [patch](signed-token.patch) in an isolated checkout. The app then ran:

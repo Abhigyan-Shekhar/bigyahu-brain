@@ -133,6 +133,11 @@ def test_upload_queues_graphify_connects_code_and_paginates_native_graph(
             ).json()
             assert first["next_offset"] == 100 and second["offset"] == 100
             assert any(c["kind"] == "Document" and c["count"] >= 107 for c in first["counts"])
+            display_counts = {c["kind"]: c["count"] for c in first["entity_counts"]}
+            assert display_counts["UploadedSection"] >= 1
+            # Unclassified extracted entities must not appear as document sections.
+            assert display_counts["OtherEntity"] == 105
+            assert "Document" not in display_counts
             assert second["nodes"] and {
                 n["id"] for n in first["nodes"] if "Source" not in n["labels"]
             }.isdisjoint(n["id"] for n in second["nodes"] if "Source" not in n["labels"])
