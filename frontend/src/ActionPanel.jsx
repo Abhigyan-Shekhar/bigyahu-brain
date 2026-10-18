@@ -11,6 +11,8 @@ import {
 import { createPortal } from "react-dom";
 import { api, send, watchResource } from "./api";
 import ActivityStream from "./ActivityStream";
+import LiveDiff from "./LiveDiff";
+import ExecutionRecovery from "./ExecutionRecovery";
 import { elapsedLabel, testSummary } from "./actionPresentation";
 
 function contributionLabel(support) {
@@ -183,7 +185,9 @@ export default function ActionPanel({
       setAction(
         await send(
           `/actions/${action.id}/${choice}`,
-          choice === "approve" ? { plan_digest: action.plan_digest } : {},
+          ["approve", "resume"].includes(choice)
+            ? { plan_digest: action.plan_digest }
+            : {},
         ),
       );
       return true;
@@ -361,6 +365,11 @@ export default function ActionPanel({
           {["running", "queued"].includes(action.status) && (
             <ActivityStream turn={action} />
           )}
+          {action.phase === "execution" && action.approval && (
+            <div ref={editSection} tabIndex={-1} className="workflow-target">
+              <LiveDiff action={action} />
+            </div>
+          )}
           {!["complete", "running", "queued"].includes(action.status) && (
             <div className="action-state agent-step" role="status">
               {["queued", "running"].includes(action.status) ? (
@@ -390,9 +399,14 @@ export default function ActionPanel({
                   ? "The model returned a path outside the supported file scope. Use literal Python, documentation or TOML filenames without annotations such as '(new)'. No execution was approved. Review the objective and retry."
                   : action.error}
               </p>
+              <ExecutionRecovery
+                action={action}
+                submitting={submitting}
+                onResume={() => decide("resume")}
+              />
             </div>
           )}
-          {action.status === "failed" && action.draft_plan && (
+          {action.status === "failed" && action.phase !== "execution" && action.draft_plan && (
             <details className="agent-step">
               <summary>
                 Draft available; execution checks need attention
@@ -857,11 +871,7 @@ export default function ActionPanel({
                   </div>
                 ))}
               </details>
-              <details
-                ref={editSection}
-                tabIndex={-1}
-                className="workflow-target"
-              >
+              <details tabIndex={-1} className="workflow-target">
                 <summary>
                   Final diff{" "}
                   <button

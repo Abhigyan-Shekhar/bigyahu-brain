@@ -18,18 +18,26 @@ TOOLS = [
 
 
 def tool_activity(trace, running):
-    completed, current, bounded = [], None, False
+    completed, active, bounded = [], {}, False
     try:
         with trace.open("rb") as stream:
-            # Bound polling work and ignore incomplete lines at the read boundary.
+            # Read the newest bounded window, never a permanently stale prefix.
+            size = stream.seek(0, 2)
+            offset = max(0, size - 2_000_000)
+            bounded = offset > 0
+            stream.seek(offset)
             data = stream.read(2_000_000)
-            bounded = bool(stream.read(1))
+            if offset:
+                data = data.partition(b"\n")[2]
         for line in data.splitlines():
             try:
                 event = json.loads(line)
             except (ValueError, UnicodeError):
                 continue
             if not isinstance(event, dict):
+                continue
+            if event.get("type") in {"turn.completed", "turn.failed"}:
+                active.clear()
                 continue
             item = event.get("item", {})
             if not isinstance(item, dict):
@@ -42,8 +50,9 @@ def tool_activity(trace, running):
                 "write_file",
             }:
                 continue
+            key = item.get("id") or item["tool"]
             if event.get("type") == "item.started":
-                current = item["tool"]
+                active[key] = item["tool"]
             elif event.get("type") == "item.completed":
                 completed.append(
                     {
@@ -53,13 +62,13 @@ def tool_activity(trace, running):
                         else "unverified",
                     }
                 )
-                current = None
+                active.pop(key, None)
     except OSError:
         pass
     return {
         "completed_tools": completed[-12:],
         "completed_count": len(completed),
-        "current_tool": current if running else None,
+        "current_tool": next(reversed(active.values()), None) if running else None,
         "trace_bounded": bounded,
     }
 
@@ -94,8 +103,17 @@ def investigation_progress(state, turn):
         }
     else:
         activity = tool_activity(trace, running)
+    from .retrieval import retrieval_stats
+    from .timing import stage_progress
+
+    if turn.get("activity_phase") not in {None, "retrieval"} or "Reviewing" in turn.get(
+        "stage", ""
+    ):
+        activity["current_tool"] = None
     return {
         **activity,
+        "stages": stage_progress(turn),
+        "retrieval": retrieval_stats(trace.parent),
         "elapsed_seconds": elapsed_seconds(
             turn.get("started_at"), turn.get("finished_at"), running
         ),

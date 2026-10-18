@@ -39,9 +39,12 @@ export default function ActivityStream({ turn }) {
             <span className={live ? "live-event-dot" : "event-dot"} />
             <span>
               {live
-                ? turn.phase === "execution"
-                  ? "Following the current execution stage"
-                  : "Waiting for the next recorded tool event"
+                ? progress?.activity_phase === "review" ||
+                  turn.activity_phase === "review"
+                  ? "Reviewing the proposal against its cited evidence"
+                  : turn.phase === "execution"
+                    ? "Following the current execution stage"
+                    : "Waiting for the next recorded tool event"
                 : "Activity retained from this run"}
             </span>
           </>
@@ -55,6 +58,57 @@ export default function ActivityStream({ turn }) {
           </span>
           {Number.isFinite(progress.elapsed_seconds) && (
             <span>{elapsedLabel(progress.elapsed_seconds)}</span>
+          )}
+          {turn.editor_timeout_seconds && turn.activity_phase === "editing" && (
+            <span>
+              Editing attempt {turn.editor_attempt} · {Math.floor(turn.editor_timeout_seconds / 60)} minute limit
+            </span>
+          )}
+        </div>
+      )}
+      {progress?.stages?.length > 0 && (
+        <dl className="stage-timings" aria-label="Stage timings">
+          {progress.stages.map((stage, index) => (
+            <div key={index} className={stage.active ? "timing-active" : ""}>
+              <dt>
+                {{
+                  retrieval: "Investigation",
+                  review: "Evidence review",
+                  validation: "Source checks",
+                  preparing: "Prepare workspace",
+                  editing: "Editing",
+                  baseline_tests: "Baseline tests",
+                  patched_tests: "Patched tests",
+                  verification: "Patch verification",
+                }[stage.name] || stage.name}
+              </dt>
+              <dd>
+                {Number.isFinite(stage.seconds)
+                  ? `${Math.floor(stage.seconds)}s`
+                  : "—"}
+                {stage.active ? " · active" : ""}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {(progress?.retrieval || progress?.reused_evidence_count > 0) && (
+        <div className="retrieval-budget">
+          {progress.retrieval && (
+            <span>
+              {progress.retrieval.used}/{progress.retrieval.limit} retrieval
+              executions · {progress.retrieval.context_used}/
+              {progress.retrieval.context_limit} context searches
+              {progress.retrieval.blocked > 0
+                ? ` · ${progress.retrieval.blocked} extra calls blocked`
+                : ""}
+            </span>
+          )}
+          {progress.reused_evidence_count > 0 && (
+            <span>
+              {progress.reused_evidence_count} evidence records revalidated and
+              reused
+            </span>
           )}
         </div>
       )}

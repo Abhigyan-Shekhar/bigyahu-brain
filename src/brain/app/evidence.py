@@ -306,3 +306,39 @@ def verified_claims(store, folder, output):
             )
         claims.append(checked)
     return claims
+
+
+def reuse_evidence(store, source_folder, destination, claims, *, max_items=8, max_bytes=40000):
+    """Mint current run evidence only after rechecking bytes, graph and access."""
+    reused, seen, size = [], set(), 0
+    for claim in claims[:20]:
+        for support in claim.get("support", [])[:8]:
+            uid = support.get("evidence_id", "")
+            if not isinstance(uid, str) or not re.fullmatch("[a-f0-9]{24}", uid) or uid in seen:
+                continue
+            seen.add(uid)
+            if len(reused) >= max_items:
+                return reused
+            try:
+                path = Path(source_folder) / (uid + ".json")
+                if path.stat().st_size > 150000:
+                    continue
+                saved = json.loads(path.read_text(encoding="utf-8"))
+                current = resolve(store, saved)
+                if (
+                    current["digest"] != saved["digest"]
+                    or current["revision"] != saved["revision"]
+                    or canonical(canonical_graph(current["graph"]))
+                    != canonical(canonical_graph(saved["graph"]))
+                ):
+                    continue
+                encoded = canonical(current).encode("utf-8")
+                if size + len(encoded) > max_bytes:
+                    continue
+                item = register(destination, current)
+                reused.append(item)
+                size += len(encoded)
+            except (OSError, ValueError, KeyError, PermissionError):
+                # Unavailable/changed/revoked sources are never copied or exposed.
+                continue
+    return reused

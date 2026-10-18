@@ -15,7 +15,15 @@ from pydantic import BaseModel, ConfigDict, Field
 from ..config import load_config
 from ..graph import GraphStore, GraphUnavailable
 from . import exchange, personal, team
-from .actions import active_actions, approve, checked_action, execute, plan_folder, prepare_plan
+from .actions import (
+    active_actions,
+    approve,
+    checked_action,
+    execute,
+    plan_folder,
+    prepare_plan,
+    resume_execution,
+)
 from .agent import run_turn
 from .enrichment import active_ingestions, run_document_enrichment, run_enrichment
 from .evidence import canonical_graph, native_graph, ready, resolve
@@ -1029,9 +1037,14 @@ def create_app(state, token, origin, assets=None):
     @app.get("/api/actions/{action_id}")
     def action_detail(action_id: str):
         value = state.get(action_id, "action")
-        from .actions import action_progress, verification_result
+        from .actions import action_progress, live_changes, verification_result
 
-        return {**value, **verification_result(value), "progress": action_progress(state, value)}
+        return {
+            **value,
+            **verification_result(value),
+            "progress": action_progress(state, value),
+            "live_changes": live_changes(state, value),
+        }
 
     @app.get("/api/actions/{action_id}/events")
     def action_events(action_id: str, request: Request):
@@ -1052,6 +1065,26 @@ def create_app(state, token, origin, assets=None):
             ):
                 raise HTTPException(409, "Wait for the investigation before approving execution")
             result = approve(state, action_id, body.plan_digest)
+            workers.submit(execute, state, action_id)
+        return result
+
+    @app.post("/api/actions/{action_id}/resume", status_code=202)
+    def resume_action(action_id: str, body: ApprovalInput):
+        with lock:
+            action = state.get(action_id, "action")
+            project = action["project"]
+            project_ready(project)
+            if (
+                active_ingestions(state, project)
+                or active_actions(state, project)
+                or any(
+                    t["status"] in {"queued", "running"}
+                    for chat in state.list("session", project)
+                    for t in state.list("turn", chat["id"])
+                )
+            ):
+                raise HTTPException(409, "Finish active repository work before resuming")
+            result = resume_execution(state, action_id, body.plan_digest)
             workers.submit(execute, state, action_id)
         return result
 

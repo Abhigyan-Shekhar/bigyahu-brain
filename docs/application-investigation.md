@@ -204,3 +204,70 @@ under the hundred-request budget. The conversation workspace visibly displayed
 those counts and the older-history exclusion, alongside the existing document
 coverage bound. This verifies public onboarding and partial-history publication,
 not a real-world historical-bug diagnosis benchmark.
+
+## Bounded planning and live edits
+
+Investigations and fix plans enforce a tool-execution budget: 20 retrieval calls,
+including at most six `get_context` calls and two identical calls. A plan repair
+shares the original budget. Blocked calls do not execute retrieval; the model is
+asked to finish with checked evidence and explicit limitations. These limits bound
+retrieval work, not provider response time or the number of rejected calls a model
+might issue. Existing overall timeouts remain in effect.
+
+Planning can reuse up to eight cited investigation excerpts (40 KB total) after
+rechecking current access, content digest, revision and graph provenance. Changed,
+revoked or unavailable evidence is skipped. Evidence verification, fallible plan
+review, approval digest checks and test gates still apply. The UI shows actual
+stage boundaries, retrieval usage and revalidated excerpt counts. Tool activity
+reads the newest 2 MB of trace data and labels truncated counts as lower bounds.
+
+During approved execution, the constrained editor records a cumulative unified
+preview after each successful file write. The authenticated action stream and
+polling response expose only approved paths after matching recorded approval.
+Reads and rejected writes produce no preview. Users can switch files, inspect
+line numbers and additions/deletions, and read a short agent-authored change
+explanation beside the separate approved plan rationale. This is a display of
+recorded writes, not private model reasoning or proof of correctness. Previews
+are bounded to 60 KB per file and 200 KB total; the final Git patch remains the
+review artifact. Baseline, patched tests and patch replay run after editing.
+
+A local synthetic two-file demo streamed both changes at 25.18 seconds while the
+editor was still running, then completed in 30.44 seconds. Patched tests passed;
+baseline errors correctly kept the fix unverified. These timings describe one
+local run and are not a performance guarantee.
+
+## Editor deadlines and recovery
+
+Editing has a 900-second (15-minute) budget per attempt; planning retains its
+240-second deadline. The editor deadline is recorded in invocation metadata and
+shown with the attempt number in activity. A model-process deadline stops its tool
+process tree before partial-file snapshots are taken. An editing timeout records
+`editor_timeout`, says tests have not started, and retains the isolated checkout,
+write previews and per-attempt traces. It never publishes a complete patch or a
+passing verification result.
+
+**Resume editing** is available for a recorded recoverable editor timeout, up to
+three total editor attempts. The authenticated resume endpoint rechecks the
+original approval digest, plan relevance, fresh evidence and source revision,
+permitted file changes and an exact snapshot of the preserved approved files.
+Changed bytes, a changed base or outside-scope edits block recovery. Resume starts
+a fresh constrained editor on the same checkout; it cannot modify the source
+checkout. Successful editor completion is still followed by baseline tests,
+patched tests and byte-equivalent patch replay. Each attempt keeps its own trace
+and response; live diffs retain the original pre-edit baseline across attempts.
+There is no automatic partial-patch acceptance or test bypass.
+
+Legacy generic failures have no trustworthy timeout checkpoint and are not
+automatically relabelled recoverable. Those saved checkouts remain preserved for
+manual inspection. Windows process-tree cleanup uses taskkill; its behavior is
+not covered by the local POSIX process-tree integration test.
+
+Recovery validation used a deliberately forced 0.2-second timeout on the owned
+synthetic two-file fixture (not Intellidoc). It preserved one real SQL edit and
+reported no tests started. The authenticated API resumed the same approved plan
+as attempt 2 with the real model editor; execution completed in 34.46 seconds,
+eight patched tests passed, and patch replay matched exactly. Both attempt traces
+were retained and the source checkout stayed clean. The report conservatively
+retained `regression_demonstrated: false`. Browser verification was unavailable
+because local browser use was disabled in Work settings; frontend rendering and
+recovery-control conditions were covered by automated tests.
