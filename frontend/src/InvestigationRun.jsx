@@ -12,9 +12,12 @@ export default function InvestigationRun({
   useEffect(() => {
     let live = true;
     const refresh = () =>
-      api(`/sessions/${run.session}/turns`)
-        .then((items) => {
-          if (live) setTurn(items.find((t) => t.id === run.turn));
+      api(`/repositories/${run.project}/runs/${run.id}`)
+        .then((item) => {
+          if (live) {
+            setTurn(item.investigation);
+            setError("");
+          }
         })
         .catch((e) => {
           if (live) setError(e.message);
@@ -25,7 +28,7 @@ export default function InvestigationRun({
       live = false;
       clearInterval(timer);
     };
-  }, [run.id]);
+  }, [run.id, run.project]);
   return (
     <>
       <div className="run-origin">
@@ -72,7 +75,7 @@ export default function InvestigationRun({
             </button>
           )}
         </>
-      ) : (
+      ) : error ? null : (
         <p role="status">Loading investigation…</p>
       )}
     </>

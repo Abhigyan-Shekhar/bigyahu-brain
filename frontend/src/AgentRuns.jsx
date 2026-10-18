@@ -36,8 +36,30 @@ export default function AgentRuns({
       clearInterval(timer);
     };
   }, [project]);
+  const [resolved, setResolved] = useState(null);
+  const listed = runs.some((r) => r.id === selected);
+  useEffect(() => {
+    if (!selected || listed) return;
+    let live = true;
+    setResolved({ project, id: selected, loading: true });
+    api(`/repositories/${project}/runs/${selected}`)
+      .then((value) => {
+        if (live) setResolved({ project, id: selected, value });
+      })
+      .catch((e) => {
+        if (live) setResolved({ project, id: selected, error: e.message });
+      });
+    return () => {
+      live = false;
+    };
+  }, [project, selected, listed]);
+  const direct =
+    resolved?.project === project && resolved?.id === selected
+      ? resolved
+      : null;
   const run =
     runs.find((r) => r.id === selected) ||
+    direct?.value ||
     (!selected
       ? runs.find((r) =>
           ["queued", "running", "awaiting_approval"].includes(r.status),
@@ -60,8 +82,8 @@ export default function AgentRuns({
         )}
         {bounded && (
           <p className="coverage">
-            Showing the latest 20 fix runs and 20 investigations. Older
-            investigations remain available from their conversations.
+            Showing the latest 20 fix runs and 20 investigations. Older runs
+            remain available from their conversations and saved lessons.
           </p>
         )}
         {!runs.length && (
@@ -93,7 +115,7 @@ export default function AgentRuns({
           run.run_kind === "investigation" ? (
             <InvestigationRun
               key={run.id}
-              run={run}
+              run={{ ...run, project }}
               onEvidence={onEvidence}
               onInvestigation={onInvestigation}
               onPlan={onInvestigation}
@@ -122,7 +144,13 @@ export default function AgentRuns({
             </>
           )
         ) : selected ? (
-          <p role="status">Loading the selected run…</p>
+          direct?.error ? (
+            <p role="alert" className="failure">
+              Unable to open the selected run: {direct.error}
+            </p>
+          ) : (
+            <p role="status">Loading the selected run…</p>
+          )
         ) : (
           <p>Select a run or begin with an investigation.</p>
         )}

@@ -160,6 +160,22 @@ def test_upload_queues_graphify_connects_code_and_paginates_native_graph(
                 for n in only_files.json()["nodes"]
                 if "File" in n["labels"] and n["label"] == "x.py"
             )
+            cluster = client.get(
+                f"/api/repositories/{project['id']}/graph?kind=File&context_neighbors=true",
+                headers=headers,
+            )
+            assert cluster.status_code == 200, cluster.text
+            cluster_data = cluster.json()
+            assert 0 < cluster_data["context_count"] <= 50
+            assert cluster_data["root_count"] == len(only_files.json()["nodes"])
+            assert any("File" not in n["labels"] for n in cluster_data["nodes"])
+            assert any(
+                e["source"] == file_uid or e["target"] == file_uid for e in cluster_data["edges"]
+            )
+            assert all(
+                n["id"] in {n["id"] for n in cluster_data["nodes"]}
+                for n in only_files.json()["nodes"]
+            )
             node = client.get(
                 f"/api/repositories/{project['id']}/graph/node",
                 params={"uid": file_uid},

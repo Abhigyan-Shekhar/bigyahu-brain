@@ -567,7 +567,14 @@ def create_app(state, token, origin, assets=None):
             )
 
     @app.get("/api/repositories/{project}/graph")
-    def graph(project: str, query: str = "", offset: int = 0, kind: str = "", folder: str = ""):
+    def graph(
+        project: str,
+        query: str = "",
+        offset: int = 0,
+        kind: str = "",
+        folder: str = "",
+        context_neighbors: bool = False,
+    ):
         from .graph_workspace import FOLDER
 
         project_ready(project)
@@ -596,12 +603,31 @@ def create_app(state, token, origin, assets=None):
             "WHERE d.uid IN $roots RETURN DISTINCT s.uid AS uid ORDER BY uid LIMIT 51",
             {"repo": store.cfg.repo_id, "roots": roots},
         )
-        result = native_graph(store, [*roots, *[n["uid"] for n in sources[:50]]])
-        truncated = len(nodes) > 100 or len(sources) > 50 or len(result["edges"]) > 300
+        context = []
+        if context_neighbors and (kind or folder):
+            context = store.query(
+                "MATCH (n {repo_id:$repo})-[]-(m {repo_id:$repo}) "
+                "WHERE n.uid IN $roots AND coalesce(n.current,true) "
+                "AND coalesce(m.current,true) AND NOT m.uid IN $roots "
+                "WITH DISTINCT m "
+                "WITH m, CASE WHEN m:Project THEN 0 WHEN m:Symbol THEN 1 "
+                "WHEN m:Document THEN 2 WHEN m:Source THEN 3 ELSE 4 END AS rank "
+                "RETURN m.uid AS uid ORDER BY rank,uid LIMIT 51",
+                {"repo": store.cfg.repo_id, "roots": roots},
+            )
+        result = native_graph(
+            store, [*roots, *[n["uid"] for n in sources[:50]], *[n["uid"] for n in context[:50]]]
+        )
+        truncated = (
+            len(nodes) > 100 or len(sources) > 50 or len(context) > 50 or len(result["edges"]) > 300
+        )
         result["edges"] = result["edges"][:300]
         return {
             **result,
             "revision": sha,
+            "root_count": len(roots),
+            "context_count": len(context[:50]),
+            "context_truncated": len(context) > 50,
             "offset": offset,
             "next_offset": offset + 100 if len(nodes) > 100 and offset < 50000 else None,
             "paging_bound_reached": len(nodes) > 100 and offset >= 50000,
@@ -881,6 +907,53 @@ def create_app(state, token, origin, assets=None):
             "truncated": len(items) > 20,
             "investigations": investigations,
             "investigations_truncated": len(rows) > 20,
+        }
+
+    @app.get("/api/repositories/{project}/runs/{run_id}")
+    def repository_run(project: str, run_id: str):
+        from .activity import investigation_progress
+
+        state.get(project, "repository")
+        with state.connect() as db:
+            row = db.execute(
+                "SELECT kind,parent,body FROM objects WHERE id=? AND kind IN ('action','turn')",
+                (run_id,),
+            ).fetchone()
+            if row is None:
+                raise HTTPException(404, "Run not found in this repository")
+            value = json.loads(row["body"])
+            if row["kind"] == "action":
+                if row["parent"] != project:
+                    raise HTTPException(404, "Run not found in this repository")
+                turn = state.get(value["turn"], "turn")
+                parent = db.execute(
+                    "SELECT parent FROM objects WHERE id=? AND kind='turn'", (turn["id"],)
+                ).fetchone()
+                session_id = parent["parent"] if parent else None
+            else:
+                turn = value
+                session_id = row["parent"]
+            session_row = db.execute(
+                "SELECT parent FROM objects WHERE id=? AND kind='session'", (session_id,)
+            ).fetchone()
+        if session_row is None or session_row["parent"] != project:
+            raise HTTPException(404, "Run not found in this repository")
+        if row["kind"] == "turn":
+            return {
+                "id": turn["id"],
+                "turn": turn["id"],
+                "session": session_id,
+                "question": turn["question"],
+                "objective": turn["question"],
+                "status": turn["status"],
+                "stage": turn.get("stage"),
+                "run_kind": "investigation",
+                "investigation": {**turn, "progress": investigation_progress(state, turn)},
+            }
+        return {
+            **{k: value.get(k) for k in ("id", "turn", "status", "phase", "stage", "objective")},
+            "question": turn["question"],
+            "session": session_id,
         }
 
     @app.get("/api/turns/{turn}/actions")

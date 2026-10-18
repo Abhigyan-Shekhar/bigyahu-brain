@@ -65,6 +65,7 @@ function App() {
   const [graphScope, setGraphScope] = useState("index");
   const [grouping, setGrouping] = useState("type");
   const [overview, setOverview] = useState(null);
+  const [graphRefresh, setGraphRefresh] = useState(0);
   const [clusterFilter, setClusterFilter] = useState({});
   const [graphSelection, setGraphSelection] = useState(null);
   const [graphInspection, setGraphInspection] = useState(null);
@@ -103,7 +104,13 @@ function App() {
     return () => {
       live = false;
     };
-  }, [project, grouping, repos.find((r) => r.id === project)?.status]);
+  }, [
+    project,
+    grouping,
+    graphRefresh,
+    mode,
+    repos.find((r) => r.id === project)?.status,
+  ]);
   useEffect(() => {
     if (mode !== "chat" || !pendingTurn.current) return;
     const target = document.getElementById(
@@ -141,7 +148,10 @@ function App() {
   async function inspectGraph(selection) {
     if (selection.node?.labels?.includes("Cluster")) {
       const key = selection.node.clusterKey;
-      const filters = grouping === "type" ? { kind: key } : { folder: key };
+      const filters =
+        grouping === "type"
+          ? { kind: key, context: true }
+          : { folder: key, context: true };
       setClusterFilter(filters);
       setFilter("");
       setGraphMode("explore");
@@ -344,7 +354,7 @@ function App() {
     try {
       setExpansion(null);
       const next = await api(
-        `/repositories/${project}/graph?query=${encodeURIComponent(q)}&offset=${offset}&kind=${encodeURIComponent(filters.kind || "")}&folder=${encodeURIComponent(filters.folder || "")}`,
+        `/repositories/${project}/graph?query=${encodeURIComponent(q)}&offset=${offset}&kind=${encodeURIComponent(filters.kind || "")}&folder=${encodeURIComponent(filters.folder || "")}&context_neighbors=${!!filters.context}`,
       );
       if (
         request === graphRequest.current &&
@@ -462,6 +472,7 @@ function App() {
       setSelected(null);
       setIngesting(true);
       await loadGraph();
+      setGraphRefresh((n) => n + 1);
       setError("");
       setUploadNotice(
         `${result.filename}: ${result.sections} source sections saved.`,
@@ -927,7 +938,23 @@ function App() {
                       value={filter}
                       onChange={(e) => setFilter(e.target.value)}
                     />
-                    <button>Search index</button>
+                    <button>
+                      {clusterFilter.kind || clusterFilter.folder
+                        ? "Search within cluster"
+                        : "Search index"}
+                    </button>
+                    {(clusterFilter.kind || clusterFilter.folder) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setClusterFilter({});
+                          setGraphMode("explore");
+                          loadGraph(filter, 0, {});
+                        }}
+                      >
+                        Search entire index
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
@@ -997,6 +1024,35 @@ function App() {
                       <p className="coverage">
                         Active cluster:{" "}
                         {clusterFilter.kind || clusterFilter.folder}
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={!!clusterFilter.context}
+                            onChange={(e) => {
+                              const next = {
+                                ...clusterFilter,
+                                context: e.target.checked,
+                              };
+                              setClusterFilter(next);
+                              loadGraph(filter, 0, next);
+                            }}
+                          />
+                          Show cross-cluster relationships
+                        </label>
+                        {graph?.context_count > 0 && (
+                          <span>
+                            {" "}
+                            · {graph.context_count} directly connected context
+                            entities (up to 50).{" "}
+                          </span>
+                        )}
+                        {graph?.context_truncated && (
+                          <span>
+                            {" "}
+                            More neighbors available; expand a node to
+                            explore.{" "}
+                          </span>
+                        )}
                         <button
                           onClick={() =>
                             explainSelection({
@@ -1336,15 +1392,18 @@ function App() {
                   </button>
                 )}
               </div>
-              {!selected && !graphSelection && mode === "chat" && (
+              <div hidden={!!selected || !!graphSelection || mode !== "chat"}>
                 <IngestionPanel
                   key={project}
                   project={project}
                   refresh={uploadNotice}
-                  onComplete={() => loadGraph("")}
+                  onComplete={() => {
+                    setGraphRefresh((n) => n + 1);
+                    loadGraph("");
+                  }}
                   onStatus={setIngesting}
                 />
-              )}
+              </div>
               {graphSelection ? (
                 <React.Suspense
                   fallback={<p role="status">Loading entity inspector…</p>}

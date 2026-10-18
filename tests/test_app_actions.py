@@ -505,5 +505,46 @@ def test_repository_run_list_links_only_its_investigations_and_actions(tmp_path)
             assert [a["id"] for a in data["items"]] == [action["id"]]
             assert data["items"][0]["session"] == session["id"]
             assert [t["id"] for t in data["investigations"]] == [turn["id"]]
+            for i in range(21):
+                newer = state.create(
+                    "turn",
+                    session["id"],
+                    project=project["id"],
+                    question=f"Newer investigation {i}",
+                    status="complete",
+                )
+                state.create(
+                    "action",
+                    project["id"],
+                    project=project["id"],
+                    turn=newer["id"],
+                    objective=f"Newer fix {i}",
+                    status="complete",
+                )
+            headers = {"Authorization": "Bearer token"}
+            recent = client.get(route, headers=headers).json()
+            assert turn["id"] not in [t["id"] for t in recent["investigations"]]
+            assert action["id"] not in [a["id"] for a in recent["items"]]
+            for run in (action, turn):
+                detail_route = f"/api/repositories/{project['id']}/runs/{run['id']}"
+                assert client.get(detail_route).status_code == 401
+                detail = client.get(detail_route, headers=headers)
+                assert detail.status_code == 200, detail.text
+                assert detail.json()["session"] == session["id"]
+                assert detail.json()["question"] == turn["question"]
+                if run is turn:
+                    assert detail.json()["investigation"]["id"] == turn["id"]
+                assert (
+                    client.get(
+                        f"/api/repositories/{other['id']}/runs/{run['id']}", headers=headers
+                    ).status_code
+                    == 404
+                )
+            assert (
+                client.get(
+                    f"/api/repositories/{project['id']}/runs/missing", headers=headers
+                ).status_code
+                == 404
+            )
     finally:
         app.state.workers.shutdown(wait=True)

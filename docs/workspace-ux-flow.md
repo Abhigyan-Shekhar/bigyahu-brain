@@ -10,7 +10,11 @@ including team membership and portable memory controls, sit under Memory.
 Ask Brain retains source-checked answer cards and compact fix launchers. A fix
 launcher creates a linked read-only plan and opens Agent Runs. Investigations and
 fixes appear separately in its run list, with actual lifecycle states. A run links
-back to its originating conversation. Saved plan, approval, edit and verification
+back to its originating conversation. The list shows the latest 20 fixes and
+20 investigations; older selected IDs resolve through a repository-scoped direct
+lookup, including the verified originating session. Missing or cross-repository
+IDs return a real not-found response instead of an endless loading state.
+Saved plan, approval, edit and verification
 sections remain navigable; focused review retains patch download and explicit
 approval. Request changes closes the pending plan and opens a revised objective;
 it cannot silently approve or edit. Any replacement needs fresh approval.
@@ -28,10 +32,17 @@ The entire-index overview groups current company entities by entity type or
 by top-level folder. It queries aggregate counts across the current repository,
 including source entities. The demo has 1,275 indexed entities, ten type groups,
 and seven folder groups. Groups are capped at 100 with an explicit warning.
-Selecting a cluster loads its bounded members; search matches names, symbols,
-paths, identifiers, source kinds and URIs throughout the current index.
+Selecting a cluster loads its bounded members plus up to 50 directly connected
+context entities. A visible cross-cluster relationships switch can hide them;
+overflow is disclosed and individual neighbor expansion remains available.
+Search within cluster retains the root filter; Search entire index explicitly
+clears it while preserving the query. Search matches names, symbols, paths,
+identifiers, source kinds and URIs. Ingestion completion invalidates the overview
+as well as detailed pages; its observer remains mounted during graph exploration.
+Returning to the graph also refreshes aggregate counts.
 
-Detailed graph pages load 100 roots plus up to 50 document sources and 300 edges.
+Detailed graph pages load 100 roots plus up to 50 document sources, optionally
+50 connected context entities for cluster views, and 300 edges.
 Neighbor expansion loads up to 50 neighbors per page; the interactive workspace
 caps accumulated detail at 300 nodes/600 edges. Root paging stops at offset
 50,000 and neighbor paging at 5,000, with a narrowing-search notice. Grouping and
@@ -74,6 +85,14 @@ operator application; historical report retention after revocation is unchanged.
   skipped, three existing dependency deprecation warnings.
 - Frontend presentation/context tests: **5 passed**; production build and Ruff
   passed. Agent Runs and the inspector load as separate bundles.
+- Follow-up endpoint regression: 21 newer fixes/investigations push selected old
+  IDs outside both list windows; direct lookup still returns their session.
+  Missing, unauthenticated and cross-repository requests fail. Live graph tests
+  verify File clusters retain roots and expose connected entity types/edges.
+  A disposable browser workspace with 21 newer runs reopened both an older
+  investigation and its original fix report from the conversation. Live search
+  for TimestampSigner.unsign returned no File roots, then five entities after
+  choosing Search entire index.
 - Live browser: selected a Symbol cluster, inspected TimestampSigner.unsign and
   its reopened source at line 72, focused its ten-node/thirteen-edge neighborhood,
   and attached the selection to chat without sending. The viewport matched on
