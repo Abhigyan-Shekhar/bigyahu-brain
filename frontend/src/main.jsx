@@ -6,7 +6,6 @@ import {
   Network,
   MessageSquare,
   Plus,
-  ArrowUp,
   ArrowUpRight,
   FileText,
   GitBranch,
@@ -42,6 +41,7 @@ import DocumentationPanel from "./DocumentationPanel";
 import WorkflowPanel from "./WorkflowPanel";
 import DeadlinePanel from "./DeadlinePanel";
 import LiveWork from "./LiveWork";
+import PromptComposer from "./PromptComposer";
 
 const fragment = location.hash.slice(1);
 if (fragment) {
@@ -71,6 +71,8 @@ function App() {
     [expansion, setExpansion] = useState(null),
     [ingesting, setIngesting] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
+  const [sendingPrompt, setSendingPrompt] = useState(false);
+  const promptInFlight = useRef(false);
   useEffect(() => setContextOpen(false), [mode, project]);
   useEffect(() => {
     if (!selected && !contextOpen) return;
@@ -429,17 +431,22 @@ function App() {
   }
   async function ask(e) {
     e.preventDefault();
-    if (!question.trim() || busy || ingesting) return;
+    if (!question.trim() || busy || ingesting || promptInFlight.current) return;
+    promptInFlight.current = true;
+    setSendingPrompt(true);
     setError("");
     try {
-      const id = session || (await newChat());
       const submitted = graphQuestion(question, graphContext);
+      const id = session || (await newChat());
       const turn = await send(`/sessions/${id}/turns`, { question: submitted });
       setGraphContext(null);
       setTurns((t) => [...t, turn]);
       setQuestion("");
     } catch (e) {
       setError(e.message);
+    } finally {
+      promptInFlight.current = false;
+      setSendingPrompt(false);
     }
   }
   async function reviewTurnFix(turn) {
@@ -1480,46 +1487,8 @@ function App() {
                       </button>
                     </div>
                   )}
-                  <form className="composer" onSubmit={ask}>
-                    <label htmlFor="question" className="sr-only">
-                      Ask Company Brain
-                    </label>
-                    <textarea
-                      id="question"
-                      placeholder="Ask a question, explore a past approach, or describe a change…"
-                      rows={1}
-                      value={question}
-                      disabled={busy || ingesting}
-                      onChange={(e) => setQuestion(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          ask(e);
-                        }
-                      }}
-                    />
-                    <div className="composer-bottom">
-                      <span>
-                        <span className="scope-pill">
-                          <Network size={12} /> Company
-                        </span>
-                        <small>
-                          {ingesting
-                            ? "Building document graph…"
-                            : busy
-                              ? "Investigating…"
-                              : "Code · documents · available history"}
-                        </small>
-                      </span>
-                      <button
-                        className="submit"
-                        aria-label="Send question"
-                        disabled={busy || ingesting || !question.trim()}
-                      >
-                        <ArrowUp size={18} />
-                      </button>
-                    </div>
-                  </form>
+                  <PromptComposer value={question} onChange={setQuestion} onSubmit={ask}
+                    context={graphContext} busy={busy} ingesting={ingesting} sending={sendingPrompt} />
                   <p className="composer-note">
                     Interpretations are model-generated. Inspect the cited
                     sources before acting.

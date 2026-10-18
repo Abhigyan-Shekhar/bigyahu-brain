@@ -286,3 +286,17 @@ model drafts. If no model plan was produced, the app labels its generic starting
 outline explicitly; it contains no approval digest or executable commands and is
 not presented as a source-backed recommendation. npm-installed Codex launchers
 resolve Node before applying the restricted sandbox child environment.
+
+## Long prompts and pasted text
+
+The prompt editor grows with pasted text up to a scrollable height. **Expand
+editor** provides more editing space; **Compact editor** reduces it again.
+Multiline prompts use Enter for a new line. Send with the arrow button or
+Ctrl/Command+Enter. For a single-line prompt, Enter still sends and Shift+Enter
+adds a line. Input-method composition never submits a prompt.
+
+The visible counter includes attached graph context. The existing limit is 8,000
+Unicode characters; over-limit text is preserved in full with an inline message,
+and sending stays disabled until it fits. Upload long reference material as a
+document instead of silently truncating it. Pending submissions lock the input
+and send button to prevent duplicate sends. Failed requests keep the prompt.

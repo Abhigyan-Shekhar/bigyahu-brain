@@ -4077,3 +4077,16 @@ h2 {
 .node-live-working { margin: 16px 0; padding: 14px; background: #eee3ff; border: 1px solid #a456de; border-left: 4px solid #8d27cb; border-radius: 9px; color: #55127b; }
 .node-live-working h4, .node-live-working p { font-family: "SFMono-Regular", Consolas, monospace; }
 .deadline-board-space, .deadline-track { transform-style: preserve-3d; }
+
+.composer.prompt-composer { flex-shrink: 0; min-width: 0; }
+.prompt-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.prompt-toolbar label { font-size: 11px; font-weight: 700; color: #48634e; }
+.prompt-toolbar button { padding: 4px 6px; font-size: 11px; color: #436b51; text-decoration: underline; min-height: 28px; }
+.composer.prompt-composer textarea, .has-turns .composer.prompt-composer textarea { display: block; min-height: 48px; max-height: none; font-size: 14px; line-height: 1.6; padding: 6px 0; white-space: pre-wrap; overflow-wrap: anywhere; resize: none; scrollbar-gutter: stable; }
+.prompt-composer.prompt-expanded textarea { min-height: min(240px, 40dvh); }
+.prompt-composer .composer-bottom { gap: 10px; flex-wrap: wrap; }
+.prompt-count, .prompt-over-limit { font-size: 11px; color: #647366; margin-left: auto; }
+.prompt-over-limit { color: #a41636; font-weight: 700; }
+.prompt-validation:not(:empty) { padding: 8px 10px; margin: 8px 0; border-radius: 6px; color: #94142d; background: #ffeaf0; font-size: 12px; line-height: 1.5; }
+.prompt-help { display: block; margin: 8px 0 2px; color: #627568; line-height: 1.5; }
+@media (max-width: 700px) { .composer.prompt-composer textarea, .has-turns .composer.prompt-composer textarea { font-size: 16px; } .prompt-composer .composer-bottom > span:first-child small { display: none; } }
