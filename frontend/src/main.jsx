@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ReactFlow, Background, Controls, MarkerType } from "@xyflow/react";
+import { ReactFlow, Background, Controls, MarkerType, useNodesInitialized } from "@xyflow/react";
 import {
   BrainCircuit,
   Network,
@@ -32,14 +32,22 @@ if (fragment) {
   sessionStorage.setItem("company-brain-token", fragment);
   history.replaceState(null, "", location.pathname);
 }
+function MeasuredGraph({ onReady }) {
+  const initialized = useNodesInitialized();
+  useEffect(() => {
+    if (initialized) onReady();
+  }, [initialized, onReady]);
+  return null;
+}
 function Graph({ graph, compact = false, onExpand }) {
   const canvas = useRef(null);
   const flow = useRef(null);
   const fitFrame = useRef(null);
   const fitted = useRef(false);
+  const measured = useRef(false);
   function fitVisibleCanvas() {
     const bounds = canvas.current?.getBoundingClientRect();
-    if (fitted.current || !bounds?.width || !bounds?.height) return;
+    if (!measured.current || fitted.current || !bounds?.width || !bounds?.height) return;
     cancelAnimationFrame(fitFrame.current);
     fitFrame.current = requestAnimationFrame(() => {
       const visible = canvas.current?.getBoundingClientRect();
@@ -245,6 +253,7 @@ function Graph({ graph, compact = false, onExpand }) {
         <ReactFlow
           onInit={(instance) => {
             flow.current = instance;
+            measured.current = false;
             fitted.current = false;
             fitVisibleCanvas();
           }}
@@ -261,13 +270,15 @@ function Graph({ graph, compact = false, onExpand }) {
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable
-          fitView
-          fitViewOptions={{ padding: onExpand || compact ? 0.25 : 0.1 }}
           minZoom={0.02}
           maxZoom={1.5}
           deleteKeyCode={null}
           proOptions={{ hideAttribution: false }}
         >
+          <MeasuredGraph onReady={() => {
+            measured.current = true;
+            fitVisibleCanvas();
+          }} />
           <Background color="#dcd9e5" gap={22} />
           <Controls showInteractive={false} />
         </ReactFlow>
