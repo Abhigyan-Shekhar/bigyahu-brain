@@ -429,7 +429,7 @@ export default function ActionPanel({
                                 {summary.failures ?? "Unknown"} assertion
                                 failures
                                 {summary.errors !== null
-                                  ? ` · ${summary.errors} runner errors`
+                                  ? ` · ${summary.errors} test errors / unexpected exceptions`
                                   : ""}
                               </p>
                             )}
@@ -486,8 +486,10 @@ export default function ActionPanel({
                 </small>
               )}
               <p className="action-note">
-                Reviewed memories are advisory evidence. Inspect the full plan
-                and sources before approval.
+                Reviewed rationales explain the proposed use of evidence; they
+                do not measure causal improvement from the graph. Reviewed
+                memories remain advisory. Inspect the full plan and sources
+                before approval.
               </p>
             </div>
           )}
@@ -500,6 +502,11 @@ export default function ActionPanel({
             >
               <summary>Fix plan · Why this fix?</summary>
               <p>{action.plan.summary}</p>
+              <p className="action-note">
+                Historical plan text is retained locally after source
+                revocation. Reopening citations rechecks current access;
+                revocation does not erase this saved report.
+              </p>
               <p className="action-note">
                 {action.relevance_review?.kind === "fallible_model_plan_review"
                   ? "Source provenance checked. Claims, rationale and proposed action reviewed by a fallible model; review the evidence before approving."
@@ -632,7 +639,7 @@ export default function ActionPanel({
                 {action.regression_demonstrated
                   ? "The same approved test command failed on the original and passed on the patch. Review its coverage; this signal does not independently prove the reported bug is fixed."
                   : baselineErrors
-                    ? "The original run reported test errors. Automatic verification excludes these because they may indicate setup problems. Inspect the trace and verify the reproduction independently; a coding lesson cannot be proposed from this report."
+                    ? "The original run reported test errors / unexpected exceptions. These can be caused by the bug or by test setup. The automatic gate conservatively excludes them because it cannot distinguish the cause. Inspect the trace and verify the reproduction independently; a coding lesson cannot be proposed from this report."
                     : "No matched baseline regression has been demonstrated. Passing tests alone do not verify the fix; a coding lesson cannot be proposed from this report."}
               </p>
               <p className="action-note">

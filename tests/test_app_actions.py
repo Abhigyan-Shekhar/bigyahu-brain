@@ -422,3 +422,42 @@ def test_zero_tests_cannot_report_success(tmp_path, monkeypatch):
     )
     assert result[0]["tests_reported"] == 0
     assert not result[0]["passed"]
+
+
+def test_local_history_retains_snapshot_when_citation_access_is_revoked(tmp_path, monkeypatch):
+    """Characterize local retention; this is not a multi-user privacy guarantee."""
+    from brain.app import server
+
+    state = State(tmp_path / "app", Config(tmp_path, "fixture"), "fixture-model")
+    project = state.create("repository")
+    evidence_id = "a" * 24
+    claims = [
+        {
+            "text": "Recorded claim",
+            "support": [
+                {"evidence_id": evidence_id, "quote": "Previously authorized fixture quote"}
+            ],
+        }
+    ]
+    action = state.create(
+        "action", project["id"], project=project["id"], status="complete", claims=claims
+    )
+
+    def revoked(*_):
+        raise PermissionError("Evidence access revoked")
+
+    monkeypatch.setattr(server, "checked_action", revoked)
+    app = create_app(state, "token", "http://testserver", assets=tmp_path / "unbuilt")
+    try:
+        with TestClient(app) as client:
+            headers = {"Authorization": "Bearer token"}
+            assert client.get(f"/api/actions/{action['id']}").status_code == 401
+            history = client.get(f"/api/actions/{action['id']}", headers=headers)
+            assert history.status_code == 200
+            assert history.json()["claims"] == claims
+            reopened = client.get(
+                f"/api/actions/{action['id']}/evidence/{evidence_id}", headers=headers
+            )
+            assert reopened.status_code == 403
+    finally:
+        app.state.workers.shutdown(wait=True)

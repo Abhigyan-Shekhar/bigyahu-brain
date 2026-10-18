@@ -23,7 +23,9 @@ coding-performance benefit remains unproven.
 The working product is a **React frontend and FastAPI backend** for one trusted
 local operator. A repository workspace combines conversational investigation,
 source inspection, interactive FalkorDB graphs, reviewed memory and a human-approved
-coding-action loop. It is not production multi-user SaaS.
+coding-action loop. It is not production multi-user SaaS. Historical report text
+can remain after source revocation even when reopening citations is denied;
+revocation is not retroactive erasure. See the [retention boundary](company-brain-actions.md#historical-retention-and-revocation-boundary).
 
 - **Company evidence:** Python AST structure, conservative static callers, Git
   history, bounded public GitHub issues/PRs/comments/reviews, repository Markdown/
