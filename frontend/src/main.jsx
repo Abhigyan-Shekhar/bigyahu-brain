@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ReactFlow, Background, Controls, MarkerType } from "@xyflow/react";
+import { ReactFlow, Background, Controls, MarkerType, getViewportForBounds } from "@xyflow/react";
 import {
   BrainCircuit,
   Network,
@@ -33,6 +33,43 @@ if (fragment) {
   history.replaceState(null, "", location.pathname);
 }
 function Graph({ graph, compact = false, onExpand }) {
+  const canvas = useRef(null);
+  const flow = useRef(null);
+  const fitFrame = useRef(null);
+  const fitted = useRef(false);
+  const fitAttempts = useRef(0);
+  function fitVisibleCanvas() {
+    const bounds = canvas.current?.getBoundingClientRect();
+    if (!canvas.current?.checkVisibility() || fitted.current || !bounds?.width || !bounds?.height) return;
+    cancelAnimationFrame(fitFrame.current);
+    fitFrame.current = requestAnimationFrame(async () => {
+      const visible = canvas.current?.getBoundingClientRect();
+      if (!canvas.current?.checkVisibility() || fitted.current || !flow.current || !visible?.width || !visible?.height) return;
+      const instance = flow.current;
+      const measuredNodes = instance.getNodes();
+      if (!measuredNodes.length || measuredNodes.some((n) => !instance.getInternalNode(n.id)?.measured?.width || !instance.getInternalNode(n.id)?.measured?.height)) {
+        if (++fitAttempts.current < 60) fitVisibleCanvas();
+        return;
+      }
+      const target = getViewportForBounds(
+        instance.getNodesBounds(measuredNodes), visible.width, visible.height,
+        0.02, 1.5, onExpand || compact ? 0.25 : 0.1,
+      );
+      const result = await instance.setViewport(target);
+      if (result) fitted.current = true;
+    });
+  }
+  useEffect(() => {
+    // A collapsed <details> has no usable viewport. Refit after its real canvas
+    // dimensions first become available. Later resizes preserve pan and zoom;
+    // the existing Fit View control remains the explicit way to reset them.
+    const observer = new ResizeObserver(fitVisibleCanvas);
+    if (canvas.current) observer.observe(canvas.current);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(fitFrame.current);
+    };
+  }, []);
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [expandTarget, setExpandTarget] = useState("");
   const [pathTarget, setPathTarget] = useState("");
@@ -68,7 +105,9 @@ function Graph({ graph, compact = false, onExpand }) {
         ? { x: path.nodes.indexOf(n.id) * 280, y: 0 }
         : compact
           ? { x: (nodeIndex % 2) * 180, y: Math.floor(nodeIndex / 2) * 95 }
-          : { x: key * 260, y: i * 95 },
+          : !onExpand
+            ? { x: (nodeIndex % 3) * 260, y: Math.floor(nodeIndex / 3) * 110 }
+            : { x: key * 260, y: i * 95 },
       data: {
         label: (
           <>
@@ -213,18 +252,27 @@ function Graph({ graph, compact = false, onExpand }) {
           )}
         </aside>
       )}
-      <div className="graph-canvas">
+      <div className="graph-canvas" ref={canvas}>
         <ReactFlow
+          onInit={(instance) => {
+            flow.current = instance;
+            fitted.current = false;
+            fitAttempts.current = 0;
+            fitVisibleCanvas();
+          }}
           key={nodes.map((n) => n.id).join("|")}
           nodes={nodes}
           edges={edges}
+          onMoveStart={(event) => {
+            if (event) fitted.current = true;
+          }}
           onNodeDoubleClick={(_, node) => onExpand?.(node.id)}
           onEdgeClick={(_, edge) => setSelectedEdge(edge.data)}
+          zoomOnScroll={false}
+          preventScrolling={false}
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable
-          fitView
-          fitViewOptions={{ padding: 0.25 }}
           minZoom={0.02}
           maxZoom={1.5}
           deleteKeyCode={null}

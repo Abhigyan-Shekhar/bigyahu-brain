@@ -62,3 +62,20 @@ Screenshots and raw traces remain local and ignored. Browser checks used the
 existing synthetic demo workspace; mobile sizes and a fresh paid model/editor
 journey were not exercised for this UI follow-up. The checks above are not a new
 comparative benchmark or evidence of graph performance advantage.
+
+
+## Private graph visibility follow-up
+
+The Personal Brain graph mounted inside a collapsed details element. React Flow
+initially fitted a zero-size viewport and could retain its minimum zoom, leaving
+loaded nodes outside the visible canvas. The shared viewer now observes real
+canvas dimensions and refits when it becomes visible. Normal page wheel scrolling
+no longer zooms graphs out; explicit zoom controls and pinch zoom remain available.
+Static memory graphs use a three-column layout and a taller canvas instead of
+spreading each node kind into a separate distant column.
+
+Browser verification used the existing private graph: 12 nodes visible on first
+expansion and after collapse/reopen, stable zoom during page scrolling, and the
+recorded MENTIONS relationship inspectable. Build and four frontend checks passed.
+This repairs rendering; existing unresolved-company-reference warnings remain
+visible and are not a claim that all memory source links resolve.
