@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ReactFlow, Background, Controls, MarkerType, useNodesInitialized } from "@xyflow/react";
+import { ReactFlow, Background, Controls, MarkerType, getViewportForBounds } from "@xyflow/react";
 import {
   BrainCircuit,
   Network,
@@ -32,28 +32,31 @@ if (fragment) {
   sessionStorage.setItem("company-brain-token", fragment);
   history.replaceState(null, "", location.pathname);
 }
-function MeasuredGraph({ onReady }) {
-  const initialized = useNodesInitialized();
-  useEffect(() => {
-    if (initialized) onReady();
-  }, [initialized, onReady]);
-  return null;
-}
 function Graph({ graph, compact = false, onExpand }) {
   const canvas = useRef(null);
   const flow = useRef(null);
   const fitFrame = useRef(null);
   const fitted = useRef(false);
-  const measured = useRef(false);
+  const fitAttempts = useRef(0);
   function fitVisibleCanvas() {
     const bounds = canvas.current?.getBoundingClientRect();
-    if (!measured.current || fitted.current || !bounds?.width || !bounds?.height) return;
+    if (!canvas.current?.checkVisibility() || fitted.current || !bounds?.width || !bounds?.height) return;
     cancelAnimationFrame(fitFrame.current);
-    fitFrame.current = requestAnimationFrame(() => {
+    fitFrame.current = requestAnimationFrame(async () => {
       const visible = canvas.current?.getBoundingClientRect();
-      if (fitted.current || !flow.current || !visible?.width || !visible?.height) return;
-      fitted.current = true;
-      flow.current.fitView({ padding: onExpand || compact ? 0.25 : 0.1 });
+      if (!canvas.current?.checkVisibility() || fitted.current || !flow.current || !visible?.width || !visible?.height) return;
+      const instance = flow.current;
+      const measuredNodes = instance.getNodes();
+      if (!measuredNodes.length || measuredNodes.some((n) => !instance.getInternalNode(n.id)?.measured?.width || !instance.getInternalNode(n.id)?.measured?.height)) {
+        if (++fitAttempts.current < 60) fitVisibleCanvas();
+        return;
+      }
+      const target = getViewportForBounds(
+        instance.getNodesBounds(measuredNodes), visible.width, visible.height,
+        0.02, 1.5, onExpand || compact ? 0.25 : 0.1,
+      );
+      const result = await instance.setViewport(target);
+      if (result) fitted.current = true;
     });
   }
   useEffect(() => {
@@ -253,8 +256,8 @@ function Graph({ graph, compact = false, onExpand }) {
         <ReactFlow
           onInit={(instance) => {
             flow.current = instance;
-            measured.current = false;
             fitted.current = false;
+            fitAttempts.current = 0;
             fitVisibleCanvas();
           }}
           key={nodes.map((n) => n.id).join("|")}
@@ -275,10 +278,6 @@ function Graph({ graph, compact = false, onExpand }) {
           deleteKeyCode={null}
           proOptions={{ hideAttribution: false }}
         >
-          <MeasuredGraph onReady={() => {
-            measured.current = true;
-            fitVisibleCanvas();
-          }} />
           <Background color="#dcd9e5" gap={22} />
           <Controls showInteractive={false} />
         </ReactFlow>
