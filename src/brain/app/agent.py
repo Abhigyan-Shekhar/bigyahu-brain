@@ -5,24 +5,15 @@ import json
 import os
 import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 from ..graph import GraphStore
 from ..memory import canonical
+from .activity import TOOLS
 from .evidence import verified_claims
 from .relevance import assess
 
-TOOLS = [
-    "get_context",
-    "check_change",
-    "find_owner",
-    "trace_decision",
-    "search_code",
-    "read_code",
-    "search_history",
-    "memory_search",
-    "memory_graph",
-]
 SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -101,7 +92,9 @@ def command(state, project, run):
 def run_turn(state, project, session, turn):
     run = state.folder(project) / "turns" / turn
     try:
-        state.update(turn, status="running", stage="Investigating")
+        state.update(
+            turn, status="running", stage="Investigating", started_at=datetime.now(UTC).isoformat()
+        )
         run.mkdir(parents=True)
         (run / "empty").mkdir()
         (run / "schema.json").write_text(canonical(SCHEMA), encoding="utf-8")
@@ -211,6 +204,7 @@ def run_turn(state, project, session, turn):
         state.update(
             turn,
             status="complete",
+            finished_at=datetime.now(UTC).isoformat(),
             stage="Complete",
             claims=claims,
             limitations=limitations,
@@ -226,4 +220,10 @@ def run_turn(state, project, session, turn):
             if isinstance(exc, ValueError)
             else "Turn failed or evidence could not be verified. Retry; no draft answer was published."
         )
-        state.update(turn, status="failed", stage="Stopped", error=message[:500])
+        state.update(
+            turn,
+            status="failed",
+            stage="Stopped",
+            error=message[:500],
+            finished_at=datetime.now(UTC).isoformat(),
+        )

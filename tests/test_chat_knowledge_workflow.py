@@ -138,6 +138,54 @@ def test_upload_queues_graphify_connects_code_and_paginates_native_graph(
             # Unclassified extracted entities must not appear as document sections.
             assert display_counts["OtherEntity"] == 105
             assert "Document" not in display_counts
+            overview = client.get(
+                f"/api/repositories/{project['id']}/graph/overview", headers=headers
+            )
+            assert overview.status_code == 200, overview.text
+            assert overview.json()["total_nodes"] == sum(c["count"] for c in first["counts"])
+            assert any(
+                g["key"] == "Document" and g["count"] >= 107 for g in overview.json()["groups"]
+            )
+            folder_view = client.get(
+                f"/api/repositories/{project['id']}/graph/overview?grouping=folder", headers=headers
+            )
+            assert folder_view.status_code == 200, folder_view.text
+            assert any(g["key"] == "(root)" for g in folder_view.json()["groups"])
+            only_files = client.get(
+                f"/api/repositories/{project['id']}/graph?kind=File", headers=headers
+            )
+            assert only_files.status_code == 200, only_files.text
+            file_uid = next(
+                n["id"]
+                for n in only_files.json()["nodes"]
+                if "File" in n["labels"] and n["label"] == "x.py"
+            )
+            node = client.get(
+                f"/api/repositories/{project['id']}/graph/node",
+                params={"uid": file_uid},
+                headers=headers,
+            )
+            assert node.status_code == 200, node.text
+            assert node.json()["evidence"]["kind"] == "code"
+            assert "def a" in node.json()["evidence"]["text"]
+            assert (
+                client.get(
+                    f"/api/repositories/{project['id']}/graph/node",
+                    params={"uid": "other-repo:private"},
+                    headers=headers,
+                ).status_code
+                == 404
+            )
+            assert (
+                client.get(f"/api/repositories/{project['id']}/graph/overview").status_code == 401
+            )
+            assert (
+                client.get(
+                    f"/api/repositories/{project['id']}/graph/overview?grouping=invalid",
+                    headers=headers,
+                ).status_code
+                == 400
+            )
             assert second["nodes"] and {
                 n["id"] for n in first["nodes"] if "Source" not in n["labels"]
             }.isdisjoint(n["id"] for n in second["nodes"] if "Source" not in n["labels"])

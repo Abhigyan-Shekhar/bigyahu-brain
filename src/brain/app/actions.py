@@ -14,7 +14,8 @@ from ..graph import GraphStore
 from ..ingest.git_parser import git
 from ..memory import canonical, digest
 from .action_mcp import target
-from .agent import SCHEMA, TOOLS, command
+from .activity import elapsed_seconds, tool_activity
+from .agent import SCHEMA, command
 from .evidence import ready, verified_claims
 from .relevance import assess
 from .test_sandbox import run_tests
@@ -24,58 +25,12 @@ def action_progress(state, action):
     """Project only allowlisted tool names/statuses from existing execution traces."""
     folder = action_folder(state, action)
     trace = folder / ("editor" if action.get("phase") == "execution" else "plan") / "trace.jsonl"
-    completed, current, bounded = [], None, False
-    try:
-        with trace.open("rb") as stream:
-            # Bound polling work and ignore incomplete lines at the read boundary.
-            data = stream.read(2_000_000)
-            bounded = bool(stream.read(1))
-        for line in data.splitlines():
-            try:
-                event = json.loads(line)
-            except (ValueError, UnicodeError):
-                continue
-            if not isinstance(event, dict):
-                continue
-            item = event.get("item", {})
-            if not isinstance(item, dict):
-                continue
-            if not isinstance(item.get("tool"), str):
-                continue
-            if item.get("type") != "mcp_tool_call" or item.get("tool") not in {
-                *TOOLS,
-                "read_file",
-                "write_file",
-            }:
-                continue
-            if event.get("type") == "item.started":
-                current = item["tool"]
-            elif event.get("type") == "item.completed":
-                completed.append(
-                    {
-                        "tool": item["tool"],
-                        "status": "completed" if item.get("status") == "completed" else "failed",
-                    }
-                )
-                current = None
-    except OSError:
-        pass
-    seconds = None
     running = action.get("status") in {"queued", "running"}
-    if action.get("phase_started_at") and (action.get("phase_finished_at") or running):
-        start = datetime.fromisoformat(action["phase_started_at"])
-        end = (
-            datetime.fromisoformat(action["phase_finished_at"])
-            if action.get("phase_finished_at")
-            else datetime.now(UTC)
-        )
-        seconds = max(0, (end - start).total_seconds())
     return {
-        "completed_tools": completed[-12:],
-        "completed_count": len(completed),
-        "current_tool": current if running else None,
-        "elapsed_seconds": seconds,
-        "trace_bounded": bounded,
+        **tool_activity(trace, running),
+        "elapsed_seconds": elapsed_seconds(
+            action.get("phase_started_at"), action.get("phase_finished_at"), running
+        ),
     }
 
 

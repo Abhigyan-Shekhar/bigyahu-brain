@@ -567,18 +567,28 @@ def create_app(state, token, origin, assets=None):
             )
 
     @app.get("/api/repositories/{project}/graph")
-    def graph(project: str, query: str = "", offset: int = 0):
+    def graph(project: str, query: str = "", offset: int = 0, kind: str = "", folder: str = ""):
+        from .graph_workspace import FOLDER
+
         project_ready(project)
-        if len(query) > 100 or not 0 <= offset <= 50000:
+        if len(query) > 100 or not 0 <= offset <= 50000 or len(kind) > 64 or len(folder) > 200:
             raise ValueError("Use a shorter graph filter")
         store = GraphStore(state.config(project))
         sha = ready(store)
         nodes = store.query(
-            "MATCH (n {repo_id:$repo}) WHERE coalesce(n.current,true) AND NOT n:Source "
-            "AND ($q='' OR any(value IN [n.path,n.qualname,n.title,n.name,n.uid] WHERE toLower(coalesce(value,'')) CONTAINS toLower($q))) "
+            "MATCH (n {repo_id:$repo}) WHERE coalesce(n.current,true) "
+            "AND ($kind='' OR $kind IN labels(n)) "
+            f"AND ($folder='' OR ({FOLDER})=$folder) "
+            "AND ($q='' OR any(value IN [n.path,n.qualname,n.title,n.name,n.uid,n.uri,n.source_kind] WHERE toLower(coalesce(value,'')) CONTAINS toLower($q))) "
             "WITH n, CASE WHEN n:Project THEN 0 WHEN n:File THEN 1 WHEN n:Symbol THEN 2 WHEN n:Document THEN 3 ELSE 4 END AS rank "
             "RETURN n.uid AS uid ORDER BY rank,uid SKIP $offset LIMIT 101",
-            {"repo": store.cfg.repo_id, "q": query, "offset": offset},
+            {
+                "repo": store.cfg.repo_id,
+                "q": query,
+                "offset": offset,
+                "kind": kind,
+                "folder": folder,
+            },
         )
         roots = [n["uid"] for n in nodes[:100]]
         sources = store.query(
@@ -593,7 +603,8 @@ def create_app(state, token, origin, assets=None):
             **result,
             "revision": sha,
             "offset": offset,
-            "next_offset": offset + 100 if len(nodes) > 100 else None,
+            "next_offset": offset + 100 if len(nodes) > 100 and offset < 50000 else None,
+            "paging_bound_reached": len(nodes) > 100 and offset >= 50000,
             "counts": store.query(
                 "MATCH (n {repo_id:$repo}) WHERE coalesce(n.current,true) "
                 "RETURN labels(n)[0] AS kind,count(n) AS count ORDER BY kind",
@@ -612,6 +623,22 @@ def create_app(state, token, origin, assets=None):
             "truncated": truncated,
             "limits": {"nodes": 150, "edges": 300, "roots": 100, "source_neighbors": 50},
         }
+
+    @app.get("/api/repositories/{project}/graph/overview")
+    def graph_overview(project: str, grouping: str = "type"):
+        from .graph_workspace import overview
+
+        project_ready(project)
+        return overview(GraphStore(state.config(project)), grouping)
+
+    @app.get("/api/repositories/{project}/graph/node")
+    def graph_node(project: str, uid: str):
+        from .graph_workspace import inspect_node
+
+        project_ready(project)
+        if not 1 <= len(uid) <= 2000:
+            raise ValueError("Choose a bounded entity identifier")
+        return inspect_node(GraphStore(state.config(project)), uid)
 
     @app.get("/api/repositories/{project}/graph/neighbors")
     def graph_neighbors(project: str, uid: str, offset: int = 0):
@@ -636,7 +663,8 @@ def create_app(state, token, origin, assets=None):
             **graph,
             "edges": graph["edges"][:300],
             "root": uid,
-            "next_offset": offset + 50 if len(rows) > 50 else None,
+            "next_offset": offset + 50 if len(rows) > 50 and offset < 5000 else None,
+            "paging_bound_reached": len(rows) > 50 and offset >= 5000,
             "truncated": len(rows) > 50 or len(graph["edges"]) > 300,
         }
 
@@ -747,7 +775,11 @@ def create_app(state, token, origin, assets=None):
     @app.get("/api/sessions/{session}/turns")
     def turns(session: str):
         state.get(session, "session")
-        return state.list("turn", session)
+        from .activity import investigation_progress
+
+        return [
+            {**t, "progress": investigation_progress(state, t)} for t in state.list("turn", session)
+        ]
 
     @app.post("/api/sessions/{session}/turns", status_code=202)
     def question(session: str, body: QuestionInput):
@@ -803,6 +835,53 @@ def create_app(state, token, origin, assets=None):
         ) != canonical_graph(saved["graph"]):
             raise HTTPException(409, "Cited evidence changed; ask again")
         return {"id": evidence_id, **checked}
+
+    @app.get("/api/repositories/{project}/actions")
+    def repository_actions(project: str):
+        state.get(project, "repository")
+        items = []
+        for action in state.list("action", project):
+            turn = state.get(action["turn"], "turn")
+            with state.connect() as db:
+                parent = db.execute(
+                    "SELECT parent FROM objects WHERE id=? AND kind='turn'", (turn["id"],)
+                ).fetchone()
+            items.append(
+                {
+                    **{
+                        k: action.get(k)
+                        for k in ("id", "turn", "status", "phase", "stage", "objective")
+                    },
+                    "question": turn["question"],
+                    "session": parent["parent"] if parent else None,
+                }
+            )
+        with state.connect() as db:
+            rows = db.execute(
+                "SELECT t.body,t.parent FROM objects t JOIN objects s ON t.parent=s.id WHERE t.kind='turn' AND s.kind='session' AND s.parent=? ORDER BY t.rowid DESC LIMIT 21",
+                (project,),
+            ).fetchall()
+        investigations = []
+        for row in rows[:20]:
+            t = json.loads(row["body"])
+            investigations.append(
+                {
+                    "id": t["id"],
+                    "turn": t["id"],
+                    "session": row["parent"],
+                    "question": t["question"],
+                    "objective": t["question"],
+                    "status": t["status"],
+                    "stage": t.get("stage"),
+                    "run_kind": "investigation",
+                }
+            )
+        return {
+            "items": items[-20:],
+            "truncated": len(items) > 20,
+            "investigations": investigations,
+            "investigations_truncated": len(rows) > 20,
+        }
 
     @app.get("/api/turns/{turn}/actions")
     def turn_actions(turn: str):

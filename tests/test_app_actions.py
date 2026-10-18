@@ -461,3 +461,49 @@ def test_local_history_retains_snapshot_when_citation_access_is_revoked(tmp_path
             assert reopened.status_code == 403
     finally:
         app.state.workers.shutdown(wait=True)
+
+
+def test_repository_run_list_links_only_its_investigations_and_actions(tmp_path):
+    state = State(tmp_path / "app", Config(tmp_path, "fixture"), "fixture-model")
+    project = state.create("repository")
+    session = state.create("session", project["id"], project=project["id"], title="Investigation")
+    turn = state.create(
+        "turn",
+        session["id"],
+        project=project["id"],
+        question="Inspect a bug",
+        status="complete",
+        stage="Ready",
+    )
+    action = state.create(
+        "action",
+        project["id"],
+        project=project["id"],
+        turn=turn["id"],
+        objective="Fix the bug",
+        status="awaiting_approval",
+        phase="review",
+        stage="Review plan",
+    )
+    other = state.create("repository")
+    other_session = state.create("session", other["id"], project=other["id"])
+    state.create(
+        "turn",
+        other_session["id"],
+        project=other["id"],
+        question="Other repository",
+        status="complete",
+    )
+    app = create_app(state, "token", "http://testserver", assets=tmp_path / "unbuilt")
+    try:
+        with TestClient(app) as client:
+            route = f"/api/repositories/{project['id']}/actions"
+            assert client.get(route).status_code == 401
+            response = client.get(route, headers={"Authorization": "Bearer token"})
+            assert response.status_code == 200
+            data = response.json()
+            assert [a["id"] for a in data["items"]] == [action["id"]]
+            assert data["items"][0]["session"] == session["id"]
+            assert [t["id"] for t in data["investigations"]] == [turn["id"]]
+    finally:
+        app.state.workers.shutdown(wait=True)

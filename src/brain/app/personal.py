@@ -117,6 +117,8 @@ def source_details(cfg, memory, record):
                     if span == record["text"] and digest(span) == source["digest"]:
                         found = {
                             "kind": "selected_user_turn",
+                            "session": envelope["session"],
+                            "turn": match[2],
                             "uri": uri,
                             "digest": source["digest"],
                             "text": turn["text"],
