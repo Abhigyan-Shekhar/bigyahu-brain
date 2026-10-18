@@ -11,6 +11,16 @@ merge or memory-acceptance endpoint.
 2. Choose **Plan a change**, describe the desired result, and prepare a cited plan.
    A fresh read-only Codex process chooses its own investigation tools. The server
    checks source bytes, literal quotations and native graph evidence again.
+   One tool-free, fallible model assessment then reviews both claim support and
+   whether the entire action follows from the objective and evidence, including
+   its stated rationale, preservation requirements and test selections. All
+   material claims and the action must be supported; uncertain/conflicting or
+   unrelated evidence stops approval. The input is bounded to 150 KB UTF-8,
+   20 claims/eight citations each and one existing 180-second model invocation.
+   Provenance and authorization are rechecked after that invocation and again
+   at approval/execution. Preferences and imported statements remain advisory.
+   Legacy plans without this review must be regenerated before a new execution;
+   historical completed reports retain their original classification.
 3. Review the summary, steps, permitted files, exact test commands and citations.
    Reject the plan or choose **Approve isolated execution**. Approval consumes the
    exact plan digest once. Revision, evidence or plan changes require a new plan.
@@ -21,6 +31,12 @@ merge or memory-acceptance endpoint.
    evidence before publishing the report. A failing baseline helps demonstrate a
    regression, but baseline failure is not required for every legitimate change.
 6. Inspect baseline/patched output and the final diff; download the patch. The
+   backend also applies the byte-preserved UTF-8 artifact to a fresh base and
+   compares edited file bytes. This replay checks patch transport, not independent
+   test correctness, and does not rerun tests. Passing tests without a matched
+   regression use a qualified neutral status; a separate follow-up does not
+   rewrite the original action's automatic verification.
+   The
    implementation handoff is generated before backend test validation. The test
    report carries the execution result. Draft lessons remain proposals until separately accepted in
    [Personal Brain](personal-brain-app.md). The report can send a regression-backed lesson

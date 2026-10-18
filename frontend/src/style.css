@@ -1229,6 +1229,42 @@ h2 {
   color: #6b8c78;
   font-weight: 500;
 }
+.test-qualified {
+  color: #735f88;
+  font-weight: 500;
+}
+.workflow-stages {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  padding: 0;
+  margin: 10px 0 14px;
+  font-size: 11px;
+  color: #786b82;
+}
+.workflow-stages [aria-current="step"] {
+  color: #563671;
+  font-weight: 650;
+  border-bottom: 2px solid #b9a1cd;
+}
+.plan-influence {
+  color: #624b72;
+  font-size: 12px;
+}
+.coverage-summary {
+  font-size: 12px;
+}
+.coverage-summary > div {
+  margin-block: 10px;
+}
+.coverage-summary dt {
+  font-weight: 600;
+}
+.coverage-summary dd {
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+}
 .execution-report code {
   font-size: 10px;
 }
@@ -1815,7 +1851,8 @@ h2 {
 .action-panel {
   scroll-margin-top: 16px;
 }
-.agent-step small, .agent-step strong {
+.agent-step small,
+.agent-step strong {
   display: block;
 }
 .agent-step small {
@@ -1849,14 +1886,18 @@ h2 {
   font-size: 12px;
   overflow-wrap: anywhere;
 }
-.execution-report summary, .plan-detail summary {
+.execution-report summary,
+.plan-detail summary {
   font-size: 13px;
   color: #395d37;
 }
-.execution-report code, .execution-report pre, .plan-detail pre {
+.execution-report code,
+.execution-report pre,
+.plan-detail pre {
   font-size: 12px;
 }
-.action-note, .plan-form p {
+.action-note,
+.plan-form p {
   font-size: 12px;
   color: #52684f;
 }
@@ -1885,7 +1926,8 @@ h2 {
   font-size: 12px;
   margin: 3px 0;
 }
-.citations button:focus-visible, .evidence-paths button:focus-visible {
+.citations button:focus-visible,
+.evidence-paths button:focus-visible {
   outline: 2px solid #345438;
   outline-offset: 3px;
 }

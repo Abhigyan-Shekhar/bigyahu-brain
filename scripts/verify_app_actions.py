@@ -81,7 +81,7 @@ def verify(state, uid):
         clone = folder / "checkout"
         clone_at(original, clone, action["base_revision"])
         patch = folder / "patch.diff"
-        patch.write_text(action["patch"], encoding="utf-8")
+        patch.write_bytes(action["patch"].encode("utf-8"))
         git(clone, "apply", "--check", str(patch))
         git(clone, "apply", str(patch))
         for name, work, passed in [("original", original, False), ("replayed_patch", clone, True)]:

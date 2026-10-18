@@ -1,5 +1,6 @@
 """Approval integrity, constrained editing and actual OS sandbox isolation."""
 
+import json
 import shutil
 import subprocess
 import sys
@@ -48,10 +49,162 @@ def test_downloaded_patch_applies_in_fresh_checkout(tmp_path, new_file):
     if new_file:
         (source / "test_x.py").write_text("assert True\n")
     _, patch = actions.patch_for(source, ["x.py", "test_x.py"])
-    subprocess.run(["git", "apply", "-"], cwd=replay, input=patch, text=True, check=True)
+    subprocess.run(["git", "apply", "-"], cwd=replay, input=patch.encode("utf-8"), check=True)
     assert (replay / "x.py").read_bytes() == (source / "x.py").read_bytes()
     if new_file:
         assert (replay / "test_x.py").read_bytes() == (source / "test_x.py").read_bytes()
+
+
+@pytest.mark.parametrize("autocrlf", ["true", "false"])
+@pytest.mark.parametrize("eol", [b"\n", b"\r\n"])
+@pytest.mark.parametrize("attributes", [False, True])
+def test_patch_preserves_source_bytes_across_git_normalization(tmp_path, autocrlf, eol, attributes):
+    source, replay = tmp_path / "source", tmp_path / "replay"
+    source.mkdir()
+    subprocess.run(["git", "init", "-q", str(source)], check=True)
+    subprocess.run(["git", "config", "core.autocrlf", autocrlf], cwd=source, check=True)
+    if attributes:
+        configured_eol = b"crlf" if eol == b"\r\n" else b"lf"
+        (source / ".gitattributes").write_bytes(b"*.py text eol=" + configured_eol + b"\n")
+    (source / "x.py").write_bytes(b"value = 1" + eol)
+    subprocess.run(["git", "add", "."], cwd=source, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.com",
+            "commit",
+            "-qm",
+            "initial",
+        ],
+        cwd=source,
+        check=True,
+    )
+    actions.clone_at(source, replay, "HEAD")
+    changed = b"value = 2  " + eol + b"# no final newline"
+    added = b"assert True  " + eol
+    (source / "x.py").write_bytes(changed)
+    (source / "test_x.py").write_bytes(added)
+    _, exported = actions.patch_for(source, ["x.py", "test_x.py"])
+    # Mirror JSON transport, UTF-8 browser Blob download and binary git stdin.
+    downloaded = json.loads(json.dumps({"patch": exported}))["patch"].encode("utf-8")
+    artifact = tmp_path / "download.patch"
+    artifact.write_bytes(downloaded)
+    subprocess.run(["git", "apply", str(artifact)], cwd=replay, check=True)
+    assert (replay / "x.py").read_bytes() == changed
+    assert (replay / "test_x.py").read_bytes() == added
+
+
+def test_editor_roundtrip_retains_crlf(tmp_path):
+    raw = b"value = 1\r\n# no final newline"
+    (tmp_path / "x.py").write_bytes(raw)
+    previous = read_file(tmp_path, "x.py")
+    assert previous["text"].encode() == raw
+    write_file(tmp_path, ["x.py"], "x.py", previous["text"], previous["digest"])
+    assert (tmp_path / "x.py").read_bytes() == raw
+
+
+@pytest.mark.parametrize("corrupt_export", [False, True])
+def test_execution_publishes_only_byte_equivalent_replay(tmp_path, monkeypatch, corrupt_export):
+    source = tmp_path / "source"
+    source.mkdir()
+    subprocess.run(["git", "init", "-q", str(source)], check=True)
+    (source / "x.py").write_bytes(b"value = 1\r\n")
+    subprocess.run(["git", "-c", "core.autocrlf=false", "add", "."], cwd=source, check=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=Fixture",
+            "-c",
+            "user.email=fixture@example.com",
+            "commit",
+            "-qm",
+            "initial",
+        ],
+        cwd=source,
+        check=True,
+    )
+    sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=source).decode().strip()
+    state = State(tmp_path / "app", Config(source, "fixture"), "fixture")
+    project = state.create("repository")
+    state.folder(project["id"]).mkdir()
+    monkeypatch.setattr(state, "config", lambda *_: state.base)
+    plan = actions.validate_plan(
+        {
+            "summary": "Update value",
+            "steps": ["Change value"],
+            "files": ["x.py", "test_x.py"],
+            "tests": [{"runner": "unittest", "path": "test_x.py"}],
+        },
+        source,
+    )
+    action = state.create(
+        "action",
+        project["id"],
+        project=project["id"],
+        turn="fixture",
+        objective="Update value",
+        base_revision=sha,
+        plan=plan,
+        claims=[{"text": "Fixture fact", "support": []}],
+        status="awaiting_approval",
+    )
+    review = {
+        "kind": "fallible_model_plan_review",
+        "input_digest": actions.review_digest(action),
+        "assessments": [{"claim": 0, "verdict": "supported"}],
+        "action": {"verdict": "supported"},
+    }
+    action = state.update(action["id"], relevance_review=review)
+    state.update(action["id"], plan_digest=actions.plan_digest(action))
+    monkeypatch.setattr(actions, "checked_action", lambda *_: None)
+    actions.approve(state, action["id"], actions.plan_digest(action))
+
+    def editor(*_a, edit, **_k):
+        work, allowed = edit
+        write_file(work, allowed, "x.py", "value = 2  \r\n", read_file(work, "x.py")["digest"])
+        write_file(work, allowed, "test_x.py", "assert True\r\n", digest(""))
+        return {"summary": "Fixture edit", "lesson": "Fixture proposal"}
+
+    monkeypatch.setattr(actions, "_codex", editor)
+    monkeypatch.setattr(
+        actions,
+        "run_tests",
+        lambda work, _run, commands: [
+            {
+                "argv": commands[0],
+                "passed": True,
+                "exit_code": 0,
+                "outcome": "exited",
+                "tests_reported": 1,
+                "output": "OK",
+            }
+        ],
+    )
+    export = actions.patch_for
+    if corrupt_export:
+
+        def changed_export(*args):
+            names, patch = export(*args)
+            return names, patch.replace("+value = 2", "+value = 3")
+
+        monkeypatch.setattr(actions, "patch_for", changed_export)
+    actions.execute(state, action["id"])
+    result = state.get(action["id"])
+    if corrupt_export:
+        assert result["status"] == "failed" and not result.get("patch_replay")
+        assert "edited file bytes" in result["error"]
+    else:
+        assert result["status"] == "complete"
+        assert result["patch_replay"]["kind"] == "git_apply_byte_comparison"
+        assert result["patch_replay"]["tests_rerun"] is False
+        assert (actions.action_folder(state, result) / "patch.diff").read_bytes() == result[
+            "patch"
+        ].encode()
+    assert (source / "x.py").read_bytes() == b"value = 1\r\n"
 
 
 @pytest.mark.parametrize(
@@ -113,9 +266,16 @@ def test_approval_digest_consumed_once_and_tampered_plan_rejected(tmp_path, monk
         objective="Fix bug",
         base_revision="sha",
         plan=plan,
-        claims=[],
+        claims=[{"text": "Code fact", "support": [], "influence": "Fix calculation"}],
         status="awaiting_approval",
     )
+    review = {
+        "kind": "fallible_model_plan_review",
+        "input_digest": actions.review_digest(action),
+        "assessments": [{"claim": 0, "verdict": "supported", "reason": "Code fact"}],
+        "action": {"verdict": "supported", "reason": "Narrow correction"},
+    }
+    action = state.update(action["id"], relevance_review=review)
     signature = actions.plan_digest(action)
     state.update(action["id"], plan_digest=signature)
     monkeypatch.setattr(actions, "checked_action", lambda *args: None)

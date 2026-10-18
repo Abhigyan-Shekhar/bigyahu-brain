@@ -166,6 +166,7 @@ def source_evidence(store, source_uid):
     ids = [source_uid, *[r["parent"] for r in rows]]
     return {
         "kind": "source",
+        "source_kind": row["kind"],
         "ref": {"source_uid": source_uid},
         "title": row["path"] or row["uri"],
         "text": text,
@@ -241,6 +242,9 @@ def verified_claims(store, folder, output):
                     "evidence_id": uid,
                     "quote": quoted,
                     "title": current["title"],
+                    "kind": current["kind"],
+                    "source_kind": current.get("source_kind"),
+                    "brain": current.get("ref", {}).get("brain"),
                     "nodes": current["graph"]["nodes"],
                 }
             )

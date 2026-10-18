@@ -1,0 +1,389 @@
+test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) ... 
+  test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='ValueError', tampered=False, options={}) ... FAIL
+  test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='ValueError', tampered=False, options={'return_timestamp': True}) ... ERROR
+  test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='ValueError', tampered=False, options={'max_age': 60}) ... ERROR
+  test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OSError', tampered=False, options={}) ... FAIL
+  test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OSError', tampered=False, options={'return_timestamp': True}) ... ERROR
+  test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OSError', tampered=False, options={'max_age': 60}) ... ERROR
+  test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OverflowError', tampered=False, options={}) ... FAIL
+  test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OverflowError', tampered=False, options={'return_timestamp': True}) ... ERROR
+  test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OverflowError', tampered=False, options={'max_age': 60}) ... ERROR
+test_expired_and_future_tokens_preserve_date_signed (tests.test_timestamp_range_unittest.TimestampRangeTests.test_expired_and_future_tokens_preserve_date_signed) ... ok
+test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) ... 
+  test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=None, return_timestamp=False) ... ERROR
+  test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=None, return_timestamp=True) ... ERROR
+  test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=60, return_timestamp=False) ... ERROR
+  test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=60, return_timestamp=True) ... ERROR
+  test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=None, return_timestamp=False) ... ERROR
+  test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=None, return_timestamp=True) ... ERROR
+  test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=60, return_timestamp=False) ... ERROR
+  test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=60, return_timestamp=True) ... ERROR
+test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) ... 
+  test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (options={}) ... FAIL
+  test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (options={'return_timestamp': True}) ... ERROR
+  test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (options={'max_age': 60}) ... ERROR
+  test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (options={'max_age': 60, 'return_timestamp': True}) ... ERROR
+  test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (max_age=None) ... FAIL
+  test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (max_age=60) ... ERROR
+test_missing_and_malformed_timestamps_are_rejected (tests.test_timestamp_range_unittest.TimestampRangeTests.test_missing_and_malformed_timestamps_are_rejected) ... ok
+test_normal_payload_timestamp_and_max_age_boundary (tests.test_timestamp_range_unittest.TimestampRangeTests.test_normal_payload_timestamp_and_max_age_boundary) ... ok
+test_serializer_round_trips_and_tampering (tests.test_timestamp_range_unittest.TimestampRangeTests.test_serializer_round_trips_and_tampering) ... ok
+test_tampered_token_is_rejected (tests.test_timestamp_range_unittest.TimestampRangeTests.test_tampered_token_is_rejected) ... ok
+
+======================================================================
+ERROR: test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='ValueError', tampered=False, options={'return_timestamp': True})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 92, in test_conversion_errors_are_normalized_and_chained
+    self.signer.unsign(candidate, **options)
+  File "<baseline>/src/itsdangerous/timed.py", line 156, in unsign
+    return value, self.timestamp_to_datetime(ts_int)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+ValueError: unrepresentable timestamp
+
+======================================================================
+ERROR: test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='ValueError', tampered=False, options={'max_age': 60})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 92, in test_conversion_errors_are_normalized_and_chained
+    self.signer.unsign(candidate, **options)
+  File "<baseline>/src/itsdangerous/timed.py", line 145, in unsign
+    date_signed=self.timestamp_to_datetime(ts_int),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+ValueError: unrepresentable timestamp
+
+======================================================================
+ERROR: test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OSError', tampered=False, options={'return_timestamp': True})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 92, in test_conversion_errors_are_normalized_and_chained
+    self.signer.unsign(candidate, **options)
+  File "<baseline>/src/itsdangerous/timed.py", line 156, in unsign
+    return value, self.timestamp_to_datetime(ts_int)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+OSError: unrepresentable timestamp
+
+======================================================================
+ERROR: test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OSError', tampered=False, options={'max_age': 60})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 92, in test_conversion_errors_are_normalized_and_chained
+    self.signer.unsign(candidate, **options)
+  File "<baseline>/src/itsdangerous/timed.py", line 145, in unsign
+    date_signed=self.timestamp_to_datetime(ts_int),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+OSError: unrepresentable timestamp
+
+======================================================================
+ERROR: test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OverflowError', tampered=False, options={'return_timestamp': True})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 92, in test_conversion_errors_are_normalized_and_chained
+    self.signer.unsign(candidate, **options)
+  File "<baseline>/src/itsdangerous/timed.py", line 156, in unsign
+    return value, self.timestamp_to_datetime(ts_int)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+OverflowError: unrepresentable timestamp
+
+======================================================================
+ERROR: test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OverflowError', tampered=False, options={'max_age': 60})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 92, in test_conversion_errors_are_normalized_and_chained
+    self.signer.unsign(candidate, **options)
+  File "<baseline>/src/itsdangerous/timed.py", line 145, in unsign
+    date_signed=self.timestamp_to_datetime(ts_int),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<python>/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+OverflowError: unrepresentable timestamp
+
+======================================================================
+ERROR: test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=None, return_timestamp=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 72, in test_extreme_timestamp_serializers
+    serializer.loads(
+  File "<baseline>/src/itsdangerous/timed.py", line 204, in loads
+    base64d, timestamp = signer.unsign(
+                         ^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 156, in unsign
+    return value, self.timestamp_to_datetime(ts_int)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+ERROR: test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=None, return_timestamp=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 72, in test_extreme_timestamp_serializers
+    serializer.loads(
+  File "<baseline>/src/itsdangerous/timed.py", line 204, in loads
+    base64d, timestamp = signer.unsign(
+                         ^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 156, in unsign
+    return value, self.timestamp_to_datetime(ts_int)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+ERROR: test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=60, return_timestamp=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 72, in test_extreme_timestamp_serializers
+    serializer.loads(
+  File "<baseline>/src/itsdangerous/timed.py", line 204, in loads
+    base64d, timestamp = signer.unsign(
+                         ^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 152, in unsign
+    date_signed=self.timestamp_to_datetime(ts_int),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+ERROR: test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=60, return_timestamp=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 72, in test_extreme_timestamp_serializers
+    serializer.loads(
+  File "<baseline>/src/itsdangerous/timed.py", line 204, in loads
+    base64d, timestamp = signer.unsign(
+                         ^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 152, in unsign
+    date_signed=self.timestamp_to_datetime(ts_int),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+ERROR: test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=None, return_timestamp=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 72, in test_extreme_timestamp_serializers
+    serializer.loads(
+  File "<baseline>/src/itsdangerous/timed.py", line 204, in loads
+    base64d, timestamp = signer.unsign(
+                         ^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 156, in unsign
+    return value, self.timestamp_to_datetime(ts_int)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+ERROR: test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=None, return_timestamp=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 72, in test_extreme_timestamp_serializers
+    serializer.loads(
+  File "<baseline>/src/itsdangerous/timed.py", line 204, in loads
+    base64d, timestamp = signer.unsign(
+                         ^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 156, in unsign
+    return value, self.timestamp_to_datetime(ts_int)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+ERROR: test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=60, return_timestamp=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 72, in test_extreme_timestamp_serializers
+    serializer.loads(
+  File "<baseline>/src/itsdangerous/timed.py", line 204, in loads
+    base64d, timestamp = signer.unsign(
+                         ^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 152, in unsign
+    date_signed=self.timestamp_to_datetime(ts_int),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+ERROR: test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=60, return_timestamp=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 72, in test_extreme_timestamp_serializers
+    serializer.loads(
+  File "<baseline>/src/itsdangerous/timed.py", line 204, in loads
+    base64d, timestamp = signer.unsign(
+                         ^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 152, in unsign
+    date_signed=self.timestamp_to_datetime(ts_int),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+ERROR: test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (options={'return_timestamp': True})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 51, in test_extreme_timestamp_unsign_and_validate
+    self.signer.unsign(token, **options)
+  File "<baseline>/src/itsdangerous/timed.py", line 156, in unsign
+    return value, self.timestamp_to_datetime(ts_int)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+ERROR: test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (options={'max_age': 60})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 51, in test_extreme_timestamp_unsign_and_validate
+    self.signer.unsign(token, **options)
+  File "<baseline>/src/itsdangerous/timed.py", line 152, in unsign
+    date_signed=self.timestamp_to_datetime(ts_int),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+ERROR: test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (options={'max_age': 60, 'return_timestamp': True})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 51, in test_extreme_timestamp_unsign_and_validate
+    self.signer.unsign(token, **options)
+  File "<baseline>/src/itsdangerous/timed.py", line 152, in unsign
+    date_signed=self.timestamp_to_datetime(ts_int),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+ERROR: test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (max_age=60)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 56, in test_extreme_timestamp_unsign_and_validate
+    self.assertFalse(self.signer.validate(token, max_age=max_age))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 164, in validate
+    self.unsign(signed_value, max_age=max_age)
+  File "<baseline>/src/itsdangerous/timed.py", line 152, in unsign
+    date_signed=self.timestamp_to_datetime(ts_int),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<baseline>/src/itsdangerous/timed.py", line 43, in timestamp_to_datetime
+    return datetime.fromtimestamp(ts, tz=timezone.utc)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: year 33658 is out of range
+
+======================================================================
+FAIL: test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='ValueError', tampered=False, options={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 91, in test_conversion_errors_are_normalized_and_chained
+    with self.assertRaises(BadTimeSignature) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: BadTimeSignature not raised
+
+======================================================================
+FAIL: test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OSError', tampered=False, options={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 91, in test_conversion_errors_are_normalized_and_chained
+    with self.assertRaises(BadTimeSignature) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: BadTimeSignature not raised
+
+======================================================================
+FAIL: test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OverflowError', tampered=False, options={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 91, in test_conversion_errors_are_normalized_and_chained
+    with self.assertRaises(BadTimeSignature) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: BadTimeSignature not raised
+
+======================================================================
+FAIL: test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (options={})
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 50, in test_extreme_timestamp_unsign_and_validate
+    with self.assertRaises(BadTimeSignature) as caught:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: BadTimeSignature not raised
+
+======================================================================
+FAIL: test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (max_age=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<baseline>/tests/test_timestamp_range_unittest.py", line 56, in test_extreme_timestamp_unsign_and_validate
+    self.assertFalse(self.signer.validate(token, max_age=max_age))
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.007s
+
+FAILED (failures=5, errors=18)

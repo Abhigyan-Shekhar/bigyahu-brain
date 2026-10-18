@@ -196,6 +196,9 @@ function App() {
     [ingesting, setIngesting] = useState(false);
   const repo = repos.find((r) => r.id === project),
     busy = turns.some((t) => ["running", "queued"].includes(t.status));
+  const entityCounts = graph?.entity_counts;
+  const countEntity = (kind) =>
+    entityCounts?.find((c) => c.kind === kind)?.count ?? 0;
   async function refresh() {
     try {
       const values = await api("/repositories");
@@ -270,7 +273,7 @@ function App() {
         throw new Error(
           "View limit reached; filter to start another investigation.",
         );
-      setGraph({ ...extra, nodes, edges });
+      setGraph({ ...graph, ...extra, nodes, edges });
       setExpansion(extra);
     } catch (e) {
       if (request === graphRequest.current && project === activeProject.current)
@@ -289,7 +292,7 @@ function App() {
         request === graphRequest.current &&
         project === activeProject.current
       ) {
-        setGraph(next);
+        setGraph((previous) => ({ ...previous, ...next }));
         setExpansion(next);
       }
     } catch (e) {
@@ -438,15 +441,12 @@ function App() {
           <Network size={17} /> Company graph
           {graph && <span className="count">{graph.nodes.length}</span>}
         </button>
-        <details className="secondary-tools">
-          <summary>More workspace tools</summary>
-          <button className="nav" onClick={() => setMode("memory")}>
-            <BrainCircuit size={17} /> Personal Brain
-          </button>
-          <button className="nav" onClick={() => setMode("team")}>
-            <Network size={17} /> Team Brain
-          </button>
-        </details>
+        <button className="nav" onClick={() => setMode("memory")}>
+          <BrainCircuit size={17} /> Personal Brain
+        </button>
+        <button className="nav" onClick={() => setMode("team")}>
+          <Network size={17} /> Team Brain
+        </button>
         <div className="section-label">
           CONNECTED SOURCES
           <button
@@ -551,14 +551,14 @@ function App() {
           <div className="welcome">
             <span className="eyebrow">A SHARED UNDERSTANDING</span>
             <h1>
-              One place to ask your code.
+              Investigate your code.
               <br />
-              And the people behind it.
+              Fix with context.
             </h1>
             <p>
-              Connect a repository, add your team’s documents, and ask why
-              things work the way they do. Follow every answer back to its graph
-              nodes.
+              Connect code, history, documents and reviewed team knowledge.
+              Investigate an issue, inspect its evidence, and approve an
+              isolated fix with an explicit test report.
             </p>
             <button className="primary" onClick={() => setAdding(true)}>
               <Plus size={17} /> Connect your first repository
@@ -570,11 +570,11 @@ function App() {
               </span>
               <span>
                 <MessageSquare />
-                Ask in your own words
+                Investigate with evidence
               </span>
               <span>
                 <BookOpen />
-                Follow the evidence
+                Review isolated fixes
               </span>
             </div>
           </div>
@@ -638,7 +638,7 @@ function App() {
                   </span>
                   <h2>
                     {mode === "chat"
-                      ? "What would you like to understand?"
+                      ? "Investigate your code. Understand its history. Fix with context."
                       : "The company graph"}
                   </h2>
                   {mode === "chat" && (
@@ -674,7 +674,58 @@ function App() {
                 </div>
               )}
               <details className="coverage-details">
-                <summary>Repository coverage & extraction</summary>
+                <summary>
+                  Knowledge coverage · indexed snapshot ·{" "}
+                  {repo.github_coverage?.mode === "not_requested"
+                    ? "GitHub history not requested"
+                    : repo.github_coverage?.imported != null
+                      ? "GitHub history partial sample"
+                      : "GitHub history unverified"}
+                </summary>
+                <dl className="coverage-summary">
+                  <div>
+                    <dt>Repository code snapshot</dt>
+                    <dd>
+                      {repo.revision
+                        ? `Revision ${repo.revision.slice(0, 8)} · manual refresh`
+                        : "Revision unavailable"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>GitHub history</dt>
+                    <dd>
+                      {repo.github_coverage?.mode === "not_requested"
+                        ? "Not requested"
+                        : repo.github_coverage?.imported != null
+                          ? `${repo.github_coverage.imported} complete work items in a partial selected sample · older history not covered`
+                          : "Coverage unavailable or unverified"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Document sections</dt>
+                    <dd>
+                      {entityCounts
+                        ? `${countEntity("RepositorySection")} repository · ${countEntity("UploadedSection")} uploaded`
+                        : "Counts unavailable"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Extracted entities</dt>
+                    <dd>
+                      {entityCounts
+                        ? `${countEntity("CodeEntity")} structural code entities · ${countEntity("ExtractedConcept")} advisory concepts`
+                        : "Counts unavailable"}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Reviewed memory scopes</dt>
+                    <dd>
+                      Accepted Personal Brain and authorized Team Brain records
+                      in this repository; unreviewed records excluded from agent
+                      retrieval.
+                    </dd>
+                  </div>
+                </dl>
                 {repo.graphify && (
                   <p>
                     Graphify: {repo.graphify.files} files ·{" "}
@@ -753,20 +804,36 @@ function App() {
                         <div className="context-mark">
                           <BrainCircuit size={30} />
                         </div>
-                        <h3>Start with a question.</h3>
+                        <h3>Start an investigation.</h3>
                         <p>
-                          Investigate the repository and its decisions.
+                          Trace an issue, inspect the evidence, then review a
+                          proposed fix.
                           <br />
                           Every published claim includes a checked source.
                         </p>
                         <div className="suggestions">
                           {[
-                            "What does this project do, and where should I start?",
-                            "Which uploaded instructions explain how this code should behave?",
-                            "Investigate a change and compare it with previous approaches.",
-                          ].map((q) => (
-                            <button key={q} onClick={() => setQuestion(q)}>
-                              {q}
+                            [
+                              "Investigate a bug",
+                              "Investigate this bug: [describe the observed behavior and expected result]. Find the relevant code, history and reviewed lessons; cite evidence and identify coverage gaps.",
+                            ],
+                            [
+                              "Explain a decision",
+                              "Explain this engineering decision: [describe the behavior or decision]. Trace its code, documents, history and reviewed knowledge; distinguish requirements from advisory lessons.",
+                            ],
+                            [
+                              "Plan a change",
+                              "Investigate this change: [describe the intended outcome]. Identify affected files, preservation requirements and test coverage so I can use Plan a change to review a cited fix before isolated execution.",
+                            ],
+                          ].map(([label, q]) => (
+                            <button
+                              key={label}
+                              onClick={() => {
+                                setQuestion(q);
+                                document.getElementById("question")?.focus();
+                              }}
+                            >
+                              {label}
                               <ArrowUpRight size={16} />
                             </button>
                           ))}
@@ -796,9 +863,11 @@ function App() {
                                 <>
                                   <div className="answer-label">
                                     COMPANY BRAIN{" "}
-                                    <span>
-                                      <Check size={12} /> Source checked
-                                    </span>
+                                    {t.claims?.length > 0 && (
+                                      <span>
+                                        <Check size={12} /> Source checked
+                                      </span>
+                                    )}
                                     {t.claims?.length > 0 && (
                                       <button
                                         className="fix-jump"
@@ -1081,16 +1150,32 @@ function App() {
                   </div>
                   <p>Code, documents, and recorded history in FalkorDB.</p>
                   <div className="knowledge-counts">
-                    {graph?.counts
+                    {graph?.entity_counts
                       ?.filter((c) =>
-                        ["File", "Symbol", "Document", "Source"].includes(
-                          c.kind,
-                        ),
+                        [
+                          "File",
+                          "Symbol",
+                          "CodeEntity",
+                          "RepositorySection",
+                          "UploadedSection",
+                          "ExtractedConcept",
+                          "Source",
+                        ].includes(c.kind),
                       )
                       .map((c) => (
                         <span key={c.kind}>
                           <strong>{c.count}</strong>
-                          {c.kind}
+                          {
+                            {
+                              File: "Files",
+                              Symbol: "Symbols",
+                              CodeEntity: "Code entities",
+                              RepositorySection: "Repository sections",
+                              UploadedSection: "Uploaded sections",
+                              ExtractedConcept: "Extracted concepts",
+                              Source: "Evidence sources",
+                            }[c.kind]
+                          }
                         </span>
                       ))}
                   </div>

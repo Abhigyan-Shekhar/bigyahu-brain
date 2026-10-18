@@ -599,6 +599,16 @@ def create_app(state, token, origin, assets=None):
                 "RETURN labels(n)[0] AS kind,count(n) AS count ORDER BY kind",
                 {"repo": store.cfg.repo_id},
             ),
+            "entity_counts": store.query(
+                "MATCH (n {repo_id:$repo}) WHERE coalesce(n.current,true) "
+                "WITH CASE WHEN n:Document AND n.source_kind='graphify_structural' THEN 'CodeEntity' "
+                "WHEN n:Document AND n.source_kind='repository_document' THEN 'RepositorySection' "
+                "WHEN n:Document AND n.source_kind IN ['app_upload','app_binary_upload'] THEN 'UploadedSection' "
+                "WHEN n:Document AND n.source_kind='semantic_advisory' THEN 'ExtractedConcept' "
+                "WHEN n:Document THEN 'OtherEntity' ELSE labels(n)[0] END AS kind "
+                "RETURN kind,count(*) AS count ORDER BY kind",
+                {"repo": store.cfg.repo_id},
+            ),
             "truncated": truncated,
             "limits": {"nodes": 150, "edges": 300, "roots": 100, "source_neighbors": 50},
         }

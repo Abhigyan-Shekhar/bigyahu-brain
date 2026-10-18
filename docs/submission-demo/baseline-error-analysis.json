@@ -1,0 +1,511 @@
+{
+  "raw_log_sha256": "802971cc2efced434e0a285defe0a844ab755815e4f7fdd0646c8e30d04abb29",
+  "errors": [
+    {
+      "case": "test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='ValueError', tampered=False, options={'return_timestamp': True})",
+      "exception": "ValueError: unrepresentable timestamp",
+      "origin": "injected conversion side_effect",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 92,
+          "function": "test_conversion_errors_are_normalized_and_chained"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 156,
+          "function": "unsign"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1139,
+          "function": "__call__"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1143,
+          "function": "_mock_call"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1198,
+          "function": "_execute_mock_call"
+        }
+      ]
+    },
+    {
+      "case": "test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='ValueError', tampered=False, options={'max_age': 60})",
+      "exception": "ValueError: unrepresentable timestamp",
+      "origin": "injected conversion side_effect",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 92,
+          "function": "test_conversion_errors_are_normalized_and_chained"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 145,
+          "function": "unsign"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1139,
+          "function": "__call__"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1143,
+          "function": "_mock_call"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1198,
+          "function": "_execute_mock_call"
+        }
+      ]
+    },
+    {
+      "case": "test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OSError', tampered=False, options={'return_timestamp': True})",
+      "exception": "OSError: unrepresentable timestamp",
+      "origin": "injected conversion side_effect",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 92,
+          "function": "test_conversion_errors_are_normalized_and_chained"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 156,
+          "function": "unsign"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1139,
+          "function": "__call__"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1143,
+          "function": "_mock_call"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1198,
+          "function": "_execute_mock_call"
+        }
+      ]
+    },
+    {
+      "case": "test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OSError', tampered=False, options={'max_age': 60})",
+      "exception": "OSError: unrepresentable timestamp",
+      "origin": "injected conversion side_effect",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 92,
+          "function": "test_conversion_errors_are_normalized_and_chained"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 145,
+          "function": "unsign"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1139,
+          "function": "__call__"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1143,
+          "function": "_mock_call"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1198,
+          "function": "_execute_mock_call"
+        }
+      ]
+    },
+    {
+      "case": "test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OverflowError', tampered=False, options={'return_timestamp': True})",
+      "exception": "OverflowError: unrepresentable timestamp",
+      "origin": "injected conversion side_effect",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 92,
+          "function": "test_conversion_errors_are_normalized_and_chained"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 156,
+          "function": "unsign"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1139,
+          "function": "__call__"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1143,
+          "function": "_mock_call"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1198,
+          "function": "_execute_mock_call"
+        }
+      ]
+    },
+    {
+      "case": "test_conversion_errors_are_normalized_and_chained (tests.test_timestamp_range_unittest.TimestampRangeTests.test_conversion_errors_are_normalized_and_chained) (error='OverflowError', tampered=False, options={'max_age': 60})",
+      "exception": "OverflowError: unrepresentable timestamp",
+      "origin": "injected conversion side_effect",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 92,
+          "function": "test_conversion_errors_are_normalized_and_chained"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 145,
+          "function": "unsign"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1139,
+          "function": "__call__"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1143,
+          "function": "_mock_call"
+        },
+        {
+          "path": "stdlib/unittest/mock.py",
+          "line": 1198,
+          "function": "_execute_mock_call"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=None, return_timestamp=False)",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 72,
+          "function": "test_extreme_timestamp_serializers"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 204,
+          "function": "loads"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 156,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=None, return_timestamp=True)",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 72,
+          "function": "test_extreme_timestamp_serializers"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 204,
+          "function": "loads"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 156,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=60, return_timestamp=False)",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 72,
+          "function": "test_extreme_timestamp_serializers"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 204,
+          "function": "loads"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 152,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='TimedSerializer', max_age=60, return_timestamp=True)",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 72,
+          "function": "test_extreme_timestamp_serializers"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 204,
+          "function": "loads"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 152,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=None, return_timestamp=False)",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 72,
+          "function": "test_extreme_timestamp_serializers"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 204,
+          "function": "loads"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 156,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=None, return_timestamp=True)",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 72,
+          "function": "test_extreme_timestamp_serializers"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 204,
+          "function": "loads"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 156,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=60, return_timestamp=False)",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 72,
+          "function": "test_extreme_timestamp_serializers"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 204,
+          "function": "loads"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 152,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_serializers (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_serializers) (serializer='URLSafeTimedSerializer', max_age=60, return_timestamp=True)",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 72,
+          "function": "test_extreme_timestamp_serializers"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 204,
+          "function": "loads"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 152,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (options={'return_timestamp': True})",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 51,
+          "function": "test_extreme_timestamp_unsign_and_validate"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 156,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (options={'max_age': 60})",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 51,
+          "function": "test_extreme_timestamp_unsign_and_validate"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 152,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (options={'max_age': 60, 'return_timestamp': True})",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 51,
+          "function": "test_extreme_timestamp_unsign_and_validate"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 152,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    },
+    {
+      "case": "test_extreme_timestamp_unsign_and_validate (tests.test_timestamp_range_unittest.TimestampRangeTests.test_extreme_timestamp_unsign_and_validate) (max_age=60)",
+      "exception": "ValueError: year 33658 is out of range",
+      "origin": "datetime.fromtimestamp(10**12, timezone.utc)",
+      "frames": [
+        {
+          "path": "tests/test_timestamp_range_unittest.py",
+          "line": 56,
+          "function": "test_extreme_timestamp_unsign_and_validate"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 164,
+          "function": "validate"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 152,
+          "function": "unsign"
+        },
+        {
+          "path": "src/itsdangerous/timed.py",
+          "line": 43,
+          "function": "timestamp_to_datetime"
+        }
+      ]
+    }
+  ],
+  "total_errors": 18,
+  "real_datetime_range_errors": 12,
+  "injected_conversion_errors": 6,
+  "assertion_failures_separate_from_errors": 5,
+  "harness_or_import_errors": 0
+}

@@ -1,0 +1,109 @@
+{
+  "date_ist": "2026-10-18",
+  "base_commit": "642402176c0143a35ae139470f791a84e6b10d17",
+  "working_tree_changes_uncommitted": true,
+  "implementation_sha256": {
+    "src/brain/app/actions.py": "adcdb21a423e90935c1c39ccfb7ac79ef2813a79743f8ba56cda9331380d2a75",
+    "src/brain/app/action_mcp.py": "3e057cbb4cac96b9a33550d3803ca0dd8706b382c433b901f817c511cc14f2b2",
+    "src/brain/app/relevance.py": "8eb2fc419d1d2f3214eed4bc0f955c1a18e43d7bd1ff3b152631dfdde5bc5eef",
+    "src/brain/app/evidence.py": "5989a796975034784205bf9321a21251e67ae61af14a09ef034a40533934d47c",
+    "src/brain/app/agent.py": "2a388fff2b858e6a27ca650dd939bb09419288c77e60b1950559401002d82f14",
+    "src/brain/app/server.py": "799817f8e1e2d286c3b21cd1bccb793da94d1e6e6fc266417a9e40487c4174c5",
+    "frontend/src/main.jsx": "453027c3f915ebd513b65e30d0c6073c8339dea63f50c3a48aaf70b6ebcd15f3",
+    "frontend/src/ActionPanel.jsx": "c9a225e24ae1ff1ac00e91834b1fd448f2fe73ff900d0f11ba8fce93aa605c6a",
+    "frontend/src/IngestionPanel.jsx": "fb0a837d22a0d43634e6518aa643e519474146fad08187e706641db5f57ad358",
+    "frontend/src/style.css": "1cb68d176b9098ed90420b67174f6d94657f85e7657a16222f6cfb28ae2d8c69",
+    "scripts/verify_app_actions.py": "8656dd8a404d3f59bbcc7853c56dae02865bba6565857b55a1b0174d704c2789",
+    "tests/test_app_actions.py": "edce84c575a160f032138e1e7783c5ba5836f38c94436f31b3f191ab5abb816a",
+    "tests/test_plan_relevance.py": "bee41f44bc58488a648f9e1988f5056e7ba18889f7ca697794e6fe0a633f6488",
+    "tests/test_chat_knowledge_workflow.py": "9d0262d35d474bbca41f20c71f3512d6ea3d5d03eb3052e9fbdcffb2d62dc631"
+  },
+  "verification": {
+    "isolated_complete_suite": {
+      "passed": 406,
+      "skipped": 0,
+      "warnings": 3
+    },
+    "focused_actions_and_plan": {
+      "passed": 45,
+      "warnings": 3
+    },
+    "frontend_build": "passed",
+    "ruff_src_tests_scripts": "passed",
+    "git_diff_check": "passed",
+    "publication_index_and_history": "passed_existing_index_and_head",
+    "publication_working_tree": "passed_including_untracked_followups",
+    "windows_modified_source": "not_run_unpushed",
+    "remote_windows_at_base_commit": "failure",
+    "new_live_editing_acceptance": "not_run_no_human_approval"
+  },
+  "live_planning": [
+    {
+      "case": "initial_ambiguous_fixture",
+      "model_requested": "gpt-6.1-sol",
+      "status": "failed",
+      "assessment": {
+        "reason": "The code directly explains the missing policy behavior, and the proposed body change, preserved signature/default, file scope, and boundary/negative/type tests follow from the supplied requirements. However, the assertion that an existing operator-installed Python runtime is available has no supplied evidence. Also, integer results are guaranteed by the proposed calculation only for integer inputs; the supplied policy does not specify that input restriction. Resolve the input domain and runtime assumption before treating the entire plan as supported. No execution is warranted for this plan-only request.",
+        "verdict": "uncertain"
+      },
+      "claim_verdicts": [
+        "supported",
+        "supported",
+        "supported"
+      ],
+      "approved": false,
+      "executed": false
+    },
+    {
+      "case": "clarified_integer_fixture",
+      "model_requested": "gpt-6.1-sol",
+      "status": "awaiting_approval",
+      "assessment": {
+        "reason": "The current unconditional return directly explains the missing growth and cap. The proposed body implements the requested policy for integer inputs while preserving the signature and default. Both file changes are justified, and the unittest cases cover growth, cap boundaries, zero inputs, negative rejection, default behavior, and exact integer types. Verification uses the operator-supplied Python and standard library without optional dependencies; execution remains deferred until human review.",
+        "verdict": "supported"
+      },
+      "claim_verdicts": [
+        "supported",
+        "supported"
+      ],
+      "approved": false,
+      "executed": false
+    }
+  ],
+  "browser_checks": [
+    "three_starters_populate_and_focus_composer",
+    "real_reviewed_plan_claims_and_contributions",
+    "citation_reopens_current_source_and_native_path",
+    "coverage_and_entity_counts"
+  ],
+  "historical_artifacts": {
+    "docs/submission-demo/verification.json": {
+      "sha256": "55bfd9c6a358155cc8f55314203c099db627d587e1d7fa06e6317e3f7b3a464a",
+      "unchanged_from_head": true
+    },
+    "docs/submission-demo/three-brain-verification.json": {
+      "sha256": "076165d4222c6564a4f1b5475073fbbf366950ee26974bfedd76c4134293fa22",
+      "unchanged_from_head": true
+    },
+    "docs/submission-demo/signed-token.patch": {
+      "sha256": "f245ebbec41c5e7c8c3a77002de30bef3cd8a4546b6b1329c8ecc4e4b727df9d",
+      "unchanged_from_head": true
+    },
+    "docs/submission-demo/three-brain.patch": {
+      "sha256": "0b2937cbe3577e4a49bb35139cf6050d60ccb95fa936a5994d1906bf558a795f",
+      "unchanged_from_head": true
+    },
+    "docs/submission-demo/capture-manifest.json": {
+      "sha256": "9d0da91be83a6971b102910b6c2044a9f4d871199152e0b54b0b4dfca15ec563",
+      "unchanged_from_head": true
+    }
+  },
+  "preserved_evaluation": "v5 baseline 3/3 and graph 3/3; no correctness advantage",
+  "limitations": [
+    "Model relevance is fallible",
+    "No new Windows CI result",
+    "No new comparative three-brain coding benchmark",
+    "No new live editing run or mobile UI acceptance",
+    "No publication or submission"
+  ]
+}

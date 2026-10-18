@@ -32,7 +32,7 @@ def read_file(work, path):
         return {"path": path, "exists": False, "text": "", "digest": digest("")}
     if not file.is_file() or file.stat().st_size > 100000:
         raise ValueError("Select a text file under 100 KB")
-    text = file.read_text(encoding="utf-8")
+    text = file.read_bytes().decode("utf-8")
     return {"path": path, "exists": True, "text": text, "digest": digest(text)}
 
 
@@ -49,7 +49,7 @@ def write_file(work, allowed, path, text, expected_digest):
         raise ValueError("File changed; read its current digest before editing")
     file = target(work, path)
     file.parent.mkdir(parents=True, exist_ok=True)
-    file.write_text(text, encoding="utf-8")
+    file.write_bytes(text.encode("utf-8"))
     return {"path": path, "digest": digest(text), "bytes": len(text.encode())}
 
 

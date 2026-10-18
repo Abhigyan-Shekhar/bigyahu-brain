@@ -10,6 +10,27 @@ import {
 } from "lucide-react";
 import { api, send } from "./api";
 
+function contributionLabel(support) {
+  if (support.kind === "code")
+    return /\.(md|rst|txt)(:|$)/i.test(support.title)
+      ? "Repository document"
+      : "Current code";
+  if (support.kind === "team_memory" || support.brain?.startsWith("team:"))
+    return "Reviewed Team Brain evidence";
+  if (support.kind === "memory" || support.brain?.startsWith("private:"))
+    return "Reviewed Personal Brain evidence";
+  if (support.kind === "history_diff") return "Historical patch";
+  if (
+    ["repository_document", "app_upload", "app_binary_upload"].includes(
+      support.source_kind,
+    )
+  )
+    return "Engineering document";
+  if (support.source_kind === "graphify_structural")
+    return "Extracted code evidence";
+  return "Source evidence";
+}
+
 function download(action) {
   const url = URL.createObjectURL(
     new Blob([action.patch], { type: "text/plain;charset=utf-8" }),
@@ -104,6 +125,17 @@ export default function ActionPanel({
   const baselineErrors = action?.baseline_tests?.some((t) =>
     /errors=[1-9]\d*|\b[1-9]\d* errors?\b/.test(t.output || ""),
   );
+  const stages = ["Investigate", "Plan", "Approve", "Edit", "Verify"];
+  const stageIndex = !action
+    ? 0
+    : action.status === "complete" ||
+        action.stage?.startsWith("Running approved tests")
+      ? 4
+      : action.phase === "execution"
+        ? 3
+        : action.status === "awaiting_approval"
+          ? 2
+          : 1;
   return (
     <section
       className="action-panel"
@@ -119,6 +151,13 @@ export default function ActionPanel({
           </button>
         )}
       </div>
+      <ol className="workflow-stages" aria-label="Fix workflow stages">
+        {stages.map((label, i) => (
+          <li key={label} aria-current={i === stageIndex ? "step" : undefined}>
+            {label}
+          </li>
+        ))}
+      </ol>
       {error && (
         <p className="failure" role="alert">
           {error}
@@ -159,7 +198,8 @@ export default function ActionPanel({
           <div className="action-state agent-step" role="status">
             {["queued", "running"].includes(action.status) ? (
               <LoaderCircle className="spin" size={14} />
-            ) : action.status === "complete" ? (
+            ) : action.status === "complete" &&
+              action.regression_demonstrated ? (
               <Check size={14} />
             ) : null}
             <div>
@@ -175,8 +215,13 @@ export default function ActionPanel({
               className="plan-detail"
               open={action.status === "awaiting_approval"}
             >
-              <summary>Fix plan & supporting evidence</summary>
+              <summary>Fix plan · Why this fix?</summary>
               <p>{action.plan.summary}</p>
+              <p className="action-note">
+                {action.relevance_review?.kind === "fallible_model_plan_review"
+                  ? "Source provenance checked. Claims, rationale and proposed action reviewed by a fallible model; review the evidence before approving."
+                  : "Historical plan: no claim-and-action relevance review was recorded. Prepare a new plan before approving another execution."}
+              </p>
               <ol>
                 {action.plan.steps.map((s, i) => (
                   <li key={i}>{s}</li>
@@ -190,7 +235,11 @@ export default function ActionPanel({
                   </li>
                 ))}
               </ul>
-              <h4>Approved test commands</h4>
+              <h4>
+                {action.status === "awaiting_approval"
+                  ? "Test commands for approval"
+                  : "Approved test commands"}
+              </h4>
               {action.plan.commands.map((argv, i) => (
                 <pre key={i}>{argv.join(" ")}</pre>
               ))}
@@ -202,7 +251,15 @@ export default function ActionPanel({
               </p>
               {action.claims?.map((c, i) => (
                 <div className="plan-evidence" key={i}>
+                  <h4>
+                    {[...new Set(c.support.map(contributionLabel))].join(" · ")}
+                  </h4>
                   <p>{c.text}</p>
+                  {c.influence && (
+                    <p className="plan-influence">
+                      <strong>How this informs the plan:</strong> {c.influence}
+                    </p>
+                  )}
                   <div className="citations">
                     {[
                       ...new Map(
@@ -290,7 +347,15 @@ export default function ActionPanel({
                 <summary>Implementation handoff before test validation</summary>
                 <p>{action.summary}</p>
               </details>
-              <strong className={action.tests_passed ? "test-pass" : "failure"}>
+              <strong
+                className={
+                  action.regression_demonstrated
+                    ? "test-pass"
+                    : action.tests_passed
+                      ? "test-qualified"
+                      : "failure"
+                }
+              >
                 {action.tests_passed
                   ? action.regression_demonstrated
                     ? "Approved tests passed · baseline failures resolved"
@@ -305,6 +370,11 @@ export default function ActionPanel({
                   : baselineErrors
                     ? "The original run reported test errors. Automatic verification excludes these because they may indicate setup problems. Inspect the trace and verify the reproduction independently; a coding lesson cannot be proposed from this report."
                     : "No matched baseline regression has been demonstrated. Passing tests alone do not verify the fix; a coding lesson cannot be proposed from this report."}
+              </p>
+              <p className="action-note">
+                {action.patch_replay?.status === "applies_to_base"
+                  ? `Patch replay: applied to base ${action.patch_replay.revision.slice(0, 8)} with exact edited-file bytes. This did not rerun tests.`
+                  : "Independent follow-up verification is not recorded in this action. Separate replay or follow-up results do not replace its original automated classification."}
               </p>
               <p className="action-note">
                 Original checkout unchanged. This patch has not been applied,
