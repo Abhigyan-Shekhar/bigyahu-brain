@@ -146,6 +146,12 @@ def run_turn(state, project, session, turn):
             "This tool does not publish to GitHub: the user must open GitHub in the app to review and publish. "
             "PRs use existing pushed branches; this capability cannot upload isolated patches. "
             "Never claim a draft was published. Report this pending publication in limitations.\n"
+            "For email requests, direct the user to the Email button in the repository workspace. "
+            "There they enter the recipient and choose Generate & send using a completed discussion. "
+            "You have no email sending tool; never claim you sent a message from chat.\n"
+            "For documentation authoring, direct the user to Docs or Create documentation on this investigation. "
+            "For a chain of research tasks, the user can opt in through Auto-investigate and choose permitted draft outcomes. "
+            "A normal chat turn does not start an autonomous workflow or publish a document.\n"
             + canonical(
                 {
                     "repository": state.get(project)["url"],

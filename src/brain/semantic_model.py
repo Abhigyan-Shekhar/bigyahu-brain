@@ -9,7 +9,7 @@ from pathlib import Path
 from .memory import canonical
 
 
-def structured_extract(prompt, schema_definition, model):
+def structured_extract(prompt, schema_definition, model, *, timeout_seconds=180):
     if not isinstance(model, str) or not 1 <= len(model) <= 100:
         raise ValueError("Explicit semantic model required")
     with tempfile.TemporaryDirectory(prefix="brain-semantic-") as temp:
@@ -60,7 +60,7 @@ def structured_extract(prompt, schema_definition, model):
             encoding="utf-8",
             capture_output=True,
             env=env,
-            timeout=180,
+            timeout=timeout_seconds,
             check=False,
         )
         if result.returncode or not output.exists() or output.stat().st_size > 1_000_000:

@@ -1,4 +1,5 @@
 import React from "react";
+import WorkTimeline, { Timestamp } from "./WorkTimeline";
 export default function GraphInspector({
   selection,
   detail,
@@ -111,6 +112,19 @@ export default function GraphInspector({
               Indexed revision: <code>{detail.revision.slice(0, 12)}</code>
             </p>
           )}
+          {detail?.highlights && <section className="node-highlights" aria-label="Node highlights">
+            <h4>Highlights</h4>
+            <p>Last modified by: {detail.highlights.last_commit?.author || "Unknown"}</p>
+            <p>Last worked on (indexed commit): <Timestamp value={detail.highlights.last_commit?.timestamp} /></p>
+            {detail.highlights.last_commit && <button onClick={() => onNode(detail.highlights.last_commit.uid)}>Inspect latest indexed commit</button>}
+            <p>GitHub last updated: <Timestamp value={detail.highlights.metadata.updated_at} /> · Editor unknown</p>
+            <div className="node-live-working"><h4>Live working</h4>
+            {detail.highlights.live.length ? detail.highlights.live.map((run) => <p key={run.id} role="status">App agent · {run.stage || run.phase} · Started <Timestamp value={run.started_at} /> (planned file scope)</p>) : <p>No active app run reported for this node.</p>}
+            <small>{detail.highlights.live_notice} Refreshes every 10 seconds.</small>
+            </div>
+            <h4>Issues, PRs and decisions</h4>
+            <WorkTimeline data={detail.highlights.work} onNode={onNode} />
+          </section>}
           {detail?.properties && (
             <dl>
               {Object.entries(detail.properties)

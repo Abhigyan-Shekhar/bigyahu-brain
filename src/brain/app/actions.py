@@ -210,7 +210,11 @@ PATCH_SCHEMA = {
 def active_actions(state, project):
     return [
         a
-        for a in state.list("action", project)
+        for a in [
+            *state.list("action", project),
+            *state.list("workflow", project),
+            *state.list("documentation_draft", project),
+        ]
         if a["status"] in {"queued", "running", "awaiting_approval"}
     ]
 
@@ -374,11 +378,32 @@ def approve(state, uid, expected_digest):
     return state.get(uid, "action")
 
 
-def _codex(state, project, run, prompt, schema, edit=None):
+def _codex(
+    state,
+    project,
+    run,
+    prompt,
+    schema,
+    edit=None,
+    *,
+    timeout_seconds=None,
+    cancel_check=None,
+    retrieval_folder=None,
+):
+    timeout = EDITOR_TIMEOUT_SECONDS if edit is not None else PLAN_TIMEOUT_SECONDS
+    if timeout_seconds is not None:
+        timeout = min(timeout, timeout_seconds)
     run.mkdir(parents=True, exist_ok=True)
     (run / "empty").mkdir(exist_ok=True)
     (run / "schema.json").write_text(canonical(schema), encoding="utf-8")
     argv = command(state, project, run)
+    if retrieval_folder is not None:
+        argv = argv[:-1] + [
+            "-c",
+            "mcp_servers.company-brain.env.BRAIN_WORKFLOW_BUDGET="
+            + json.dumps(str(retrieval_folder)),
+            "-",
+        ]
     if edit is not None:
         work, files = edit
         prefix = "mcp_servers.patch-workspace."
@@ -403,9 +428,7 @@ def _codex(state, project, run, prompt, schema, edit=None):
         canonical(
             {
                 "model_requested": state.model,
-                "timeout_seconds": EDITOR_TIMEOUT_SECONDS
-                if edit is not None
-                else PLAN_TIMEOUT_SECONDS,
+                "timeout_seconds": timeout,
                 "prompt_sha256": digest(prompt),
                 "backend_source_sha256": {
                     str(p.relative_to(Path(__file__).parents[2])): hashlib.sha256(
@@ -429,7 +452,8 @@ def _codex(state, project, run, prompt, schema, edit=None):
             trace,
             err,
             env,
-            EDITOR_TIMEOUT_SECONDS if edit is not None else PLAN_TIMEOUT_SECONDS,
+            timeout,
+            **({"cancel_check": cancel_check} if cancel_check else {}),
         )
     output = run / "answer.json"
     if returncode or not output.exists() or output.stat().st_size > 100000:
@@ -469,7 +493,7 @@ def validate_candidate(output, root):
     validate_plan(output.get("plan"), root)
 
 
-def _plan_candidate(state, uid, action, cfg, turn, feedback):
+def _plan_candidate(state, uid, action, cfg, turn, feedback, budget=None):
     set_stage(
         state,
         uid,
@@ -480,7 +504,15 @@ def _plan_candidate(state, uid, action, cfg, turn, feedback):
     )
     seed = reuse_evidence(
         GraphStore(cfg),
-        state.folder(action["project"]) / "turns" / action["turn"] / "evidence",
+        (
+            state.folder(action["project"])
+            / "workflows"
+            / action["source_workflow"]
+            / action["turn"]
+            / "evidence"
+        )
+        if action.get("source_workflow")
+        else state.folder(action["project"]) / "turns" / action["turn"] / "evidence",
         plan_folder(state, action) / "evidence",
         turn.get("claims", []),
     )
@@ -524,6 +556,15 @@ def _plan_candidate(state, uid, action, cfg, turn, feedback):
             }
         ),
         PLAN_SCHEMA,
+        **(
+            {
+                "timeout_seconds": budget.consume(),
+                "cancel_check": budget.check,
+                "retrieval_folder": budget.retrieval_folder,
+            }
+            if budget
+            else {}
+        ),
     )
     # Retain bounded display text before validation; it never authorizes execution.
     state.update(uid, draft_plan=draft_plan(action["objective"], output))
@@ -542,7 +583,14 @@ def _plan_candidate(state, uid, action, cfg, turn, feedback):
         claim["influence"] = influence
     set_stage(state, uid, "review", "Reviewing plan claims and proposed action")
     folder = plan_folder(state, action)
-    assessment = assess(action["objective"], claims, folder / "evidence", state.model, plan=plan)
+    assessment = assess(
+        action["objective"],
+        claims,
+        folder / "evidence",
+        state.model,
+        plan=plan,
+        **({"timeout_seconds": budget.consume()} if budget else {}),
+    )
     review = {
         "kind": "fallible_model_plan_review",
         **assessment,
@@ -601,7 +649,7 @@ def draft_plan(objective, output=None):
     }
 
 
-def prepare_plan(state, uid):
+def prepare_plan(state, uid, *, budget=None):
     action = state.get(uid, "action")
     if not state.transition(
         uid,
@@ -615,13 +663,29 @@ def prepare_plan(state, uid):
     try:
         cfg = state.config(action["project"])
         sha = ready(GraphStore(cfg))
-        turn = state.get(action["turn"], "turn")
+        turn = state.get(
+            action["turn"], "workflow_step" if action.get("source_workflow") else "turn"
+        )
+        if action.get("source_workflow"):
+            if (
+                turn["project"] != action["project"]
+                or turn["workflow"] != action["source_workflow"]
+                or turn["status"] != "complete"
+            ):
+                raise ValueError("Workflow source investigation is unavailable")
+            turn = {**turn, "question": turn["objective"]}
         feedback = None
         for attempt in (1, 2):
             action = state.update(uid, plan_attempt=attempt)
             try:
                 output, claims, plan, review, folder = _plan_candidate(
-                    state, uid, action, cfg, turn, feedback
+                    state,
+                    uid,
+                    action,
+                    cfg,
+                    turn,
+                    feedback,
+                    **({"budget": budget} if budget else {}),
                 )
                 break
             except RepairablePlanError as exc:

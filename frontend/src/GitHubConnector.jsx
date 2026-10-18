@@ -301,7 +301,9 @@ export default function GitHubConnector({ project, latestTurn }) {
                   <h3>
                     {draft.status === "published"
                       ? "Published"
-                      : "Review publication"}
+                      : draft.status === "rejected"
+                        ? "Publication rejected"
+                        : "Review publication"}
                   </h3>
                   <p>
                     Publish as <strong>{draft.login}</strong> to{" "}
@@ -317,6 +319,7 @@ export default function GitHubConnector({ project, latestTurn }) {
                     </p>
                   )}
                   <pre>{draft.payload.body}</pre>
+                  {draft.error && <p role="alert">{draft.error}</p>}
                   {draft.status === "draft" && (
                     <button
                       className="primary"

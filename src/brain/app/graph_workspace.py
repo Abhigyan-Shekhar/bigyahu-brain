@@ -66,6 +66,7 @@ def inspect_node(store, uid):
         "sources": [r["uid"] for r in sources[:10]],
         "sources_truncated": len(sources) > 10,
     }
+    result["highlights"] = node_highlights(store, uid, rows[0])
     try:
         if "Source" in node["labels"]:
             result["evidence"] = source_evidence(store, uid)
@@ -83,3 +84,79 @@ def inspect_node(store, uid):
             str(exc)[:500] if isinstance(exc, ValueError) else "Source bytes unavailable"
         )
     return result
+
+
+def work_timeline(store, uid=None):
+    """Current GitHub work and explicitly linked decisions; never mine approval from prose."""
+    sha = ready(store)
+    params = {"repo": store.cfg.repo_id, "uid": uid}
+    prefix = (
+        "MATCH p=(n {repo_id:$repo,uid:$uid})"
+        "-[:DECLARES|CHANGES|REFERENCES|SUPPORTS|SUPPORTED_BY|DISCUSSED_IN*0..3]-(w) "
+        "WHERE all(x IN nodes(p) WHERE x.repo_id=$repo AND coalesce(x.current,true)) "
+        "AND (w:Issue OR w:PR) "
+        if uid else
+        "MATCH (w {repo_id:$repo}) WHERE (w:Issue OR w:PR) AND coalesce(w.current,true) "
+    )
+    rows = store.query(
+        prefix + "RETURN DISTINCT w.uid AS uid,labels(w)[0] AS kind,w.title AS title,"
+        "w.url AS url,w.work_status AS status,w.author AS author,"
+        "w.created_at AS created_at,w.updated_at AS updated_at,w.due_at AS due_at,"
+        "w.deadline_basis AS deadline_basis,w.snapshot_at AS snapshot_at "
+        "ORDER BY due_at IS NULL,due_at,uid LIMIT 201", params,
+    )
+    items = rows[:200]
+    decisions = store.query(
+        "MATCH p=(w {repo_id:$repo})-[:SUPPORTS|DISCUSSED_IN*1..2]->"
+        "(s:Source {repo_id:$repo})<-[:SUPPORTED_BY]-(d:Decision {repo_id:$repo,scope:'org'}) "
+        "WHERE w.uid IN $ids AND all(x IN nodes(p) WHERE x.repo_id=$repo "
+        "AND coalesce(x.current,true)) "
+        "RETURN DISTINCT w.uid AS work_uid,d.uid AS uid,d.text AS text,d.status AS status,"
+        "d.created_at AS created_at,d.approved_at AS approved_at,d.approved_by AS approved_by,"
+        "s.uid AS source_uid,s.uri AS source_url "
+        "ORDER BY created_at DESC,uid LIMIT 501",
+        {"repo": store.cfg.repo_id, "ids": [w["uid"] for w in items]},
+    ) if items else []
+    for item in items:
+        item["decisions"] = [d for d in decisions[:500] if d["work_uid"] == item["uid"]]
+    return {
+        "items": items, "revision": sha, "truncated": len(rows) > 200,
+        "decisions_truncated": len(decisions) > 500,
+        "limits": {"work_items": 200, "decision_links": 500},
+    }
+
+
+def node_highlights(store, uid, properties):
+    params = {"repo": store.cfg.repo_id, "uid": uid}
+    commits = store.query(
+        "MATCH p=(n {repo_id:$repo,uid:$uid})-[:DECLARES|MODIFIES*0..2]-"
+        "(c:Commit {repo_id:$repo}) "
+        "WHERE all(x IN nodes(p) WHERE x.repo_id=$repo AND coalesce(x.current,true)) "
+        "OPTIONAL MATCH (a:Person {repo_id:$repo})-[:AUTHORED]->(c) "
+        "RETURN DISTINCT c.uid AS uid,c.sha AS sha,c.timestamp AS timestamp,a.name AS author "
+        "ORDER BY timestamp DESC,uid LIMIT 1", params,
+    )
+    metadata = store.query(
+        "MATCH (n {repo_id:$repo,uid:$uid}) RETURN n.updated_at AS updated_at,"
+        "n.created_at AS created_at,n.author AS author,n.snapshot_at AS snapshot_at LIMIT 1",
+        params,
+    )[0]
+    return {
+        "last_commit": commits[0] if commits else None,
+        "metadata": metadata,
+        "work": work_timeline(store, uid),
+        "path": properties.get("path"),
+        "live": [],
+        "live_notice": "Human presence is unavailable. Active app runs show planned file scope.",
+    }
+
+
+def active_node_runs(state, project, path):
+    if not path:
+        return []
+    return [
+        {"id": run["id"], "stage": run.get("stage"), "phase": run.get("phase"),
+         "started_at": run.get("phase_started_at"), "basis": "planned_file_scope"}
+        for run in state.list("action", project)
+        if run.get("status") == "running" and path in run.get("plan", {}).get("files", [])
+    ]

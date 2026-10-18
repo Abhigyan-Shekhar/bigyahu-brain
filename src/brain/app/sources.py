@@ -196,7 +196,7 @@ def onboard(state, project, history=True, history_required=False):
         state.update(project, status="failed", stage="Indexing stopped", error=message[:500])
 
 
-def upload_document(state, project, filename, text):
+def upload_document(state, project, filename, text, *, generated_provenance=None):
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_. -]{0,99}\.(?:md|rst)", filename):
         raise ValueError("Upload a Markdown or RST file with a simple filename")
     raw = text.encode("utf-8")
@@ -217,17 +217,23 @@ def upload_document(state, project, filename, text):
     (folder / content).write_bytes(raw)
     source_ids = []
     for start, end, body in prepared:
-        uid = f"{cfg.repo_id}@{sha}:upload:{content}:L{start}-L{end}"
+        origin = "generated" if generated_provenance else "upload"
+        uid = f"{cfg.repo_id}@{sha}:{origin}:{content}:L{start}-L{end}"
         props = {
             "repo_id": cfg.repo_id,
             "revision": sha,
             "current": True,
-            "source_kind": "app_upload",
+            "source_kind": "agent_generated_document" if generated_provenance else "app_upload",
             "path": filename,
             "line_start": start,
             "line_end": end,
             "digest": digest(body),
             "upload_digest": content,
+            **(
+                {"binding": False, "reviewed": True, "generated_provenance": generated_provenance}
+                if generated_provenance
+                else {}
+            ),
         }
         store.upsert(
             "Source",

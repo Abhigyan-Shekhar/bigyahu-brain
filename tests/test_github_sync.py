@@ -38,6 +38,9 @@ class API:
                     "body": "untrusted",
                     "html_url": "https://github.com/test/repo/pull/7",
                     "state": "open",
+                    "created_at": "2026-10-16T00:00:00Z",
+                    "updated_at": "2026-10-17T00:00:00Z",
+                    "milestone": {"due_on": "2026-10-20T00:00:00Z"},
                     "pull_request": {},
                 }
             ]
@@ -84,6 +87,8 @@ def test_complete_batch_has_disjoint_comment_ids_and_immutable_sources(tmp_path,
 
     manifest, records = read_snapshot(tmp_path / "capture")
     assert manifest["immutable_sources"] is True
+    assert records[0]["updated_at"] == "2026-10-17T00:00:00Z"
+    assert records[0]["milestone"]["due_on"] == "2026-10-20T00:00:00Z"
     assert records[0]["reviews_snapshot"][0]["id"] == "review:1"
     assert {c["id"] for c in records[0]["comments_snapshot"]} == {"issue:1", "inline:1"}
     assert result["cursor"]

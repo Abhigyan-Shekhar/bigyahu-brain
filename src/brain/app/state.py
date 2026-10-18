@@ -24,7 +24,10 @@ class State:
                 body = json.loads(row["body"])
                 if body.get("status") in {"queued", "running"}:
                     body.update(
-                        status="failed", error="Application stopped; start a new job to retry."
+                        status="unknown" if body.get("delivery_started") else "failed",
+                        error="Application stopped during email sending. Check with your provider before sending again."
+                        if body.get("delivery_started")
+                        else "Application stopped; start a new job to retry.",
                     )
                     db.execute(
                         "UPDATE objects SET body=? WHERE id=?", (json.dumps(body), row["id"])
@@ -35,12 +38,12 @@ class State:
         db.row_factory = sqlite3.Row
         return db
 
-    def create(self, kind, parent="", **body):
+    def create(self, object_kind, parent="", **body):
         uid = uuid.uuid4().hex
         value = dict(id=uid, **body)
         with self.connect() as db:
             db.execute(
-                "INSERT INTO objects VALUES(?,?,?,?)", (uid, kind, parent, json.dumps(value))
+                "INSERT INTO objects VALUES(?,?,?,?)", (uid, object_kind, parent, json.dumps(value))
             )
         return value
 
@@ -53,6 +56,7 @@ class State:
 
     def update(self, uid, **fields):
         with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
             row = db.execute("SELECT body FROM objects WHERE id=?", (uid,)).fetchone()
             body = {**json.loads(row["body"]), **fields}
             db.execute("UPDATE objects SET body=? WHERE id=?", (json.dumps(body), uid))

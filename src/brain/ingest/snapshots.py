@@ -80,6 +80,17 @@ def ingest_snapshots(store, directory, authorized_private=False):
             "revision_basis": "indexed_checkout_not_source_revision",
             "snapshot_at": manifest["collected_at"],
         }
+        # Event time is distinct from collection time. Updated_at does not identify
+        # an editor; GitHub's issue API supplies only the original author here.
+        activity = {
+            "author": (record.get("user") or {}).get("login"),
+            "created_at": record.get("created_at"),
+            "updated_at": record.get("updated_at"),
+            "closed_at": record.get("closed_at"),
+            "due_at": (record.get("milestone") or {}).get("due_on"),
+            "deadline_basis": "github_milestone"
+            if (record.get("milestone") or {}).get("due_on") else None,
+        }
         store.upsert(
             label,
             uid,
@@ -91,6 +102,7 @@ def ingest_snapshots(store, directory, authorized_private=False):
                 "url": record["html_url"],
                 "snapshot_at": manifest["collected_at"],
                 **provenance,
+                **activity,
             },
         )
         source = source_id(uid, record["body"], record["html_url"])
@@ -115,12 +127,20 @@ def ingest_snapshots(store, directory, authorized_private=False):
                 "snapshot_at": manifest["collected_at"],
                 "revision": manifest["sha"],
                 **provenance,
+                **activity,
             },
         )
         store.edge(uid, "SUPPORTS", source)
         for comment in record.get("comments_snapshot", []) + record.get("reviews_snapshot", []):
             cid = f"{uid}:comment:{comment['id']}"
-            store.upsert("Comment", cid, {"repo_id": store.cfg.repo_id, "url": comment["html_url"]})
+            comment_activity = {
+                "author": (comment.get("user") or {}).get("login"),
+                "created_at": comment.get("created_at") or comment.get("submitted_at"),
+                "updated_at": comment.get("updated_at"),
+            }
+            store.upsert("Comment", cid, {
+                "repo_id": store.cfg.repo_id, "url": comment["html_url"], **comment_activity,
+            })
             sid = source_id(cid, comment.get("body"), comment["html_url"])
             source_urls[sid] = comment["html_url"]
             store.upsert(
@@ -132,6 +152,7 @@ def ingest_snapshots(store, directory, authorized_private=False):
                     "excerpt": comment.get("body") or "",
                     "snapshot_at": manifest["collected_at"],
                     **provenance,
+                    **comment_activity,
                 },
             )
             store.edge(uid, "DISCUSSED_IN", cid)

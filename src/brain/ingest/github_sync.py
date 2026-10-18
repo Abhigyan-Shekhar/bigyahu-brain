@@ -111,7 +111,10 @@ def sync_github(store, output, api=None, reconcile=False):
         raise ValueError("Incremental batch too large; partition repositories")
     records = []
     for number, item in sorted(work.items()):
-        record = {k: item.get(k) for k in ("number", "title", "body", "html_url", "state")}
+        record = {k: item.get(k) for k in (
+            "number", "title", "body", "html_url", "state", "user",
+            "created_at", "updated_at", "closed_at", "milestone",
+        )}
         record["comments_snapshot"] = api.pages(base + f"/issues/{number}/comments")
         for comment in record["comments_snapshot"]:
             comment["id"] = "issue:" + str(comment["id"])

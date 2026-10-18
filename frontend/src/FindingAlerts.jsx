@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ShieldAlert, FileText, ArrowRight, MapPin } from "lucide-react";
+import ProblemLocation from "./ProblemLocation";
 
 const rank = { critical: 0, high: 1, medium: 2, low: 3, info: 4 };
 export default function FindingAlerts({ turn, onEvidence, onPlan }) {
@@ -100,6 +101,7 @@ export default function FindingAlerts({ turn, onEvidence, onPlan }) {
               </header>
               <h4>{finding.title}</h4>
               <p className="finding-impact">{claim.text}</p>
+              <ProblemLocation location={finding.location} sources={sources} onEvidence={onEvidence} />
               <div className="finding-recommendation">
                 <strong>Recommended fix</strong>
                 <p>{finding.recommendation}</p>

@@ -163,7 +163,7 @@ def source_evidence(store, source_uid):
         proof = code_evidence(store, row["path"], row["start"], row["end"])
         if proof["text"] != text:
             raise ValueError("Document source differs from current file bytes")
-    elif row["kind"] == "app_upload":
+    elif row["kind"] in {"app_upload", "agent_generated_document"}:
         upload = row["upload_digest"]
         if not isinstance(upload, str) or not re.fullmatch("[a-f0-9]{64}", upload):
             raise ValueError("Invalid upload identity")

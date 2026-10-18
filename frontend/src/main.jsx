@@ -37,6 +37,11 @@ import IngestionPanel from "./IngestionPanel";
 import PersonalBrain from "./PersonalBrain";
 import TeamBrain from "./TeamBrain";
 import GitHubConnector from "./GitHubConnector";
+import EmailConnector from "./EmailConnector";
+import DocumentationPanel from "./DocumentationPanel";
+import WorkflowPanel from "./WorkflowPanel";
+import DeadlinePanel from "./DeadlinePanel";
+import LiveWork from "./LiveWork";
 
 const fragment = location.hash.slice(1);
 if (fragment) {
@@ -98,6 +103,18 @@ function App() {
   }, [mode, graphMode, graph]);
   const inspectRequest = useRef(0);
   const evidenceRequest = useRef(0);
+  useEffect(() => {
+    const uid = graphSelection?.node?.id;
+    if (mode !== "graph" || !uid || uid.startsWith("memory:") || graphSelection.node.labels?.includes("Cluster")) return;
+    const request = inspectRequest.current;
+    let live = true;
+    const timer = setInterval(() => {
+      api(`/repositories/${project}/graph/node?uid=${encodeURIComponent(uid)}`)
+        .then((detail) => { if (live && request === inspectRequest.current) setGraphInspection(detail); })
+        .catch((error) => { if (live && request === inspectRequest.current) setGraphInspection({ error: error.message }); });
+    }, 10000);
+    return () => { live = false; clearInterval(timer); };
+  }, [project, mode, graphSelection]);
   useEffect(() => {
     setRunId(null);
     setGraphSelection(null);
@@ -577,6 +594,10 @@ function App() {
         >
           <Activity size={17} /> Agent Runs
         </button>
+        <button className={"nav " + (mode === "deadlines" ? "active" : "")}
+          onClick={() => { setGraphSelection(null); setSelected(null); setMode("deadlines"); }}>
+          <Activity size={17} /> Deadlines
+        </button>
         <button
           className={"nav " + (mode === "memory" ? "active" : "")}
           onClick={() => setMode("memory")}
@@ -695,6 +716,10 @@ function App() {
             <span className="dot ready" /> Local workspace
           </span>
         </header>
+        {project && <LiveWork key={project} project={project} onNavigate={(item) => {
+          if (item.kind === "investigation") returnToInvestigation({ ...item, turn: item.id });
+          else openRun(item.id);
+        }} />}
         {error && (
           <div className="error" role="alert">
             <CircleAlert size={16} />
@@ -825,6 +850,8 @@ function App() {
                       ? "From an issue to an evidence-backed fix."
                       : mode === "runs"
                         ? "Agent runs"
+                        : mode === "deadlines"
+                          ? "Deadlines and decisions"
                         : "Explore your knowledge graph"}
                   </h2>
                   {mode === "chat" && (
@@ -840,7 +867,10 @@ function App() {
                   )}
                 </div>
                 <div className="workspace-actions">
+                <DocumentationPanel key={`docs-${project}`} project={project} sourceTurn={turns.filter((turn) => turn.status === "complete").at(-1)} />
+                <WorkflowPanel key={`workflow-${project}`} project={project} sourceTurn={turns.filter((turn) => turn.status === "complete").at(-1)} />
                 <GitHubConnector key={project} project={project} latestTurn={turns.at(-1)} />
+                <EmailConnector key={`email-${project}`} project={project} latestTurn={turns.filter((turn) => turn.status === "complete").at(-1)} />
                 {mode === "chat" && <button className="context-toggle" aria-expanded={contextOpen}
                   aria-controls="context-panel" onClick={() => {
                     setContextOpen(!contextOpen);
@@ -1175,6 +1205,8 @@ function App() {
                       : "Directed links come from FalkorDB. The focused view uses loaded connections; expand a node to fetch more, or show all loaded entities. A graph connection is navigation context, not proof of causality."}
                   </p>
                 </>
+              ) : mode === "deadlines" ? (
+                <DeadlinePanel project={project} onNode={(uid) => { setMode("graph"); inspectGraphUid(uid); }} />
               ) : mode === "runs" ? (
                 <React.Suspense
                   fallback={<p role="status">Loading Agent Runs…</p>}
@@ -1421,6 +1453,7 @@ function App() {
                                     </div>
                                   </details>
                                   <FixLauncher turn={t} onRun={openRun} />
+                                  <DocumentationPanel project={project} sourceTurn={t} label="Create documentation" />
                                 </>
                               )}
                             </div>

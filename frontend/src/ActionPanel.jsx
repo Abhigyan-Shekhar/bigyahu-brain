@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Check,
   LoaderCircle,
-  Play,
   FileText,
   X,
   Download,
@@ -13,6 +12,8 @@ import { api, send, watchResource } from "./api";
 import ActivityStream from "./ActivityStream";
 import LiveDiff from "./LiveDiff";
 import ExecutionRecovery from "./ExecutionRecovery";
+import ApprovalDecision from "./ApprovalDecision";
+import DocumentationPanel from "./DocumentationPanel";
 import { elapsedLabel, testSummary } from "./actionPresentation";
 
 function contributionLabel(support) {
@@ -438,6 +439,7 @@ export default function ActionPanel({
               aria-label="Verification results"
             >
               <div className="outcome-heading">
+                <DocumentationPanel project={project} sourceTurn={turn} sourceAction={action} label="Document this patch run" />
                 <span className="eyebrow">EXECUTION OUTCOME</span>
                 <h3>
                   {action.regression_demonstrated
@@ -758,30 +760,16 @@ export default function ActionPanel({
                 Approval authorizes only this plan’s files and test commands in
                 a separate checkout. Your indexed source stays unchanged.
               </p>
-              <div>
-                <button
-                  disabled={submitting}
-                  onClick={async () => {
+              <ApprovalDecision key={action.plan_digest} action={action} busy={submitting} error={error}
+                  onChanges={async () => {
                     if (!(await decide("reject"))) return;
                     setForm(true);
                     setStageNotice(
                       "The old plan is closed. Revise the objective below and prepare a new plan for fresh approval.",
                     );
+                    return true;
                   }}
-                >
-                  Request changes
-                </button>
-                <button disabled={submitting} onClick={() => decide("reject")}>
-                  <X size={14} /> Reject plan
-                </button>
-                <button
-                  className="primary"
-                  disabled={submitting}
-                  onClick={() => decide("approve")}
-                >
-                  <Play size={14} /> Approve isolated execution
-                </button>
-              </div>
+                  onReject={() => decide("reject")} onApprove={() => decide("approve")} />
             </div>
           )}
           {action.approval && action.status !== "awaiting_approval" && (
