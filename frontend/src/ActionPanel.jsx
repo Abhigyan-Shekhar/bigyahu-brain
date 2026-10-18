@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { api, send } from "./api";
+import ActivityStream from "./ActivityStream";
 import { elapsedLabel, testSummary } from "./actionPresentation";
 
 function contributionLabel(support) {
@@ -273,7 +274,19 @@ export default function ActionPanel({
         </div>
         <ol className="workflow-stages" aria-label="Fix workflow stages">
           {stages.map((label, i) => (
-            <li key={label}>
+            <li
+              key={label}
+              className={
+                i < stageIndex ||
+                (i === 4 &&
+                  action?.status === "complete" &&
+                  action.tests_passed)
+                  ? "stage-done"
+                  : i === stageIndex
+                    ? "stage-current"
+                    : "stage-pending"
+              }
+            >
               <button
                 type="button"
                 onClick={() => jumpToStage(i)}
@@ -282,6 +295,16 @@ export default function ActionPanel({
                 }
                 aria-label={`Go to ${label.toLowerCase()}`}
               >
+                <span className="stage-marker">
+                  {i < stageIndex ||
+                  (i === 4 &&
+                    action?.status === "complete" &&
+                    action.tests_passed) ? (
+                    <Check size={14} />
+                  ) : (
+                    i + 1
+                  )}
+                </span>
                 {label}
               </button>
             </li>
@@ -343,20 +366,25 @@ export default function ActionPanel({
       )}
       {action && (
         <>
-          <div className="action-state agent-step" role="status">
-            {["queued", "running"].includes(action.status) ? (
-              <LoaderCircle className="spin" size={14} />
-            ) : action.status === "complete" &&
-              action.regression_demonstrated ? (
-              <Check size={14} />
-            ) : null}
-            <div>
-              <small>
-                {action.phase === "execution" ? "EXECUTION" : "FIX WORKFLOW"}
-              </small>
-              <strong>{action.stage}</strong>
+          {["running", "queued"].includes(action.status) && (
+            <ActivityStream turn={action} />
+          )}
+          {!["complete", "running", "queued"].includes(action.status) && (
+            <div className="action-state agent-step" role="status">
+              {["queued", "running"].includes(action.status) ? (
+                <LoaderCircle className="spin" size={14} />
+              ) : action.status === "complete" &&
+                action.regression_demonstrated ? (
+                <Check size={14} />
+              ) : null}
+              <div>
+                <small>
+                  {action.phase === "execution" ? "EXECUTION" : "FIX WORKFLOW"}
+                </small>
+                <strong>{action.stage}</strong>
+              </div>
             </div>
-          </div>
+          )}
           {action.error && (
             <div className="failure" role="alert">
               <strong>
@@ -372,39 +400,6 @@ export default function ActionPanel({
               </p>
             </div>
           )}
-          {action.progress && (
-            <div className="action-progress">
-              <span>
-                {elapsedLabel(action.progress.elapsed_seconds)} ·{" "}
-                {action.progress.completed_count} completed tool actions
-              </span>
-              {action.progress.current_tool && (
-                <span>Current tool: {action.progress.current_tool}</span>
-              )}
-              <details>
-                <summary>
-                  Tool activity{" "}
-                  {action.progress.trace_bounded ? "(bounded trace)" : ""}
-                </summary>
-                {action.progress.completed_tools.length ? (
-                  <ol>
-                    {action.progress.completed_tools.map((item, i) => (
-                      <li key={i}>
-                        {item.tool} · {item.status}
-                      </li>
-                    ))}
-                  </ol>
-                ) : (
-                  <p>No completed tool actions recorded yet.</p>
-                )}
-                <small>
-                  Tool names and completion events only. Evidence review and
-                  test stages are reported above; no progress percentage is
-                  estimated.
-                </small>
-              </details>
-            </div>
-          )}
           {action.status === "complete" && (
             <div
               className="action-outcome workflow-target"
@@ -412,68 +407,146 @@ export default function ActionPanel({
               tabIndex={-1}
               aria-label="Verification results"
             >
-              <div
-                className="test-comparison"
-                aria-label="Before and after test results"
-              >
-                {[
-                  ["Original + proposed tests", action.baseline_tests],
-                  ["Patched code", action.tests],
-                ].map(([label, results]) => (
-                  <div key={label}>
-                    <strong>{label}</strong>
-                    {results?.length ? (
-                      results.map((t, i) => {
-                        const summary = testSummary(t);
-                        return (
-                          <div key={i} className="test-count-summary">
-                            <p
-                              className={
-                                t.passed && t.tests_reported > 0
-                                  ? "test-pass"
-                                  : "failure"
-                              }
-                            >
-                              {t.passed && t.tests_reported > 0
-                                ? "Command passed"
-                                : t.outcome === "exited" && t.exit_code !== 0
-                                  ? "Command failed"
-                                  : "Unverified"}{" "}
-                              · exit {t.exit_code ?? "unknown"}
-                            </p>
-                            <p>
-                              {summary.count ?? "Unknown"} {summary.unit}
-                            </p>
-                            {(summary.failures !== null ||
-                              summary.errors !== null) && (
-                              <p>
-                                {summary.failures ?? "Unknown"} assertion
-                                failures
-                                {summary.errors !== null
-                                  ? ` · ${summary.errors} test errors / unexpected exceptions`
-                                  : ""}
-                              </p>
-                            )}
-                            {summary.subtests > 0 && (
-                              <p>
-                                {summary.detailsComplete
-                                  ? summary.subtests
-                                  : `At least ${summary.subtests}`}{" "}
-                                subtest failures
-                                {summary.detailsComplete
-                                  ? ` · ${summary.failures - summary.subtests} method/case failures`
-                                  : " visible in retained log; failure details may be truncated"}
-                              </p>
-                            )}
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <p>No test results recorded</p>
-                    )}
-                  </div>
-                ))}
+              <div className="outcome-heading">
+                <span className="eyebrow">EXECUTION OUTCOME</span>
+                <h3>
+                  {action.regression_demonstrated
+                    ? "The approved tests now pass."
+                    : action.tests_passed
+                      ? "Tests passed. Fix needs review."
+                      : "Execution finished. Tests need attention."}
+                </h3>
               </div>
+              <div className="outcome-scoreboard">
+                {[
+                  ["Baseline", action.baseline_tests],
+                  ["Patched", action.tests],
+                ].map(([label, results]) => {
+                  const passed =
+                    results?.filter(
+                      (t) =>
+                        t.passed &&
+                        t.tests_reported > 0 &&
+                        t.exit_code === 0 &&
+                        t.outcome === "exited",
+                    ).length || 0;
+                  const summaries = (results || []).map(testSummary);
+                  const counted =
+                    summaries.length > 0 &&
+                    summaries.every(
+                      (t) => t.failures !== null && t.errors !== null,
+                    );
+                  const failures = summaries.reduce(
+                    (n, t) => n + (t.failures || 0),
+                    0,
+                  );
+                  const errors = summaries.reduce(
+                    (n, t) => n + (t.errors || 0),
+                    0,
+                  );
+                  return (
+                    <div
+                      key={label}
+                      className={
+                        passed === results?.length && passed > 0
+                          ? "score-pass"
+                          : "score-review"
+                      }
+                    >
+                      <span>{label}</span>
+                      <strong>
+                        {counted
+                          ? failures
+                          : results?.length
+                            ? `${passed}/${results.length}`
+                            : "—"}
+                      </strong>
+                      <small>
+                        {counted
+                          ? `assertion failures · ${errors} errors`
+                          : results?.length
+                            ? "test commands passed"
+                            : "No results recorded"}
+                      </small>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="verification-ledger">
+                <span>
+                  <Check size={13} /> Execution finished
+                </span>
+                <span>
+                  {action.tests_passed ? "Tests passed" : "Tests need review"}
+                </span>
+                <span>Independent bug review: not recorded</span>
+                <span>Source checkout: unchanged</span>
+              </div>
+              <details className="test-result-details">
+                <summary>Inspect test counts and runner details</summary>
+                <div
+                  className="test-comparison"
+                  aria-label="Before and after test results"
+                >
+                  {[
+                    ["Original + proposed tests", action.baseline_tests],
+                    ["Patched code", action.tests],
+                  ].map(([label, results]) => (
+                    <div key={label}>
+                      <strong>{label}</strong>
+                      {results?.length ? (
+                        results.map((t, i) => {
+                          const summary = testSummary(t);
+                          return (
+                            <div key={i} className="test-count-summary">
+                              <p
+                                className={
+                                  t.passed && t.tests_reported > 0
+                                    ? "test-pass"
+                                    : "failure"
+                                }
+                              >
+                                {t.passed && t.tests_reported > 0
+                                  ? "Command passed"
+                                  : t.outcome === "exited" && t.exit_code !== 0
+                                    ? "Command failed"
+                                    : "Unverified"}{" "}
+                                · exit {t.exit_code ?? "unknown"}
+                              </p>
+                              <p>
+                                {summary.count ?? "Unknown"} {summary.unit}
+                              </p>
+                              {(summary.failures !== null ||
+                                summary.errors !== null) && (
+                                <p>
+                                  {summary.failures ?? "Unknown"} assertion
+                                  failures
+                                  {summary.errors !== null
+                                    ? ` · ${summary.errors} test errors / unexpected exceptions`
+                                    : ""}
+                                </p>
+                              )}
+                              {summary.subtests > 0 && (
+                                <p>
+                                  {summary.detailsComplete
+                                    ? summary.subtests
+                                    : `At least ${summary.subtests}`}{" "}
+                                  subtest failures
+                                  {summary.detailsComplete
+                                    ? ` · ${summary.failures - summary.subtests} method/case failures`
+                                    : " visible in retained log; failure details may be truncated"}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p>No test results recorded</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </details>
               <p className="action-note">
                 Verification:{" "}
                 {action.regression_demonstrated
@@ -482,8 +555,50 @@ export default function ActionPanel({
               </p>
             </div>
           )}
+          {action.progress &&
+            !["running", "queued"].includes(action.status) && (
+              <details
+                className="action-progress"
+                open={action.status !== "complete"}
+              >
+                <summary>Recorded tool activity</summary>
+                <span>
+                  {elapsedLabel(action.progress.elapsed_seconds)} ·{" "}
+                  {action.progress.completed_count} completed tool actions
+                </span>
+                {action.progress.current_tool && (
+                  <span>Current tool: {action.progress.current_tool}</span>
+                )}
+                <details>
+                  <summary>
+                    Tool activity{" "}
+                    {action.progress.trace_bounded ? "(bounded trace)" : ""}
+                  </summary>
+                  {action.progress.completed_tools.length ? (
+                    <ol>
+                      {action.progress.completed_tools.map((item, i) => (
+                        <li key={i}>
+                          {item.tool} · {item.status}
+                        </li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p>No completed tool actions recorded yet.</p>
+                  )}
+                  <small>
+                    Tool names and completion events only. Evidence review and
+                    test stages are reported above; no progress percentage is
+                    estimated.
+                  </small>
+                </details>
+              </details>
+            )}
           {action.plan && (
-            <div className="action-brief">
+            <details
+              className="action-brief"
+              open={action.status === "awaiting_approval"}
+            >
+              <summary>Why this fix? · Plan rationale & evidence</summary>
               <strong>{action.plan.summary}</strong>
               <p>
                 {action.plan.files.length} permitted files ·{" "}
@@ -512,7 +627,7 @@ export default function ActionPanel({
                 memories remain advisory. Inspect the full plan and sources
                 before approval.
               </p>
-            </div>
+            </details>
           )}
           {action.plan && (
             <details

@@ -20,7 +20,19 @@ def overview(store, grouping):
         "MATCH (n {repo_id:$repo}) WHERE coalesce(n.current,true) RETURN count(n) AS nodes",
         {"repo": store.cfg.repo_id},
     )
+    target_expression = expression.replace("n.", "m.").replace("labels(n)", "labels(m)")
+    links = store.query(
+        "MATCH (n {repo_id:$repo})-[r]->(m {repo_id:$repo}) "
+        "WHERE coalesce(n.current,true) AND coalesce(m.current,true) "
+        f"WITH {expression} AS source,{target_expression} AS target,"
+        "type(r) AS relation,count(r) AS count "
+        "RETURN source,target,relation,count ORDER BY count DESC,source,target,relation LIMIT 201",
+        {"repo": store.cfg.repo_id},
+    )
     return {
+        "relationships": links[:200],
+        "relationships_truncated": len(links) > 200,
+        "relationship_limit": 200,
         "grouping": grouping,
         "groups": groups[:100],
         "total_nodes": totals[0]["nodes"],

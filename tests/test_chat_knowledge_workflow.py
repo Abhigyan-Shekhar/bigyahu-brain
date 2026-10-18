@@ -146,11 +146,21 @@ def test_upload_queues_graphify_connects_code_and_paginates_native_graph(
             assert any(
                 g["key"] == "Document" and g["count"] >= 107 for g in overview.json()["groups"]
             )
+            assert any(
+                r["source"] == "Document" and r["target"] == "File"
+                and r["relation"] == "MENTIONS" and r["count"] >= 1
+                for r in overview.json()["relationships"]
+            )
             folder_view = client.get(
                 f"/api/repositories/{project['id']}/graph/overview?grouping=folder", headers=headers
             )
             assert folder_view.status_code == 200, folder_view.text
             assert any(g["key"] == "(root)" for g in folder_view.json()["groups"])
+            assert any(
+                r["source"] == "(root)" and r["target"] == "(root)"
+                and r["relation"] == "MENTIONS"
+                for r in folder_view.json()["relationships"]
+            )
             only_files = client.get(
                 f"/api/repositories/{project['id']}/graph?kind=File", headers=headers
             )
