@@ -67,3 +67,26 @@ def test_annotated_model_path_explains_retry(tmp_path):
         validate_plan(
             {"summary": "Fix conversion", "files": ["tests/test_timed.py (new)"]}, tmp_path
         )
+
+
+def test_investigation_activity_uses_only_safe_recorded_tools(tmp_path):
+    from brain.app.activity import investigation_progress
+
+    state = SimpleNamespace(folder=lambda _: tmp_path)
+    result = investigation_progress(
+        state,
+        {
+            "id": "turn",
+            "project": "repo",
+            "status": "complete",
+            "tools": [
+                {"tool": "read_code", "status": "completed", "arguments": "not public"},
+                {"tool": "memory_search", "status": "unexpected model status"},
+                {"tool": "private_reasoning", "status": "completed"},
+            ],
+        },
+    )
+    assert result["completed_count"] == 2
+    assert result["completed_tools"][1]["status"] == "unverified"
+    assert "not public" not in str(result)
+    assert result["elapsed_seconds"] is None

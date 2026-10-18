@@ -48,6 +48,9 @@ export default function ActionPanel({
   project,
   onEvidence,
   onReviewMemory,
+  actionId,
+  onAction,
+  onInvestigation,
 }) {
   const [focused, setFocused] = useState(false);
   const dialog = useRef(null);
@@ -62,6 +65,10 @@ export default function ActionPanel({
     setSelectedStage(index);
     if (index === 0) {
       setFocused(false);
+      if (onInvestigation) {
+        onInvestigation();
+        return;
+      }
       requestAnimationFrame(() => {
         const investigation = document.getElementById(
           `investigation-${turn.id}`,
@@ -106,6 +113,7 @@ export default function ActionPanel({
     else if (wasFocused.current) focusButton.current?.focus();
     wasFocused.current = focused;
   }, [focused]);
+  const [loading, setLoading] = useState(true);
   const [action, setAction] = useState(null),
     [form, setForm] = useState(false),
     [objective, setObjective] = useState(turn.question),
@@ -114,21 +122,29 @@ export default function ActionPanel({
     [lessonNotice, setLessonNotice] = useState("");
   useEffect(() => {
     let active = true;
-    api(`/turns/${turn.id}/actions`)
-      .then((list) => {
-        if (list.length) return api(`/actions/${list.at(-1).id}`);
-      })
+    setLoading(true);
+    (actionId
+      ? api(`/actions/${actionId}`)
+      : api(`/turns/${turn.id}/actions`).then((list) => {
+          if (list.length) return api(`/actions/${list.at(-1).id}`);
+        })
+    )
       .then((a) => {
         if (active && a) {
           setAction(a);
           setObjective(a.objective || turn.question);
         }
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => {
+        if (active) setError(e.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
-  }, [turn.id]);
+  }, [turn.id, actionId]);
   useEffect(() => {
     if (
       !action ||
@@ -155,9 +171,11 @@ export default function ActionPanel({
     setSubmitting(true);
     setError("");
     try {
-      setAction(
-        await send(`/turns/${turn.id}/actions`, { question: objective }),
-      );
+      const next = await send(`/turns/${turn.id}/actions`, {
+        question: objective,
+      });
+      setAction(next);
+      onAction?.(next);
       setForm(false);
     } catch (e) {
       setError(e.message);
@@ -175,8 +193,10 @@ export default function ActionPanel({
           choice === "approve" ? { plan_digest: action.plan_digest } : {},
         ),
       );
+      return true;
     } catch (e) {
       setError(e.message);
+      return false;
     } finally {
       setSubmitting(false);
     }
@@ -236,7 +256,7 @@ export default function ActionPanel({
               <Download size={13} /> Download final patch
             </button>
           )}
-          {!busy && !form && (
+          {!loading && !busy && !form && (
             <button
               onClick={() => {
                 setObjective(action?.objective || objective);
@@ -268,6 +288,7 @@ export default function ActionPanel({
           ))}
         </ol>
       </div>
+      {loading && <p role="status">Loading saved action…</p>}
       {stageNotice && (
         <p
           className="action-note workflow-target"
@@ -584,6 +605,18 @@ export default function ActionPanel({
                 a separate checkout. Your indexed source stays unchanged.
               </p>
               <div>
+                <button
+                  disabled={submitting}
+                  onClick={async () => {
+                    if (!(await decide("reject"))) return;
+                    setForm(true);
+                    setStageNotice(
+                      "The old plan is closed. Revise the objective below and prepare a new plan for fresh approval.",
+                    );
+                  }}
+                >
+                  Request changes
+                </button>
                 <button disabled={submitting} onClick={() => decide("reject")}>
                   <X size={14} /> Reject plan
                 </button>

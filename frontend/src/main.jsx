@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ReactFlow, Background, Controls, MarkerType, getViewportForBounds } from "@xyflow/react";
+
 import {
   BrainCircuit,
   Network,
@@ -17,12 +17,17 @@ import {
   ChevronRight,
   PanelRightClose,
   CircleAlert,
+  Activity,
 } from "lucide-react";
 import "@xyflow/react/dist/style.css";
 import "./style.css";
 import { api, send } from "./api";
-import ActionPanel from "./ActionPanel";
-import { evidencePath } from "./graphPresentation";
+const AgentRuns = React.lazy(() => import("./AgentRuns"));
+import FixLauncher from "./FixLauncher";
+const GraphInspector = React.lazy(() => import("./GraphInspector"));
+import ActivityStream from "./ActivityStream";
+import { selectionContext, graphQuestion } from "./workspaceContext";
+import Graph from "./GraphViewer";
 import IngestionPanel from "./IngestionPanel";
 import PersonalBrain from "./PersonalBrain";
 import TeamBrain from "./TeamBrain";
@@ -31,259 +36,6 @@ const fragment = location.hash.slice(1);
 if (fragment) {
   sessionStorage.setItem("company-brain-token", fragment);
   history.replaceState(null, "", location.pathname);
-}
-function Graph({ graph, compact = false, onExpand }) {
-  const canvas = useRef(null);
-  const flow = useRef(null);
-  const fitFrame = useRef(null);
-  const fitted = useRef(false);
-  const fitAttempts = useRef(0);
-  function fitVisibleCanvas() {
-    const bounds = canvas.current?.getBoundingClientRect();
-    if (!canvas.current?.checkVisibility() || fitted.current || !bounds?.width || !bounds?.height) return;
-    cancelAnimationFrame(fitFrame.current);
-    fitFrame.current = requestAnimationFrame(async () => {
-      const visible = canvas.current?.getBoundingClientRect();
-      if (!canvas.current?.checkVisibility() || fitted.current || !flow.current || !visible?.width || !visible?.height) return;
-      const instance = flow.current;
-      const measuredNodes = instance.getNodes();
-      if (!measuredNodes.length || measuredNodes.some((n) => !instance.getInternalNode(n.id)?.measured?.width || !instance.getInternalNode(n.id)?.measured?.height)) {
-        if (++fitAttempts.current < 60) fitVisibleCanvas();
-        return;
-      }
-      const target = getViewportForBounds(
-        instance.getNodesBounds(measuredNodes), visible.width, visible.height,
-        0.02, 1.5, onExpand || compact ? 0.25 : 0.1,
-      );
-      const result = await instance.setViewport(target);
-      if (result) fitted.current = true;
-    });
-  }
-  useEffect(() => {
-    // A collapsed <details> has no usable viewport. Refit after its real canvas
-    // dimensions first become available. Later resizes preserve pan and zoom;
-    // the existing Fit View control remains the explicit way to reset them.
-    const observer = new ResizeObserver(fitVisibleCanvas);
-    if (canvas.current) observer.observe(canvas.current);
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(fitFrame.current);
-    };
-  }, []);
-  const [selectedEdge, setSelectedEdge] = useState(null);
-  const [expandTarget, setExpandTarget] = useState("");
-  const [pathTarget, setPathTarget] = useState("");
-  const [pathOnly, setPathOnly] = useState(false);
-  const path = pathOnly ? evidencePath(graph, expandTarget, pathTarget) : null;
-  useEffect(() => setSelectedEdge(null), [graph]);
-  const groups = {};
-  const visibleIds = new Set();
-  if (compact) {
-    for (const edge of graph?.edges || []) {
-      if (visibleIds.size >= 6) break;
-      visibleIds.add(edge.source);
-      visibleIds.add(edge.target);
-    }
-    if (!visibleIds.size)
-      (graph?.nodes || []).slice(0, 6).forEach((n) => visibleIds.add(n.id));
-  }
-  const visibleNodes = (graph?.nodes || []).filter((n) =>
-    path ? path.nodes.includes(n.id) : !compact || visibleIds.has(n.id),
-  );
-  const kinds = [...new Set(visibleNodes.map((n) => n.labels?.[0] || "Node"))];
-  const nodes = visibleNodes.map((n, nodeIndex) => {
-    const kind = n.labels?.[0] || "Node";
-    const key = kinds.indexOf(kind);
-    const i = groups[key] || 0;
-    groups[key] = i + 1;
-    return {
-      id: n.id,
-      displayLabel: n.label,
-      sourcePosition: "right",
-      targetPosition: "left",
-      position: path
-        ? { x: path.nodes.indexOf(n.id) * 280, y: 0 }
-        : compact
-          ? { x: (nodeIndex % 2) * 180, y: Math.floor(nodeIndex / 2) * 95 }
-          : !onExpand
-            ? { x: (nodeIndex % 3) * 260, y: Math.floor(nodeIndex / 3) * 110 }
-            : { x: key * 260, y: i * 95 },
-      data: {
-        label: (
-          <>
-            <small>{kind}</small>
-            <span title={n.id}>{n.label.split("/").slice(-2).join("/")}</span>
-          </>
-        ),
-      },
-      style: { width: compact ? 150 : 220 },
-    };
-  });
-  const ids = new Set(nodes.map((n) => n.id));
-  const edges = (graph?.edges || [])
-    .map((e, i) => ({ ...e, recordedIndex: i }))
-    .filter(
-      (e) =>
-        ids.has(e.source) &&
-        ids.has(e.target) &&
-        (!path || path.edges.includes(e.recordedIndex)),
-    )
-    .map((e) => ({
-      ...e,
-      id: String(e.recordedIndex),
-      label: e.relation,
-      data: e,
-      markerEnd: { type: MarkerType.ArrowClosed },
-      style: { stroke: "#8b80bd" },
-      labelStyle: { fontSize: compact ? 11 : 12 },
-    }));
-  return (
-    <div className={"graph " + (compact ? "compact" : "")}>
-      {!compact && (
-        <div className="graph-toolbar" aria-label="Graph controls">
-          {onExpand && !compact && (
-            <div className="graph-node-picker">
-              <select
-                aria-label="Start node or node to expand"
-                value={expandTarget}
-                onChange={(e) => {
-                  setExpandTarget(e.target.value);
-                  setPathOnly(false);
-                }}
-              >
-                <option value="">Choose a node…</option>
-                {(graph?.nodes || []).map((n) => (
-                  <option key={n.id} value={n.id}>
-                    {n.label}
-                  </option>
-                ))}
-              </select>
-              <button
-                disabled={!expandTarget}
-                onClick={() => onExpand(expandTarget)}
-              >
-                Expand neighbors
-              </button>
-            </div>
-          )}
-          {edges.length > 0 && !compact && (
-            <select
-              className="graph-edge-picker"
-              aria-label="Inspect relationship"
-              value={
-                edges.find(
-                  (e) => e.data.recordedIndex === selectedEdge?.recordedIndex,
-                )?.id ?? ""
-              }
-              onChange={(event) =>
-                setSelectedEdge(
-                  edges.find((e) => e.id === event.target.value)?.data ?? null,
-                )
-              }
-            >
-              <option value="">Inspect a relationship…</option>
-              {edges.map((edge) => (
-                <option key={edge.id} value={edge.id}>
-                  {nodes.find((n) => n.id === edge.source)?.displayLabel} →{" "}
-                  {edge.label} →{" "}
-                  {nodes.find((n) => n.id === edge.target)?.displayLabel}
-                </option>
-              ))}
-            </select>
-          )}
-          {onExpand && (
-            <div className="graph-path-controls">
-              <select
-                aria-label="Evidence path destination"
-                value={pathTarget}
-                onChange={(e) => {
-                  setPathTarget(e.target.value);
-                  setPathOnly(false);
-                }}
-              >
-                <option value="">Choose path destination…</option>
-                {(graph?.nodes || []).map((n) => (
-                  <option key={n.id} value={n.id}>
-                    {n.label}
-                  </option>
-                ))}
-              </select>
-              <button
-                disabled={!expandTarget || !pathTarget}
-                onClick={() => {
-                  setSelectedEdge(null);
-                  setPathOnly(true);
-                }}
-              >
-                Focus evidence path
-              </button>
-              {pathOnly && (
-                <button onClick={() => setPathOnly(false)}>
-                  Show all loaded nodes
-                </button>
-              )}
-              {pathOnly && (
-                <small role="status">
-                  {path
-                    ? `${path.nodes.length} nodes · ${path.edges.length} stored relationships. Arrows retain recorded direction; connection does not prove causality.`
-                    : "No connecting path in the loaded graph. Load or expand more evidence."}
-                </small>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-      {selectedEdge && (
-        <aside className="graph-edge-detail">
-          <button
-            onClick={() => setSelectedEdge(null)}
-            aria-label="Close relationship details"
-          >
-            ×
-          </button>
-          <strong>{selectedEdge.relation}</strong>
-          <p>
-            Stored type: {selectedEdge.edge_type || selectedEdge.relation}
-            {selectedEdge.confidence ? ` · ${selectedEdge.confidence}` : ""}
-          </p>
-          {selectedEdge.quote && <blockquote>{selectedEdge.quote}</blockquote>}
-          {selectedEdge.source_uid && (
-            <small>Source: {selectedEdge.source_uid}</small>
-          )}
-        </aside>
-      )}
-      <div className="graph-canvas" ref={canvas}>
-        <ReactFlow
-          onInit={(instance) => {
-            flow.current = instance;
-            fitted.current = false;
-            fitAttempts.current = 0;
-            fitVisibleCanvas();
-          }}
-          key={nodes.map((n) => n.id).join("|")}
-          nodes={nodes}
-          edges={edges}
-          onMoveStart={(event) => {
-            if (event) fitted.current = true;
-          }}
-          onNodeDoubleClick={(_, node) => onExpand?.(node.id)}
-          onEdgeClick={(_, edge) => setSelectedEdge(edge.data)}
-          zoomOnScroll={false}
-          preventScrolling={false}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          elementsSelectable
-          minZoom={0.02}
-          maxZoom={1.5}
-          deleteKeyCode={null}
-          proOptions={{ hideAttribution: false }}
-        >
-          <Background color="#dcd9e5" gap={22} />
-          <Controls showInteractive={false} />
-        </ReactFlow>
-      </div>
-    </div>
-  );
 }
 function App() {
   const [repos, setRepos] = useState([]),
@@ -307,6 +59,176 @@ function App() {
     [historyRequired, setHistoryRequired] = useState(false),
     [expansion, setExpansion] = useState(null),
     [ingesting, setIngesting] = useState(false);
+  const [memoryTab, setMemoryTab] = useState("personal");
+  const [runId, setRunId] = useState(null);
+  const [graphMode, setGraphMode] = useState("overview");
+  const [graphScope, setGraphScope] = useState("index");
+  const [grouping, setGrouping] = useState("type");
+  const [overview, setOverview] = useState(null);
+  const [graphRefresh, setGraphRefresh] = useState(0);
+  const [clusterFilter, setClusterFilter] = useState({});
+  const [graphSelection, setGraphSelection] = useState(null);
+  const [graphInspection, setGraphInspection] = useState(null);
+  const [graphInspectLoading, setGraphInspectLoading] = useState(false);
+  const [graphContext, setGraphContext] = useState(null);
+  const [graphOrigin, setGraphOrigin] = useState(null);
+  const graphViewport = useRef({});
+  const graphPreferences = useRef({});
+  const pendingTurn = useRef(null);
+  const inspectRequest = useRef(0);
+  const evidenceRequest = useRef(0);
+  useEffect(() => {
+    setRunId(null);
+    setGraphSelection(null);
+    setGraphInspection(null);
+    setGraphContext(null);
+    setOverview(null);
+    setGraphMode("overview");
+    setGraphScope("index");
+    setClusterFilter({});
+    setGraphOrigin(null);
+    ++inspectRequest.current;
+    ++evidenceRequest.current;
+  }, [project]);
+  useEffect(() => {
+    if (!project || repos.find((r) => r.id === project)?.status !== "ready")
+      return;
+    let live = true;
+    api(`/repositories/${project}/graph/overview?grouping=${grouping}`)
+      .then((r) => {
+        if (live) setOverview(r);
+      })
+      .catch((e) => {
+        if (live) setError(e.message);
+      });
+    return () => {
+      live = false;
+    };
+  }, [
+    project,
+    grouping,
+    graphRefresh,
+    mode,
+    repos.find((r) => r.id === project)?.status,
+  ]);
+  useEffect(() => {
+    if (mode !== "chat" || !pendingTurn.current) return;
+    const target = document.getElementById(
+      `investigation-${pendingTurn.current}`,
+    );
+    if (target) {
+      target.scrollIntoView({ block: "start" });
+      target.focus({ preventScroll: true });
+      pendingTurn.current = null;
+    }
+  }, [mode, turns]);
+  function returnToInvestigation(run) {
+    if (run.session) setSession(run.session);
+    pendingTurn.current = run.turn;
+    setMode("chat");
+  }
+  function openRun(id) {
+    setRunId(id);
+    setGraphSelection(null);
+    setSelected(null);
+    setMode("runs");
+  }
+  function explainSelection(selection) {
+    setGraphContext(
+      selectionContext(selection, graph?.revision || selected?.revision),
+    );
+    setQuestion(
+      (q) =>
+        q ||
+        "Explain this selected graph context. Check its sources and distinguish facts from interpretations.",
+    );
+    setMode("chat");
+    requestAnimationFrame(() => document.getElementById("question")?.focus());
+  }
+  async function inspectGraph(selection) {
+    if (selection.node?.labels?.includes("Cluster")) {
+      const key = selection.node.clusterKey;
+      const filters =
+        grouping === "type"
+          ? { kind: key, context: true }
+          : { folder: key, context: true };
+      setClusterFilter(filters);
+      setFilter("");
+      setGraphMode("explore");
+      setGraphSelection(null);
+      await loadGraph("", 0, filters);
+      return;
+    }
+    const request = ++inspectRequest.current;
+    setGraphSelection(selection);
+    setGraphInspection(null);
+    setGraphInspectLoading(false);
+    if (selection.kind !== "node") return;
+    if (selection.node.id.startsWith("memory:")) {
+      setGraphInspection({
+        source_notice:
+          "Native memory topology from the checked evidence view. Use Memory to inspect its authorized source and review state.",
+      });
+      return;
+    }
+    setGraphInspectLoading(true);
+    try {
+      const detail = await api(
+        `/repositories/${project}/graph/node?uid=${encodeURIComponent(selection.node.id)}`,
+      );
+      if (request === inspectRequest.current) setGraphInspection(detail);
+    } catch (e) {
+      if (request === inspectRequest.current)
+        setGraphInspection({ error: e.message });
+    } finally {
+      if (request === inspectRequest.current) setGraphInspectLoading(false);
+    }
+  }
+  function inspectGraphUid(uid) {
+    const node = graph?.nodes?.find((n) => n.id === uid) ||
+      selected?.graph?.nodes?.find((n) => n.id === uid) || {
+        id: uid,
+        label: uid,
+        labels: [],
+      };
+    inspectGraph({ kind: "node", node });
+  }
+  function exploreEvidence(evidence, turn = null) {
+    setGraph({
+      ...evidence.graph,
+      revision: evidence.revision,
+      counts: graph?.counts,
+      entity_counts: graph?.entity_counts,
+    });
+    setGraphScope("evidence");
+    setGraphMode("focused");
+    setGraphOrigin(turn ? { session, turn } : graphOrigin);
+    setMode("graph");
+    setGraphSelection(null);
+    setExpansion(null);
+  }
+  async function openMemorySource(source) {
+    if (source.kind === "lesson") {
+      openRun(JSON.parse(source.text).action);
+      return;
+    }
+    if (source.session && source.turn) {
+      if (!sessions.some((s) => s.id === source.session)) {
+        setError("Originating conversation is not in the current repository.");
+        return;
+      }
+      returnToInvestigation({ session: source.session, turn: source.turn });
+    }
+  }
+  const overviewGraph = {
+    nodes: (overview?.groups || []).map((g) => ({
+      id: `cluster:${grouping}:${g.key}`,
+      label: `${g.key} · ${g.count} entities`,
+      labels: ["Cluster"],
+      clusterKey: g.key,
+    })),
+    edges: [],
+  };
   const repo = repos.find((r) => r.id === project),
     busy = turns.some((t) => ["running", "queued"].includes(t.status));
   const entityCounts = graph?.entity_counts;
@@ -331,16 +253,24 @@ function App() {
   }, []);
   useEffect(() => {
     setTurns([]);
+    setSessions([]);
     setSession(null);
     setSelected(null);
     setGraph(null);
     if (!project) return;
+    let active = true;
     api(`/repositories/${project}/sessions`)
       .then((s) => {
+        if (!active) return;
         setSessions(s);
         setSession(s.at(-1)?.id || null);
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => {
+        if (active) setError(e.message);
+      });
+    return () => {
+      active = false;
+    };
   }, [project]);
   useEffect(() => {
     if (!session) return;
@@ -396,6 +326,8 @@ function App() {
   async function focusNode(uid) {
     const request = ++graphRequest.current;
     setMode("graph");
+    setGraphMode("focused");
+    setGraphScope("neighborhood");
     setFilter("");
     try {
       const next = await api(
@@ -405,29 +337,39 @@ function App() {
         request === graphRequest.current &&
         project === activeProject.current
       ) {
-        setGraph((previous) => ({ ...previous, ...next }));
+        setGraph((previous) => ({
+          ...next,
+          counts: previous?.counts,
+          entity_counts: previous?.entity_counts,
+          revision: next.revision || previous?.revision,
+        }));
         setExpansion(next);
       }
     } catch (e) {
       setError(e.message);
     }
   }
-  async function loadGraph(q = filter, offset = 0) {
+  async function loadGraph(q = filter, offset = 0, filters = clusterFilter) {
     const request = ++graphRequest.current;
     try {
       setExpansion(null);
       const next = await api(
-        `/repositories/${project}/graph?query=${encodeURIComponent(q)}&offset=${offset}`,
+        `/repositories/${project}/graph?query=${encodeURIComponent(q)}&offset=${offset}&kind=${encodeURIComponent(filters.kind || "")}&folder=${encodeURIComponent(filters.folder || "")}&context_neighbors=${!!filters.context}`,
       );
-      if (request === graphRequest.current && project === activeProject.current)
+      if (
+        request === graphRequest.current &&
+        project === activeProject.current
+      ) {
         setGraph(next);
+        setGraphScope("index");
+      }
     } catch (e) {
       if (request === graphRequest.current && project === activeProject.current)
         setError(e.message);
     }
   }
   useEffect(() => {
-    if (repo?.status === "ready") loadGraph("");
+    if (repo?.status === "ready") loadGraph("", 0, {});
   }, [project, repo?.status]);
   async function connect(e) {
     e.preventDefault();
@@ -441,6 +383,7 @@ function App() {
       });
       setRepos((v) => [...v, value]);
       setProject(value.id);
+      setMode("chat");
       setAdding(false);
       setUrl("");
     } catch (e) {
@@ -455,6 +398,8 @@ function App() {
     setSession(chat.id);
     setTurns([]);
     setSelected(null);
+    setGraphContext(null);
+    setMode("chat");
     return chat.id;
   }
   async function ask(e) {
@@ -463,18 +408,27 @@ function App() {
     setError("");
     try {
       const id = session || (await newChat());
-      const turn = await send(`/sessions/${id}/turns`, { question });
+      const submitted = graphQuestion(question, graphContext);
+      const turn = await send(`/sessions/${id}/turns`, { question: submitted });
+      setGraphContext(null);
       setTurns((t) => [...t, turn]);
       setQuestion("");
     } catch (e) {
       setError(e.message);
     }
   }
-  async function citation(turn, id, kind = "turns") {
+  async function citation(turn, id, kind = "turns", origin = null) {
+    setGraphOrigin(
+      origin || (kind === "turns" ? { session, turn } : graphOrigin),
+    );
+    setGraphSelection(null);
+    const request = ++evidenceRequest.current;
     setLoadingEvidence(true);
     setSelected(null);
     try {
-      setSelected(await api(`/${kind}/${turn}/evidence/${id}`));
+      const proof = await api(`/${kind}/${turn}/evidence/${id}`);
+      if (request !== evidenceRequest.current) return;
+      setSelected(proof);
       if (matchMedia("(max-width:680px)").matches)
         requestAnimationFrame(() =>
           document
@@ -482,9 +436,9 @@ function App() {
             ?.scrollIntoView({ behavior: "smooth", block: "start" }),
         );
     } catch (e) {
-      setError(e.message);
+      if (request === evidenceRequest.current) setError(e.message);
     } finally {
-      setLoadingEvidence(false);
+      if (request === evidenceRequest.current) setLoadingEvidence(false);
     }
   }
   async function upload(e) {
@@ -518,6 +472,7 @@ function App() {
       setSelected(null);
       setIngesting(true);
       await loadGraph();
+      setGraphRefresh((n) => n + 1);
       setError("");
       setUploadNotice(
         `${result.filename}: ${result.sections} source sections saved.`,
@@ -545,20 +500,30 @@ function App() {
           className={"nav " + (mode === "chat" ? "active" : "")}
           onClick={() => setMode("chat")}
         >
-          <MessageSquare size={17} /> Conversations
+          <MessageSquare size={17} /> Ask Brain
         </button>
         <button
           className={"nav " + (mode === "graph" ? "active" : "")}
           onClick={() => setMode("graph")}
         >
-          <Network size={17} /> Company graph
+          <Network size={17} /> Explore Graph
           {graph && <span className="count">{graph.nodes.length}</span>}
         </button>
-        <button className="nav" onClick={() => setMode("memory")}>
-          <BrainCircuit size={17} /> Personal Brain
+        <button
+          className={"nav " + (mode === "runs" ? "active" : "")}
+          onClick={() => {
+            setGraphSelection(null);
+            setSelected(null);
+            setMode("runs");
+          }}
+        >
+          <Activity size={17} /> Agent Runs
         </button>
-        <button className="nav" onClick={() => setMode("team")}>
-          <Network size={17} /> Team Brain
+        <button
+          className={"nav " + (mode === "memory" ? "active" : "")}
+          onClick={() => setMode("memory")}
+        >
+          <BrainCircuit size={17} /> Memory
         </button>
         <div className="section-label">
           CONNECTED SOURCES
@@ -605,6 +570,7 @@ function App() {
               className={session === s.id ? "current" : ""}
               onClick={() => {
                 setSession(s.id);
+                setMode("chat");
                 setSelected(null);
               }}
             >
@@ -613,6 +579,19 @@ function App() {
             </button>
           ))}
         </div>
+        <details className="workspace-settings">
+          <summary>Workspace settings</summary>
+          <dl>
+            <dt>Connected model</dt>
+            <dd>{model || "Loading…"}</dd>
+            <dt>Workspace access</dt>
+            <dd>Local operator</dd>
+          </dl>
+          <p>
+            Model and workspace configuration are set when starting the local
+            application.
+          </p>
+        </details>
         <div className="operator">
           <span className="avatar">LO</span>
           <span>
@@ -716,24 +695,50 @@ function App() {
               </button>
             )}
           </div>
-        ) : mode === "team" ? (
-          <TeamBrain
-            key={project}
-            project={project}
-            renderGraph={(g) => <Graph graph={g} />}
-          />
         ) : mode === "memory" ? (
-          <PersonalBrain
-            key={project}
-            project={project}
-            turns={turns}
-            session={session}
-            renderGraph={(g) => <Graph graph={g} />}
-          />
+          <div className="memory-workspace">
+            <nav className="workspace-tabs" aria-label="Memory scopes">
+              <button
+                aria-pressed={memoryTab === "personal"}
+                onClick={() => setMemoryTab("personal")}
+              >
+                Personal
+              </button>
+              <button
+                aria-pressed={memoryTab === "team"}
+                onClick={() => setMemoryTab("team")}
+              >
+                Team & management
+              </button>
+            </nav>
+            <div hidden={memoryTab !== "personal"}>
+              <PersonalBrain
+                key={project}
+                project={project}
+                turns={turns}
+                session={session}
+                onOpenSource={openMemorySource}
+                renderGraph={(g) => <Graph graph={g} />}
+              />
+            </div>
+            <div hidden={memoryTab !== "team"}>
+              <TeamBrain
+                key={project}
+                project={project}
+                renderGraph={(g) => <Graph graph={g} />}
+              />
+            </div>
+          </div>
         ) : (
           <div
             className={
-              "work-area " + (mode === "graph" ? "graph-workspace" : "")
+              "work-area " +
+              (mode === "graph"
+                ? "graph-workspace"
+                : mode === "runs"
+                  ? "runs-area"
+                  : "") +
+              (graphSelection || selected ? " inspector-open" : "")
             }
           >
             <section
@@ -752,7 +757,9 @@ function App() {
                   <h2>
                     {mode === "chat"
                       ? "Investigate your code. Understand its history. Fix with context."
-                      : "The company graph"}
+                      : mode === "runs"
+                        ? "Agent runs"
+                        : "Explore your knowledge graph"}
                   </h2>
                   {mode === "chat" && (
                     <button
@@ -854,10 +861,74 @@ function App() {
               </details>
               {mode === "graph" ? (
                 <>
+                  <nav className="workspace-tabs" aria-label="Graph views">
+                    <button
+                      aria-pressed={graphMode === "overview"}
+                      onClick={() => setGraphMode("overview")}
+                    >
+                      Entire graph · overview
+                    </button>
+                    <button
+                      aria-pressed={graphMode !== "overview"}
+                      onClick={() =>
+                        setGraphMode(
+                          graphScope !== "index" ? "focused" : "explore",
+                        )
+                      }
+                    >
+                      {graphScope !== "index"
+                        ? "Focused evidence"
+                        : "Explore loaded entities"}
+                    </button>
+                    {graphOrigin && (
+                      <button
+                        onClick={() => returnToInvestigation(graphOrigin)}
+                      >
+                        Return to investigation
+                      </button>
+                    )}
+                  </nav>
+                  {graphMode === "overview" && (
+                    <div className="graph-summary">
+                      <label>
+                        Group entire index by{" "}
+                        <select
+                          aria-label="Group entire index by"
+                          value={grouping}
+                          onChange={(e) => setGrouping(e.target.value)}
+                        >
+                          <option value="type">Entity type</option>
+                          <option value="folder">Top-level folder</option>
+                        </select>
+                      </label>
+                      <p>
+                        {overview?.total_nodes ?? "Loading"} indexed entities ·{" "}
+                        {overview?.groups.length || 0} clusters. Select a
+                        cluster to explore its members. Counts cover the current
+                        index; the detailed canvas loads bounded pages.
+                      </p>
+                      {overview?.truncated && (
+                        <p className="coverage">
+                          First {overview.group_limit} groups shown. Search and
+                          filters remain available across the index.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {graphMode === "focused" && (
+                    <p className="coverage">
+                      Focused neighborhood / checked evidence slice. Expand
+                      neighbors for another hop.{" "}
+                      <button onClick={() => setGraphMode("overview")}>
+                        View entire graph
+                      </button>
+                    </p>
+                  )}
                   <form
                     className="graph-filter"
                     onSubmit={(e) => {
                       e.preventDefault();
+                      setGraphMode("explore");
                       loadGraph();
                     }}
                   >
@@ -867,19 +938,58 @@ function App() {
                       value={filter}
                       onChange={(e) => setFilter(e.target.value)}
                     />
-                    <button>Filter graph</button>
+                    <button>
+                      {clusterFilter.kind || clusterFilter.folder
+                        ? "Search within cluster"
+                        : "Search index"}
+                    </button>
+                    {(clusterFilter.kind || clusterFilter.folder) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setClusterFilter({});
+                          setGraphMode("explore");
+                          loadGraph(filter, 0, {});
+                        }}
+                      >
+                        Search entire index
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFilter("");
+                        setClusterFilter({});
+                        setGraphMode("explore");
+                        loadGraph("", 0, {});
+                      }}
+                    >
+                      Clear filters
+                    </button>
                   </form>
                   <div className="graph-meta">
+                    {graphMode === "overview"
+                      ? "Cluster overview; detailed slice retained: "
+                      : "Loaded slice: "}
                     {graph?.nodes.length || 0} nodes ·{" "}
                     {graph?.edges.length || 0} recorded relationships
                     {graph?.truncated
                       ? " · Bounded slice; filter to explore more"
                       : ""}
                   </div>
-                  <p>
-                    Double-click a node to explore its callers, changes and
-                    supporting evidence.
-                  </p>
+                  {graph?.paging_bound_reached && (
+                    <p className="coverage">
+                      Page limit reached. Narrow the search or cluster to
+                      discover additional indexed entities.
+                    </p>
+                  )}
+                  {graphMode !== "overview" && (
+                    <p className="graph-instruction">
+                      Select a node for its inspector; double-click or expand to
+                      load another hop. At low zoom, labels are hidden to keep
+                      the canvas readable.
+                    </p>
+                  )}
                   {expansion?.next_offset != null && (
                     <button
                       onClick={() =>
@@ -889,26 +999,116 @@ function App() {
                       More neighbors
                     </button>
                   )}
-                  {graph?.offset != null && (
-                    <div className="graph-pages">
-                      <button
-                        disabled={!graph?.offset}
-                        onClick={() =>
-                          loadGraph(filter, Math.max(0, graph.offset - 100))
-                        }
-                      >
-                        Previous nodes
-                      </button>
-                      <button
-                        disabled={graph?.next_offset == null}
-                        onClick={() => loadGraph(filter, graph.next_offset)}
-                      >
-                        Next nodes
-                      </button>
-                    </div>
-                  )}
-                  <Graph key={project} graph={graph} onExpand={expandNode} />
+                  {graphMode !== "overview" &&
+                    graphScope === "index" &&
+                    graph?.offset != null && (
+                      <div className="graph-pages">
+                        <button
+                          disabled={!graph?.offset}
+                          onClick={() =>
+                            loadGraph(filter, Math.max(0, graph.offset - 100))
+                          }
+                        >
+                          Previous nodes
+                        </button>
+                        <button
+                          disabled={graph?.next_offset == null}
+                          onClick={() => loadGraph(filter, graph.next_offset)}
+                        >
+                          Next nodes
+                        </button>
+                      </div>
+                    )}
+                  {(clusterFilter.kind || clusterFilter.folder) &&
+                    graphMode !== "overview" && (
+                      <p className="coverage">
+                        Active cluster:{" "}
+                        {clusterFilter.kind || clusterFilter.folder}
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={!!clusterFilter.context}
+                            onChange={(e) => {
+                              const next = {
+                                ...clusterFilter,
+                                context: e.target.checked,
+                              };
+                              setClusterFilter(next);
+                              loadGraph(filter, 0, next);
+                            }}
+                          />
+                          Show cross-cluster relationships
+                        </label>
+                        {graph?.context_count > 0 && (
+                          <span>
+                            {" "}
+                            · {graph.context_count} directly connected context
+                            entities (up to 50).{" "}
+                          </span>
+                        )}
+                        {graph?.context_truncated && (
+                          <span>
+                            {" "}
+                            More neighbors available; expand a node to
+                            explore.{" "}
+                          </span>
+                        )}
+                        <button
+                          onClick={() =>
+                            explainSelection({
+                              kind: "cluster",
+                              grouping: clusterFilter.kind ? "type" : "folder",
+                              key: clusterFilter.kind || clusterFilter.folder,
+                            })
+                          }
+                        >
+                          Explain cluster in chat
+                        </button>
+                      </p>
+                    )}
+                  <Graph
+                    key={`${project}:${graphMode}:${JSON.stringify(clusterFilter)}:${graph?.offset || 0}`}
+                    viewKey={`${project}:${graphMode}:${JSON.stringify(clusterFilter)}:${graph?.offset || 0}`}
+                    focused={graphMode === "focused"}
+                    focusId={graph?.root || graphSelection?.node?.id}
+                    viewportCache={graphViewport}
+                    uiCache={graphPreferences}
+                    graph={graphMode === "overview" ? overviewGraph : graph}
+                    onExpand={graphMode === "overview" ? undefined : expandNode}
+                    onInspect={inspectGraph}
+                    onExplain={explainSelection}
+                  />
+                  <p className="graph-caption">
+                    Overview summarizes the entire current index. Detailed
+                    search and neighbor pages are bounded; path finding uses
+                    only loaded relationships. Labels appear as you zoom in.
+                  </p>
                 </>
+              ) : mode === "runs" ? (
+                <React.Suspense
+                  fallback={<p role="status">Loading Agent Runs…</p>}
+                >
+                  <AgentRuns
+                    project={project}
+                    selected={runId}
+                    onSelect={(id) => {
+                      setRunId(id);
+                      setSelected(null);
+                      setGraphSelection(null);
+                      document
+                        .querySelector(".runs-area .conversation")
+                        ?.scrollTo({ top: 0 });
+                    }}
+                    onInvestigation={returnToInvestigation}
+                    onEvidence={(id, evidence, kind, origin) =>
+                      citation(id, evidence, kind, origin)
+                    }
+                    onReviewMemory={() => {
+                      setMemoryTab("personal");
+                      setMode("memory");
+                    }}
+                  />
+                </React.Suspense>
               ) : (
                 <>
                   <div className="thread" aria-live="polite">
@@ -968,19 +1168,21 @@ function App() {
                             <BrainCircuit size={21} />
                             <div>
                               {["running", "queued"].includes(t.status) ? (
-                                <div className="agent-step" role="status">
-                                  <LoaderCircle size={15} className="spin" />
-                                  <div>
-                                    <small>ACTIVE AGENT STEP</small>
-                                    <strong>{t.stage}</strong>
-                                  </div>
-                                </div>
+                                <>
+                                  <ActivityStream turn={t} />
+                                  <button onClick={() => openRun(t.id)}>
+                                    View live investigation
+                                  </button>
+                                </>
                               ) : t.status === "failed" ? (
                                 <p className="failure">{t.error}</p>
                               ) : (
                                 <>
                                   <div className="answer-label">
                                     COMPANY BRAIN{" "}
+                                    <button onClick={() => openRun(t.id)}>
+                                      Open investigation run
+                                    </button>
                                     {t.claims?.length > 0 && (
                                       <span>
                                         <Check size={12} /> Source checked
@@ -1002,6 +1204,25 @@ function App() {
                                   {t.claims?.map((c, i) => (
                                     <div className="claim" key={i}>
                                       <p>{c.text}</p>
+                                      <button
+                                        className="evidence-graph-link"
+                                        onClick={async () => {
+                                          try {
+                                            const scope = project;
+                                            const proof = await api(
+                                              `/turns/${t.id}/evidence/${c.support[0].evidence_id}`,
+                                            );
+                                            if (scope !== activeProject.current)
+                                              return;
+                                            setSelected(proof);
+                                            exploreEvidence(proof, t.id);
+                                          } catch (e) {
+                                            setError(e.message);
+                                          }
+                                        }}
+                                      >
+                                        Explore evidence graph
+                                      </button>
                                       <div className="quoted-support">
                                         {c.support.map((support, j) => (
                                           <details key={j}>
@@ -1078,14 +1299,7 @@ function App() {
                                     {t.relevance_review &&
                                       " · Citation relevance model-reviewed"}
                                   </div>
-                                  <ActionPanel
-                                    turn={t}
-                                    project={project}
-                                    onReviewMemory={() => setMode("memory")}
-                                    onEvidence={(id, evidence) =>
-                                      citation(id, evidence, "actions")
-                                    }
-                                  />
+                                  <FixLauncher turn={t} onRun={openRun} />
                                 </>
                               )}
                             </div>
@@ -1094,6 +1308,24 @@ function App() {
                       ))
                     )}
                   </div>
+                  {graphContext && (
+                    <div className="context-chip">
+                      <strong>Graph context attached</strong>
+                      <span>
+                        {graphContext.selection.kind} ·{" "}
+                        {graphContext.selection.label ||
+                          graphContext.selection.key ||
+                          graphContext.selection.edge?.relation ||
+                          "recorded path"}
+                      </span>
+                      <button onClick={() => setMode("graph")}>
+                        Return to graph
+                      </button>
+                      <button onClick={() => setGraphContext(null)}>
+                        Clear context
+                      </button>
+                    </div>
+                  )}
                   <form className="composer" onSubmit={ask}>
                     <label htmlFor="question" className="sr-only">
                       Ask Company Brain
@@ -1145,7 +1377,11 @@ function App() {
               <div className="inspector-heading">
                 <span>
                   <Network size={16} />{" "}
-                  {selected ? "Cited evidence" : "Knowledge & sources"}
+                  {graphSelection
+                    ? "Context inspector"
+                    : selected
+                      ? "Cited evidence"
+                      : "Knowledge & sources"}
                 </span>
                 {selected && (
                   <button
@@ -1156,14 +1392,40 @@ function App() {
                   </button>
                 )}
               </div>
-              <IngestionPanel
-                key={project}
-                project={project}
-                refresh={uploadNotice}
-                onComplete={() => loadGraph("")}
-                onStatus={setIngesting}
-              />
-              {loadingEvidence ? (
+              <div hidden={!!selected || !!graphSelection || mode !== "chat"}>
+                <IngestionPanel
+                  key={project}
+                  project={project}
+                  refresh={uploadNotice}
+                  onComplete={() => {
+                    setGraphRefresh((n) => n + 1);
+                    loadGraph("");
+                  }}
+                  onStatus={setIngesting}
+                />
+              </div>
+              {graphSelection ? (
+                <React.Suspense
+                  fallback={<p role="status">Loading entity inspector…</p>}
+                >
+                  <GraphInspector
+                    selection={graphSelection}
+                    linkedEvidence={selected}
+                    detail={graphInspection}
+                    loading={graphInspectLoading}
+                    graph={graph}
+                    onClose={() => setGraphSelection(null)}
+                    onNode={inspectGraphUid}
+                    onExpand={expandNode}
+                    onFocus={focusNode}
+                    onSource={(proof) => {
+                      setSelected(proof);
+                      setGraphSelection(null);
+                    }}
+                    onExplain={explainSelection}
+                  />
+                </React.Suspense>
+              ) : loadingEvidence ? (
                 <div className="evidence-empty">
                   <LoaderCircle className="spin" />
                   Rechecking source…
@@ -1246,7 +1508,17 @@ function App() {
                       node to explore its neighbors.
                     </p>
                   )}
-                  <Graph graph={selected.graph} compact />
+                  <button
+                    className="primary"
+                    onClick={() => exploreEvidence(selected)}
+                  >
+                    Explore focused evidence graph
+                  </button>
+                  <Graph
+                    graph={selected.graph}
+                    compact
+                    onInspect={inspectGraph}
+                  />
                   <div className="proof-note">
                     These nodes and relationships come from FalkorDB. A source
                     match verifies provenance; it does not prove an

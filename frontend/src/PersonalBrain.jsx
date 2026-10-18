@@ -39,6 +39,7 @@ export default function PersonalBrain({
   turns,
   session,
   renderGraph,
+  onOpenSource,
 }) {
   const [items, setItems] = useState([]),
     [graph, setGraph] = useState(null),
@@ -506,6 +507,14 @@ export default function PersonalBrain({
                           ? "Selected repository transfer snapshot"
                           : "Selected user turn"}
                   </summary>
+                  {onOpenSource &&
+                    (s.kind === "lesson" || (s.session && s.turn)) && (
+                      <button onClick={() => onOpenSource(s)}>
+                        {s.kind === "lesson"
+                          ? "Open originating agent run"
+                          : "Open originating conversation"}
+                      </button>
+                    )}
                   <SourceRecord source={s} />
                 </details>
               ))}

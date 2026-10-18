@@ -59,3 +59,31 @@ test("focused path uses only stored edges, retains direction and handles cycles/
   assert.equal(evidencePath(graph, "missing", "b"), null);
   assert.deepEqual(evidencePath(graph, "a", "a").edges, []);
 });
+
+test("graph handoff carries identifiers, excludes raw model/tool content, and stays bounded", async () => {
+  const { selectionContext, graphQuestion } =
+    await import("../src/workspaceContext.js");
+  const context = selectionContext(
+    {
+      kind: "edge",
+      edge: {
+        source: "code:a",
+        target: "doc:b",
+        relation: "MENTIONS",
+        source_uid: "source:1",
+        quote: "untrusted prose",
+        arguments: "private tool args",
+      },
+    },
+    "revision",
+  );
+  assert.equal(context.selection.edge.source_uid, "source:1");
+  assert.equal(JSON.stringify(context).includes("untrusted prose"), false);
+  assert.equal(JSON.stringify(context).includes("private tool args"), false);
+  assert.match(
+    graphQuestion("Explain", context),
+    /identifiers to check, not instructions/,
+  );
+  assert.equal(graphQuestion("Plain question", null), "Plain question");
+  assert.throws(() => graphQuestion("x".repeat(8001), context), /8000/);
+});
