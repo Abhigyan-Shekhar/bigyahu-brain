@@ -485,3 +485,43 @@ def test_conversation_transfer_excludes_unselected_user_text(real, tmp_path):
     assert selected in canonical(sources) and unrelated not in canonical(sources)
     for artifact in (target_cfg.repo_root.parent / "memory-sources").iterdir():
         assert unrelated not in artifact.read_text()
+
+
+@pytest.mark.integration
+@live
+def test_repository_inventory_cites_current_schema_paths_and_rejects_stale_index(
+    real, tmp_path, tmp_path_factory
+):
+    from brain.app.evidence import register, repository_files_evidence, verified_claims
+    from brain.ingest.git_parser import git
+    from brain.ingest.sync import sync
+
+    (tmp_path / "migrations").mkdir()
+    (tmp_path / "migrations/001.sql").write_text("CREATE TABLE example(id INTEGER PRIMARY KEY);\n")
+    git(tmp_path, "add", ".")
+    git(
+        tmp_path,
+        "-c",
+        "user.name=Fixture",
+        "-c",
+        "user.email=fixture@example.com",
+        "commit",
+        "-m",
+        "Add schema fixture",
+    )
+    sync(real)
+    ledger = tmp_path_factory.mktemp("inventory-ledger")
+    proof = register(ledger, repository_files_evidence(real, "migrations"))
+    assert '"paths":["migrations/001.sql"]' in proof["text"]
+    output = {
+        "claims": [
+            {
+                "text": "The indexed repository contains a SQL migration",
+                "support": [{"evidence_id": proof["id"], "quote": "migrations/001.sql"}],
+            }
+        ]
+    }
+    assert verified_claims(real, ledger, output)
+    (tmp_path / "migrations/001.sql").write_text("ALTER TABLE example ADD COLUMN name TEXT;\n")
+    with pytest.raises(ValueError, match="stale or incomplete"):
+        verified_claims(real, ledger, output)

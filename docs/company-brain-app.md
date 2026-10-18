@@ -195,3 +195,52 @@ See [PR #7 review fixes](pr7-review-fixes.md) for validation and remaining limit
 See [historical investigation and connected memory](application-investigation.md)
 for ranked history/patch evidence, explicit company links, citation relevance
 review, paged neighbor expansion and selected cross-repository memory transfers.
+
+## Planning recovery
+
+A shape-invalid plan or a claim/action relevance rejection gets one automatic,
+read-only regeneration using the validation feedback. The second attempt has its
+own evidence ledger and trace under `plan/repair/`. Both attempts run the same
+provenance, file/test bounds, relevance and revision gates. Authentication,
+timeouts, unavailable reviewers, invented citations and revoked/stale evidence
+stop the job; these failures cannot authorize execution. A supported second plan
+still needs explicit approval with its current digest. Active polling follows the
+current attempt without changing the frontend interval.
+
+If both reviews reject the proposal, the UI retains the last reviewed draft and
+complete review reasons, without an executable plan or approval controls. The
+`repository_files` tool supplies citable, revision-checked inventories of up to
+200 matching indexed paths, with explicit truncation and filename-only coverage.
+Planners must inspect actual schema, constraints and tests before claiming
+migration conventions or choosing migration locations. `.sql` files can be
+included in an approved patch; the executable test runners remain Python
+`pytest` and `unittest`. No migration is applied to a live database.
+
+Repeated citations resolve once per verification pass. This reduces redundant
+file, graph and catalog reads while preserving new checks after model review,
+at approval and when opening citations. The regression fixture with 20 claims
+sharing a source performs one resolution instead of 20 in each pass. This is a
+work-count improvement, not an end-to-end latency or model acceptance benchmark;
+repository ingestion and provider timings need a separate real workload run.
+
+## Live output and finding alerts
+
+Ask Brain, investigation details and fix actions subscribe to authenticated SSE
+snapshot endpoints under `/api/sessions/{id}/events`, `/api/turns/{id}/events` and
+`/api/actions/{id}/events`. Live stages and allowlisted tool events update while
+the agent works; reviewed output arrives when its checks finish. Raw reasoning,
+partial model JSON, tool arguments and tool results are never streamed. Fetch
+uses the existing bearer header. Disconnects cancel the subscription; interrupted
+connections use the existing JSON endpoint during reconnect. Single-job streams
+close at a terminal or human-review state; session streams remain open for new
+questions. Server snapshots refresh once per second with idle heartbeats.
+
+New investigations can attach severity and category metadata to an actionable
+claim. In-app alerts group critical/high/medium/low/info findings and show the
+impact, cited code location when available, source buttons and a recommended fix.
+Locations must fall within a cited current code excerpt. Classification and
+remediation go through the same fallible relevance review as the claim; rejected
+claims produce no alerts. Security, correctness, performance and reliability
+findings remain distinct. Existing saved answers without finding metadata remain
+readable; rerun an investigation to generate structured findings. Alerts do not
+publish GitHub comments or send external notifications.

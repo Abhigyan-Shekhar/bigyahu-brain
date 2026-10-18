@@ -9,6 +9,7 @@ TOOLS = [
     "find_owner",
     "trace_decision",
     "search_code",
+    "repository_files",
     "read_code",
     "search_history",
     "memory_search",

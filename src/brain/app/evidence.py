@@ -10,6 +10,7 @@ from urllib.parse import quote, urlsplit
 
 from ..ingest.git_parser import clean, revision
 from ..memory import canonical, digest
+from .findings import validate_finding
 
 
 def native_graph(store, uids):
@@ -102,6 +103,46 @@ def code_evidence(store, path, start=1, end=80):
     }
 
 
+def repository_files_evidence(store, query=""):
+    """Citable bounded path inventory, without implying content-search coverage."""
+    if not isinstance(query, str) or len(query) > 100:
+        raise ValueError("Use a literal path substring of at most 100 characters")
+    sha = ready(store)
+    rows = store.query(
+        "MATCH (p:Project {uid:$repo})-[:CONTAINS]->"
+        "(f:File {repo_id:$repo,current:true,revision:$sha}) "
+        "WHERE toLower(f.path) CONTAINS toLower($q) "
+        "RETURN f.path AS path ORDER BY path LIMIT 201",
+        {"repo": store.cfg.repo_id, "sha": sha, "q": query},
+    )
+    paths, size = [], 0
+    for row in rows[:200]:
+        cost = len(canonical(row["path"]).encode("utf-8")) + 1
+        if size + cost > 10000:
+            break
+        paths.append(row["path"])
+        size += cost
+    text = canonical(
+        {
+            "path_substring": query,
+            "paths": paths,
+            "truncated": len(rows) > len(paths),
+            "coverage": "Current indexed file paths only; not a search of file contents or proof that no convention exists.",
+        }
+    )
+    return {
+        "kind": "repository_files",
+        "ref": {"query": query},
+        "title": "Repository file inventory: " + (query or "all paths"),
+        "text": text,
+        "digest": digest(text),
+        "revision": sha,
+        "graph": native_graph(store, [store.cfg.repo_id]),
+        "verification": "current_native_file_inventory",
+        "binding": False,
+    }
+
+
 def source_evidence(store, source_uid):
     ready(store)
     rows = store.query(
@@ -177,13 +218,16 @@ def source_evidence(store, source_uid):
         "verification": "original_file_digest_and_extraction_snapshot"
         if row["kind"] == "app_binary_upload"
         else "source_bytes_and_native_graph"
-        if row["kind"] in {"repository_document", "graphify_structural", "app_upload", "app_binary_upload"}
+        if row["kind"]
+        in {"repository_document", "graphify_structural", "app_upload", "app_binary_upload"}
         else "recorded_snapshot_and_native_graph",
         "binding": False,
     }
 
 
 def resolve(store, evidence):
+    if evidence["kind"] == "repository_files":
+        return repository_files_evidence(store, **evidence["ref"])
     if evidence["kind"] == "team_memory":
         from .team import memory_evidence
 
@@ -218,6 +262,9 @@ def register(folder, evidence):
 def verified_claims(store, folder, output):
     """Reject invented IDs/quotes and changed evidence. Does not prove semantic entailment."""
     claims = []
+    # Reuse only within this verification pass. Later review/approval passes
+    # must resolve again to detect revocation and source changes.
+    resolved = {}
     for claim in output.get("claims", [])[:20]:
         if not isinstance(claim.get("text"), str) or not 1 <= len(claim["text"]) <= 3000:
             raise ValueError("Invalid answer claim")
@@ -226,8 +273,10 @@ def verified_claims(store, folder, output):
             uid, quoted = support.get("evidence_id", ""), support.get("quote", "")
             if not re.fullmatch("[a-f0-9]{24}", uid):
                 raise ValueError("Unknown evidence ID")
-            saved = json.loads((Path(folder) / (uid + ".json")).read_text(encoding="utf-8"))
-            current = resolve(store, saved)
+            if uid not in resolved:
+                saved = json.loads((Path(folder) / (uid + ".json")).read_text(encoding="utf-8"))
+                resolved[uid] = saved, resolve(store, saved)
+            saved, current = resolved[uid]
             if (
                 current["digest"] != saved["digest"]
                 or canonical(canonical_graph(current["graph"]))
@@ -250,5 +299,10 @@ def verified_claims(store, folder, output):
             )
         if not supporting:
             raise ValueError("Repository claims require checked source support")
-        claims.append({"text": claim["text"], "support": supporting})
+        checked = {"text": claim["text"], "support": supporting}
+        if claim.get("finding") is not None:
+            checked["finding"] = validate_finding(
+                claim["finding"], [resolved[s["evidence_id"]][1] for s in supporting]
+            )
+        claims.append(checked)
     return claims

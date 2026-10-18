@@ -9,7 +9,7 @@ import {
   GitBranch,
 } from "lucide-react";
 import { createPortal } from "react-dom";
-import { api, send } from "./api";
+import { api, send, watchResource } from "./api";
 import ActivityStream from "./ActivityStream";
 import { elapsedLabel, testSummary } from "./actionPresentation";
 
@@ -152,20 +152,12 @@ export default function ActionPanel({
       !["queued", "running", "awaiting_approval"].includes(action.status)
     )
       return;
-    let active = true;
-    const timer = setInterval(
-      () =>
-        api(`/actions/${action.id}`)
-          .then((a) => {
-            if (active) setAction(a);
-          })
-          .catch((e) => setError(e.message)),
-      1500,
+    return watchResource(
+      `/actions/${action.id}/events`,
+      `/actions/${action.id}`,
+      setAction,
+      (e) => setError(e.message),
     );
-    return () => {
-      active = false;
-      clearInterval(timer);
-    };
   }, [action?.id, action?.status]);
   async function propose(e) {
     e.preventDefault();
@@ -334,8 +326,8 @@ export default function ActionPanel({
           </label>
           {action?.status === "failed" && (
             <p>
-              Correct the issue described above in this objective before
-              retrying. A retry creates a new read-only plan and requires fresh
+              Planning tries one automatic repair using validation feedback. You
+              can refine the objective and try again. Each new plan requires
               approval before any editing.
             </p>
           )}
@@ -399,6 +391,29 @@ export default function ActionPanel({
                   : action.error}
               </p>
             </div>
+          )}
+          {action.status === "failed" && action.draft_plan && (
+            <details className="agent-step">
+              <summary>
+                Draft available; execution checks need attention
+              </summary>
+              <p>
+                This draft did not pass review and cannot be approved for
+                execution.
+              </p>
+              <p>{action.draft_plan.summary}</p>
+              <ol>
+                {action.draft_plan.steps.map((step, i) => (
+                  <li key={i}>{step}</li>
+                ))}
+              </ol>
+              <p>Proposed files: {action.draft_plan.files.join(", ")}</p>
+              <ul>
+                {(action.review_issues || []).map((issue, i) => (
+                  <li key={i}>{issue}</li>
+                ))}
+              </ul>
+            </details>
           )}
           {action.status === "complete" && (
             <div
@@ -557,10 +572,7 @@ export default function ActionPanel({
           )}
           {action.progress &&
             !["running", "queued"].includes(action.status) && (
-              <details
-                className="action-progress"
-                open={action.status !== "complete"}
-              >
+              <details className="action-progress">
                 <summary>Recorded tool activity</summary>
                 <span>
                   {elapsedLabel(action.progress.elapsed_seconds)} ·{" "}
@@ -594,11 +606,11 @@ export default function ActionPanel({
               </details>
             )}
           {action.plan && (
-            <details
-              className="action-brief"
-              open={action.status === "awaiting_approval"}
-            >
-              <summary>Why this fix? · Plan rationale & evidence</summary>
+            <details className="action-brief">
+              <summary>
+                Evidence & rationale · {action.claims?.length || 0}{" "}
+                contributions
+              </summary>
               <strong>{action.plan.summary}</strong>
               <p>
                 {action.plan.files.length} permitted files ·{" "}
@@ -636,17 +648,12 @@ export default function ActionPanel({
               tabIndex={-1}
               open={action.status === "awaiting_approval"}
             >
-              <summary>Fix plan · Why this fix?</summary>
+              <summary>Proposed changes</summary>
               <p>{action.plan.summary}</p>
-              <p className="action-note">
-                Historical plan text is retained locally after source
-                revocation. Reopening citations rechecks current access;
-                revocation does not erase this saved report.
-              </p>
-              <p className="action-note">
+              <p className="plan-review-status">
                 {action.relevance_review?.kind === "fallible_model_plan_review"
-                  ? "Source provenance checked. Claims, rationale and proposed action reviewed by a fallible model; review the evidence before approving."
-                  : "Historical plan: no claim-and-action relevance review was recorded. Prepare a new plan before approving another execution."}
+                  ? "Evidence reviewed · Ready for your review"
+                  : "Historical plan · Generate a new review before execution"}
               </p>
               <ol>
                 {action.plan.steps.map((s, i) => (
@@ -675,37 +682,54 @@ export default function ActionPanel({
                 dependencies are installed. Each command is capped at 120
                 seconds and 512 KB of output.
               </p>
-              {action.claims?.map((c, i) => (
-                <div className="plan-evidence" key={i}>
-                  <h4>
-                    {[...new Set(c.support.map(contributionLabel))].join(" · ")}
-                  </h4>
-                  <p>{c.text}</p>
-                  {c.influence && (
-                    <p className="plan-influence">
-                      <strong>How this informs the plan:</strong> {c.influence}
-                    </p>
-                  )}
-                  <div className="citations">
-                    {[
-                      ...new Map(
-                        c.support.map((s) => [s.evidence_id, s]),
-                      ).values(),
-                    ].map((s) => (
-                      <button
-                        key={s.evidence_id}
-                        onClick={() => {
-                          setFocused(false);
-                          onEvidence(action.id, s.evidence_id);
-                        }}
-                      >
-                        <FileText size={12} />
-                        {s.title.split("/").slice(-2).join("/")}
-                      </button>
-                    ))}
+              <details className="plan-supporting-evidence">
+                <summary>Inspect supporting evidence</summary>
+                <p className="action-note">
+                  Historical plan text is retained locally after source
+                  revocation. Reopening citations rechecks current access;
+                  revocation does not erase this saved report.
+                </p>
+                <p className="action-note">
+                  {action.relevance_review?.kind ===
+                  "fallible_model_plan_review"
+                    ? "Source provenance checked. Claims, rationale and proposed action reviewed by a fallible model; review the evidence before approving."
+                    : "Historical plan: no claim-and-action relevance review was recorded. Prepare a new plan before approving another execution."}
+                </p>
+                {action.claims?.map((c, i) => (
+                  <div className="plan-evidence" key={i}>
+                    <h4>
+                      {[...new Set(c.support.map(contributionLabel))].join(
+                        " · ",
+                      )}
+                    </h4>
+                    <p>{c.text}</p>
+                    {c.influence && (
+                      <p className="plan-influence">
+                        <strong>How this informs the plan:</strong>{" "}
+                        {c.influence}
+                      </p>
+                    )}
+                    <div className="citations">
+                      {[
+                        ...new Map(
+                          c.support.map((s) => [s.evidence_id, s]),
+                        ).values(),
+                      ].map((s) => (
+                        <button
+                          key={s.evidence_id}
+                          onClick={() => {
+                            setFocused(false);
+                            onEvidence(action.id, s.evidence_id);
+                          }}
+                        >
+                          <FileText size={12} />
+                          {s.title.split("/").slice(-2).join("/")}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </details>
             </details>
           )}
           {action.status === "awaiting_approval" && (

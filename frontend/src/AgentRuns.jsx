@@ -8,6 +8,7 @@ export default function AgentRuns({
   selected,
   onSelect,
   onInvestigation,
+  onReviewFix,
   onEvidence,
   onReviewMemory,
 }) {
@@ -150,7 +151,7 @@ export default function AgentRuns({
               run={{ ...run, project }}
               onEvidence={onEvidence}
               onInvestigation={onInvestigation}
-              onPlan={onInvestigation}
+              onPlan={onReviewFix || onInvestigation}
             />
           ) : (
             <>

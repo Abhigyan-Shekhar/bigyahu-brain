@@ -217,3 +217,104 @@ def test_legacy_plan_requires_new_review_before_approval(planning):
     old = state.update(action["id"], status="awaiting_approval", plan_digest="old")
     with pytest.raises(ValueError):
         actions.approve(state, old["id"], "old")
+
+
+def test_review_feedback_repairs_once_with_fresh_evidence_and_explicit_approval(
+    planning, monkeypatch
+):
+    state, action, _ = planning
+    codex = actions._codex
+    folders, prompts = [], []
+
+    def generate(*args):
+        folders.append(args[2])
+        prompts.append(args[3])
+        return codex(*args)
+
+    reviews = iter(
+        [assessment(action="uncertain", reason="Inspect migration layout first"), assessment()]
+    )
+    monkeypatch.setattr(actions, "_codex", generate)
+    monkeypatch.setattr(actions, "assess", lambda *_a, **_k: next(reviews))
+    actions.prepare_plan(state, action["id"])
+    result = state.get(action["id"])
+    assert result["status"] == "awaiting_approval" and result["plan_attempt"] == 2
+    assert "Inspect migration layout first" in prompts[1]
+    assert folders[1] == folders[0] / "repair"
+    assert (folders[0] / "relevance.json").exists()
+    assert (folders[1] / "relevance.json").exists()
+    assert not result.get("draft_plan") and not result["review_issues"]
+    assert not result.get("approval")
+    actions.checked_action(state, result)
+    approved = actions.approve(state, result["id"], result["plan_digest"])
+    assert approved["status"] == "queued" and approved["phase"] == "execution"
+
+
+def test_repeated_review_rejection_retains_draft_and_full_reason_without_approval(
+    planning, monkeypatch
+):
+    state, action, _ = planning
+    reason = "Existing schema and test coverage remain unestablished. " * 20
+    calls = []
+
+    def review(*_a, **_k):
+        calls.append(1)
+        return assessment(action="uncertain", reason=reason)
+
+    monkeypatch.setattr(actions, "assess", review)
+    actions.prepare_plan(state, action["id"])
+    result = state.get(action["id"])
+    assert len(calls) == 2 and result["status"] == "failed"
+    assert result["draft_plan"]["summary"] and result["review_issues"] == [reason]
+    assert reason in result["error"]
+    assert not result.get("plan_digest") and not result.get("plan")
+    with pytest.raises(ValueError):
+        actions.approve(state, result["id"], "0" * 64)
+
+
+@pytest.mark.parametrize("malformed", [[], None, {"claims": []}, {"claims": [None]}])
+def test_malformed_candidate_gets_one_structured_repair(planning, monkeypatch, malformed):
+    state, action, _ = planning
+    codex = actions._codex
+    calls = []
+
+    def generate(*args):
+        calls.append(1)
+        return malformed if len(calls) == 1 else codex(*args)
+
+    monkeypatch.setattr(actions, "_codex", generate)
+    monkeypatch.setattr(actions, "assess", lambda *_a, **_k: assessment())
+    actions.prepare_plan(state, action["id"])
+    assert len(calls) == 2 and state.get(action["id"])["status"] == "awaiting_approval"
+
+
+def test_invented_citation_does_not_trigger_automatic_retry(planning, monkeypatch):
+    state, action, _ = planning
+    codex = actions._codex
+    calls = []
+
+    def generate(*args):
+        calls.append(1)
+        output = codex(*args)
+        output["claims"][0]["support"][0]["evidence_id"] = "invented"
+        return output
+
+    monkeypatch.setattr(actions, "_codex", generate)
+    monkeypatch.setattr(
+        actions, "assess", lambda *_a, **_k: pytest.fail("invalid evidence reviewed")
+    )
+    actions.prepare_plan(state, action["id"])
+    assert len(calls) == 1 and state.get(action["id"])["status"] == "failed"
+
+
+def test_sql_plan_is_editable_but_only_python_tests_are_executable(tmp_path):
+    plan = {
+        "summary": "Add a checked constraint",
+        "files": ["migrations/constraint.sql"],
+        "steps": ["Add constraint and verify with the existing test harness"],
+        "tests": [{"runner": "unittest", "path": "tests"}],
+    }
+    assert actions.validate_plan(plan, tmp_path)["commands"][0][:3] == ["python", "-m", "unittest"]
+    plan["tests"] = [{"runner": "psql", "path": "migrations/constraint.sql"}]
+    with pytest.raises(ValueError, match="Only pytest and unittest"):
+        actions.validate_plan(plan, tmp_path)

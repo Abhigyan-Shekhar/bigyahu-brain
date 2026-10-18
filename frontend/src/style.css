@@ -3774,3 +3774,90 @@ h2 {
   z-index: 1;
   pointer-events: none;
 }
+
+/* Review surfaces: outcomes first, trace and supporting detail on demand. */
+.finding-alerts { display: grid; gap: 18px; margin: 20px 0 24px; min-width: 0; }
+.findings-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.findings-kicker { display: flex; align-items: center; gap: 7px; color: #55705e; font-size: 10px; font-weight: 650; letter-spacing: .09em; }
+.findings-heading h3 { margin: 8px 0; font-size: 27px; line-height: 1.2; letter-spacing: -.7px; font-weight: 600; color: #233c2d; }
+.findings-heading p { margin: 0; color: #52665b; font-size: 12px; line-height: 1.6; }
+.findings-review-note { color: #64736a; }
+.findings-plan-button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: 11px 14px; background: #355b42; color: #fff; border: 1px solid #355b42; border-radius: 7px; font-size: 12px; font-weight: 550; min-height: 40px; }
+.findings-plan-button:hover { background: #254b32; }
+.finding-filters { display: flex; gap: 6px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid #dce4de; }
+.finding-filters button { display: inline-flex; align-items: center; gap: 9px; padding: 7px 11px; border: 1px solid transparent; border-radius: 6px; color: #5a6d60; text-transform: capitalize; font-size: 12px; min-height: 34px; }
+.finding-filters button span { font-size: 11px; font-variant-numeric: tabular-nums; opacity: .8; }
+.finding-filters button[aria-pressed="true"] { background: #e8efe9; border-color: #cbd8ce; color: #2f503b; font-weight: 600; }
+.finding-filters button:hover { background: #edf2ed; }
+.finding-list { display: grid; gap: 16px; min-width: 0; }
+.finding-alert { --severity: #546b60; --severity-bg: #edf2ef; border: 1px solid #d9e1dc; border-left: 3px solid var(--severity); padding: 20px; border-radius: 8px; background: #fff; min-width: 0; }
+.finding-alert.severity-critical, .finding-alert.severity-high { --severity: #a1372c; --severity-bg: #fbefec; }
+.finding-alert.severity-medium { --severity: #8c5d20; --severity-bg: #fbf4e6; }
+.finding-alert.severity-low { --severity: #3d6483; --severity-bg: #edf3f8; }
+.finding-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 11px; }
+.finding-severity { display: inline-flex; gap: 6px; align-items: center; padding: 4px 7px; border-radius: 4px; background: var(--severity-bg); color: var(--severity); font-weight: 650; text-transform: uppercase; font-size: 10px; letter-spacing: .035em; }
+.finding-severity > span { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.finding-category { color: #64756b; text-transform: capitalize; }
+.finding-location { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; color: #5c7163; min-width: 0; }
+.finding-location code { font-size: 11px; overflow-wrap: anywhere; }
+.finding-alert h4 { font-size: 18px; line-height: 1.45; letter-spacing: -.3px; color: #253d30; margin: 12px 0 8px; font-weight: 600; overflow-wrap: anywhere; }
+.finding-alert .finding-impact { color: #465b4e; font-size: 13px; line-height: 1.75; margin: 0; overflow-wrap: anywhere; }
+.finding-recommendation { margin-top: 16px; padding: 13px 15px; border-radius: 5px; background: #f3f6f2; border: 1px solid #e6ece4; }
+.finding-recommendation > strong { display: block; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; color: #4f6b56; font-weight: 650; }
+.finding-recommendation p { margin: 6px 0 0; font-size: 12px; line-height: 1.8; color: #354b3c; overflow-wrap: anywhere; }
+.finding-sources { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 12px; border-top: 1px solid #edf0ec; }
+.finding-sources > span { color: #6b7a70; font-size: 11px; margin-right: 3px; }
+.finding-sources button { display: inline-flex; align-items: center; gap: 6px; color: #4b6353; background: #f7f9f6; border: 1px solid #e1e8df; border-radius: 5px; padding: 6px 8px; font-size: 11px; max-width: 100%; overflow-wrap: anywhere; }
+.finding-sources button:hover { color: #284a34; background: #edf3eb; border-color: #b8cbb9; }
+.findings-disclaimer { font-size: 11px; line-height: 1.7; color: #68776c; margin: 0; }
+.investigation-run-heading { display: flex; align-items: start; justify-content: space-between; gap: 18px; margin: 8px 0 20px; padding-bottom: 18px; border-bottom: 1px solid #dce5dd; }
+.investigation-run-heading h3 { color: #294735; font-size: 23px; font-weight: 550; letter-spacing: -.5px; margin: 7px 0 11px; }
+.investigation-run-heading > button { font-size: 11px; min-height: 34px; padding: 7px 10px; border: 1px solid #d5e0d6; border-radius: 5px; white-space: nowrap; color: #47644f; }
+.investigation-run-heading > button:hover { background: #ecf2eb; }
+.investigation-question { font-size: 12px; color: #5b7061; }
+.investigation-question summary { cursor: pointer; }
+.investigation-question p { line-height: 1.7; max-width: 66ch; }
+.completed-activity, .result-limitations { margin: 12px 0 18px; padding: 11px 0; border-bottom: 1px solid #e1e7df; }
+.completed-activity > summary, .result-limitations > summary { font-size: 12px; cursor: pointer; color: #566d5d; }
+.completed-activity > summary span { color: #748176; font-size: 11px; margin-left: 10px; }
+.result-limitations p { font-size: 12px; color: #5e7263; line-height: 1.7; }
+.action-panel { background: #fbfcfa; border-color: #d6e0d5; padding: 18px; font-size: 13px; }
+.action-heading { color: #48654f; }
+.action-heading strong { font-size: 12px; }
+.action-note { color: #65766a; font-size: 11px; }
+.action-brief, .action-progress { border-bottom: 1px solid #e1e8df; padding: 8px 0; }
+.plan-detail { margin-top: 14px; }
+.plan-detail > summary { font-size: 16px; font-weight: 600; color: #2e5039; cursor: pointer; }
+.plan-detail > p:first-of-type { font-size: 14px; line-height: 1.75; }
+.plan-review-status { display: inline-block; color: #4f6e55; background: #edf3e9; padding: 5px 9px; border-radius: 4px; font-size: 11px; }
+.plan-detail > ol { padding-left: 22px; margin: 18px 0; }
+.plan-detail > ol > li { margin: 12px 0; padding-left: 5px; color: #425c49; line-height: 1.8; }
+.plan-detail h4 { color: #3c5d45; font-size: 12px; font-weight: 650; margin-top: 22px; }
+.plan-detail pre { background: #edf2ec; color: #314d39; padding: 12px 14px; border: 1px solid #dae4d6; border-radius: 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.plan-supporting-evidence { border-top: 1px solid #dce5d9; margin-top: 22px; padding-top: 14px; }
+.plan-supporting-evidence > summary { font-size: 12px; }
+.approval-controls { padding: 18px 0 4px; margin-top: 20px; border-top: 1px solid #cbdac7; }
+.approval-controls p { font-size: 12px; color: #526d59; line-height: 1.7; }
+.approval-controls > div { flex-wrap: wrap; }
+.approval-controls button { min-height: 38px; font-size: 12px; }
+.workspace-actions { display: flex; align-items: center; gap: 8px; }
+.context-toggle { display: none; }
+@media (max-width: 1100px) {
+  .work-area:not(.graph-workspace) { position: relative; }
+  .work-area:not(.graph-workspace) > .evidence-panel { display: none; }
+  .work-area:not(.graph-workspace).inspector-open > .evidence-panel,
+  .work-area.context-open > .evidence-panel { display: flex; position: absolute; top: 0; right: 0; width: min(360px, 100%); height: calc(100vh - 65px); max-height: calc(100vh - 65px); z-index: 25; box-shadow: -12px 0 30px #253d3014; border-left: 1px solid #d7e1d5; overflow: auto; }
+  .context-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 10px; border: 1px solid #d5e1d5; border-radius: 6px; color: #4b6952; font-size: 11px; min-height: 34px; }
+  .context-toggle:hover, .context-toggle[aria-expanded="true"] { background: #e8f0e6; }
+}
+@media (max-width: 680px) {
+  .findings-heading h3 { font-size: 24px; }
+  .findings-plan-button { width: 100%; }
+  .finding-alert { padding: 15px; }
+  .finding-location { width: 100%; margin-left: 0; }
+  .investigation-run-heading { flex-direction: column; gap: 10px; }
+  .workspace-actions { flex-wrap: wrap; justify-content: flex-end; }
+  .context-toggle { font-size: 10px; }
+  .approval-controls > div { align-items: stretch; }
+  .approval-controls .primary { width: 100%; }
+}
