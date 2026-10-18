@@ -53,10 +53,44 @@ uv run --frozen --extra app --extra lite python -m brain.app.server \
 Open the printed local session URL, which includes a bearer token in its fragment.
 The client removes the fragment and retains the token in this tab's session
 storage. Each application restart issues a new token; open the new URL in a fresh
-tab (or reload it) after restarting. Build assets before launching the server;
-generated assets and Node dependencies are ignored. Development: `npm run dev
+tab (or reload it) after restarting. The CLI checks a content fingerprint of the
+frontend sources before startup and rebuilds missing or outdated assets. It runs
+`npm ci --ignore-scripts` when dependencies have not been recorded for the current
+lockfile. Node.js/npm must be installed for that rebuild. A failed build stops
+startup rather than silently serving an old interface. Installed wheels with no
+frontend source tree use their packaged assets. Generated assets and Node
+dependencies are ignored. Development: `npm run dev
 --prefix frontend` provides the Vite client, but the production same-origin build
 served by FastAPI is the supported authenticated workflow.
+
+### Update an existing checkout
+
+The default branch is **master**. Fetching downloads remote commits; pulling
+updates your checked-out branch. Stop the old app server first, then run from the
+repository folder:
+
+```sh
+git fetch origin --prune
+git switch master
+git pull --ff-only origin master
+uv sync --frozen --extra app --extra lite --extra graphify --extra ingestion --python 3.12
+```
+
+If Git reports local changes or a diverged branch, preserve those changes and
+resolve the reported condition before proceeding; do not reset them away.
+Restart with your existing absolute `--config`, `--data`, model and port arguments
+shown above. The startup check builds the current client automatically. Open the
+new **Open locally** session URL printed by that server. A previously running
+Python process continues using old code until restarted. The old port 5193
+`.ui-preview.html` page was a temporary synthetic UI check; use the actual app
+URL (8787 by default) for the full product.
+
+For a manual frontend rebuild:
+
+```sh
+npm ci --prefix frontend --ignore-scripts
+npm run --prefix frontend build
+```
 
 ## What runs
 

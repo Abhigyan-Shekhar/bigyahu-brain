@@ -1259,6 +1259,12 @@ def main():
     )
     parser.add_argument("--port", type=int, default=8787)
     args = parser.parse_args()
+    from .client_build import ensure_client
+
+    try:
+        ensure_client()
+    except RuntimeError as exc:
+        parser.exit(1, str(exc) + "\n")
     token = secrets.token_urlsafe(32)
     origin = f"http://127.0.0.1:{args.port}"
     state = State(args.data, load_config(args.config), args.model)
