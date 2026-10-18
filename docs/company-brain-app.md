@@ -244,3 +244,11 @@ claims produce no alerts. Security, correctness, performance and reliability
 findings remain distinct. Existing saved answers without finding metadata remain
 readable; rerun an investigation to generate structured findings. Alerts do not
 publish GitHub comments or send external notifications.
+
+Planning accepts 1–20 nonempty steps, with 2000 characters per step and 20000
+characters overall; the output schema, planner instructions and execution
+validator use these same limits. Failed attempts retain bounded display-only
+model drafts. If no model plan was produced, the app labels its generic starting
+outline explicitly; it contains no approval digest or executable commands and is
+not presented as a source-backed recommendation. npm-installed Codex launchers
+resolve Node before applying the restricted sandbox child environment.

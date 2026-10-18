@@ -16,6 +16,16 @@ def sandbox_command(work, scratch, argv):
     codex = shutil.which("codex")
     if not codex or sys.platform not in {"darwin", "linux"}:
         raise ValueError("A supported Codex OS sandbox is required for test execution")
+    launcher = [codex]
+    with Path(codex).open("rb") as executable:
+        node_wrapper = executable.read(64).splitlines()[0] == b"#!/usr/bin/env node"
+    if node_wrapper:
+        node = shutil.which("node")
+        if not node:
+            raise ValueError("The npm Codex launcher requires Node.js on the server PATH")
+        # The child environment deliberately omits user PATH entries. Resolve Node
+        # before applying that environment; sandbox permissions remain unchanged.
+        launcher = [str(Path(node).resolve()), str(Path(codex).resolve())]
     # Resolve the interpreter: execution through a venv symlink is denied by narrow OS profiles.
     filesystem = {
         ":minimal": "read",
@@ -28,7 +38,7 @@ def sandbox_command(work, scratch, argv):
     table = "{" + ",".join(json.dumps(k) + "=" + json.dumps(v) for k, v in filesystem.items()) + "}"
     name = "brain-tests-" + work.parent.name.replace("_", "-")
     return [
-        codex,
+        *launcher,
         "sandbox",
         "-P",
         name,

@@ -398,8 +398,9 @@ export default function ActionPanel({
                 Draft available; execution checks need attention
               </summary>
               <p>
-                This draft did not pass review and cannot be approved for
-                execution.
+                {action.draft_plan.origin === "starting_outline"
+                  ? "No model plan was produced. This is a starting outline to refine the objective; it cannot be approved for execution."
+                  : "This draft did not pass review and cannot be approved for execution."}
               </p>
               <p>{action.draft_plan.summary}</p>
               <ol>
