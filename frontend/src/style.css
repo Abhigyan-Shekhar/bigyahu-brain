@@ -1243,7 +1243,7 @@ h2 {
   font-size: 11px;
   color: #786b82;
 }
-.workflow-stages [aria-current="step"] {
+.workflow-stages [aria-current] {
   color: #563671;
   font-weight: 650;
   border-bottom: 2px solid #b9a1cd;
@@ -2271,4 +2271,48 @@ h2 {
 }
 .action-outcome .test-count-summary p {
   line-height: 1.4;
+}
+
+.workflow-stages button {
+  color: inherit;
+  padding: 6px 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  cursor: pointer;
+  font: inherit;
+}
+.workflow-stages button:hover {
+  color: #563671;
+  border-bottom-color: #b9a1cd;
+}
+.workflow-stages button:focus-visible {
+  outline: 2px solid #563671;
+  outline-offset: 4px;
+}
+.workflow-target {
+  scroll-margin-top: 90px;
+}
+.workflow-target:focus-visible {
+  outline: 2px solid #b9a1cd;
+  outline-offset: 4px;
+}
+.approval-record {
+  padding: 12px 0;
+  font-size: 12px;
+}
+
+.action-focus .action-navigation {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
+  padding-bottom: 4px;
+}
+.action-focus .action-heading {
+  position: static;
+}
+.action-focus .workflow-target {
+  scroll-margin-top: 150px;
 }

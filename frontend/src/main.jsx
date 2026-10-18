@@ -906,7 +906,12 @@ function App() {
                       </div>
                     ) : (
                       turns.map((t) => (
-                        <article className="turn" key={t.id}>
+                        <article
+                          className="turn workflow-target"
+                          key={t.id}
+                          id={`investigation-${t.id}`}
+                          tabIndex={-1}
+                        >
                           <div className="question">
                             <span className="avatar">YOU</span>
                             <p>{t.question}</p>

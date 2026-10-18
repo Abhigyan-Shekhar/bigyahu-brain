@@ -51,6 +51,54 @@ export default function ActionPanel({
 }) {
   const [focused, setFocused] = useState(false);
   const dialog = useRef(null);
+  const planSection = useRef(null);
+  const approvalSection = useRef(null);
+  const editSection = useRef(null);
+  const verifySection = useRef(null);
+  const noticeSection = useRef(null);
+  const [selectedStage, setSelectedStage] = useState(null);
+  const [stageNotice, setStageNotice] = useState("");
+  function jumpToStage(index) {
+    setSelectedStage(index);
+    if (index === 0) {
+      setFocused(false);
+      requestAnimationFrame(() => {
+        const investigation = document.getElementById(
+          `investigation-${turn.id}`,
+        );
+        investigation?.scrollIntoView({ block: "start" });
+        investigation?.focus({ preventScroll: true });
+      });
+      return;
+    }
+    const target = [
+      null,
+      planSection,
+      approvalSection,
+      editSection,
+      verifySection,
+    ][index]?.current;
+    if (target) {
+      setStageNotice("");
+      if (target.tagName === "DETAILS") target.open = true;
+      target.scrollIntoView({ block: "start" });
+      target.focus({ preventScroll: true });
+    } else {
+      setStageNotice(
+        [
+          "",
+          "No fix plan is available yet. Use Plan a change or retry the stopped plan.",
+          "Approval is available after a plan passes review. Selecting this stage never approves execution.",
+          "No final edit is available yet. Editing begins only after explicit plan approval.",
+          "No verification results are available yet. Results appear after the approved tests finish.",
+        ][index],
+      );
+      requestAnimationFrame(() => {
+        noticeSection.current?.scrollIntoView({ block: "start" });
+        noticeSection.current?.focus({ preventScroll: true });
+      });
+    }
+  }
   const focusButton = useRef(null);
   const wasFocused = useRef(false);
   useEffect(() => {
@@ -176,39 +224,60 @@ export default function ActionPanel({
       id={`fix-${turn.id}`}
       aria-label="Plan and execution"
     >
-      <div className="action-heading">
-        <GitBranch size={14} />
-        <strong>From investigation to a fix</strong>
-        <button ref={focusButton} onClick={() => setFocused(!focused)}>
-          {focused ? "Close focused review" : "Open focused review"}
-        </button>
-        {action?.patch && (
-          <button onClick={() => download(action)}>
-            <Download size={13} /> Download final patch
+      <div className="action-navigation">
+        <div className="action-heading">
+          <GitBranch size={14} />
+          <strong>From investigation to a fix</strong>
+          <button ref={focusButton} onClick={() => setFocused(!focused)}>
+            {focused ? "Close focused review" : "Open focused review"}
           </button>
-        )}
-        {!busy && !form && (
-          <button
-            onClick={() => {
-              setObjective(action?.objective || objective);
-              setForm(true);
-            }}
-          >
-            {action?.status === "failed"
-              ? "Review objective and retry"
-              : action
-                ? "Plan another change"
-                : "Plan a change"}
-          </button>
-        )}
+          {action?.patch && (
+            <button onClick={() => download(action)}>
+              <Download size={13} /> Download final patch
+            </button>
+          )}
+          {!busy && !form && (
+            <button
+              onClick={() => {
+                setObjective(action?.objective || objective);
+                setForm(true);
+              }}
+            >
+              {action?.status === "failed"
+                ? "Review objective and retry"
+                : action
+                  ? "Plan another change"
+                  : "Plan a change"}
+            </button>
+          )}
+        </div>
+        <ol className="workflow-stages" aria-label="Fix workflow stages">
+          {stages.map((label, i) => (
+            <li key={label}>
+              <button
+                type="button"
+                onClick={() => jumpToStage(i)}
+                aria-current={
+                  i === (selectedStage ?? stageIndex) ? "location" : undefined
+                }
+                aria-label={`Go to ${label.toLowerCase()}`}
+              >
+                {label}
+              </button>
+            </li>
+          ))}
+        </ol>
       </div>
-      <ol className="workflow-stages" aria-label="Fix workflow stages">
-        {stages.map((label, i) => (
-          <li key={label} aria-current={i === stageIndex ? "step" : undefined}>
-            {label}
-          </li>
-        ))}
-      </ol>
+      {stageNotice && (
+        <p
+          className="action-note workflow-target"
+          ref={noticeSection}
+          tabIndex={-1}
+          role="status"
+        >
+          {stageNotice}
+        </p>
+      )}
       {error && (
         <p className="failure" role="alert">
           {error}
@@ -316,7 +385,12 @@ export default function ActionPanel({
             </div>
           )}
           {action.status === "complete" && (
-            <div className="action-outcome">
+            <div
+              className="action-outcome workflow-target"
+              ref={verifySection}
+              tabIndex={-1}
+              aria-label="Verification results"
+            >
               <div
                 className="test-comparison"
                 aria-label="Before and after test results"
@@ -419,7 +493,9 @@ export default function ActionPanel({
           )}
           {action.plan && (
             <details
-              className="plan-detail"
+              className="plan-detail workflow-target"
+              ref={planSection}
+              tabIndex={-1}
               open={action.status === "awaiting_approval"}
             >
               <summary>Fix plan · Why this fix?</summary>
@@ -490,7 +566,12 @@ export default function ActionPanel({
             </details>
           )}
           {action.status === "awaiting_approval" && (
-            <div className="approval-controls">
+            <div
+              className="approval-controls workflow-target"
+              ref={approvalSection}
+              tabIndex={-1}
+              aria-label="Plan approval"
+            >
               <p>
                 Approval authorizes only this plan’s files and test commands in
                 a separate checkout. Your indexed source stays unchanged.
@@ -507,6 +588,21 @@ export default function ActionPanel({
                   <Play size={14} /> Approve isolated execution
                 </button>
               </div>
+            </div>
+          )}
+          {action.approval && action.status !== "awaiting_approval" && (
+            <div
+              className="approval-record workflow-target"
+              ref={approvalSection}
+              tabIndex={-1}
+              aria-label="Recorded approval"
+            >
+              <strong>Recorded plan approval</strong>
+              <p>
+                Approved by {action.approval.principal} at {action.approval.at}.
+                This is the existing approval record; visiting this stage does
+                not run the action again.
+              </p>
             </div>
           )}
           {action.status === "complete" && (
@@ -581,7 +677,11 @@ export default function ActionPanel({
                   </div>
                 ))}
               </details>
-              <details>
+              <details
+                ref={editSection}
+                tabIndex={-1}
+                className="workflow-target"
+              >
                 <summary>
                   Final diff{" "}
                   <button
