@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ReactFlow, Background, Controls, MarkerType } from "@xyflow/react";
+import { ReactFlow, Background, Controls, MarkerType, getViewportForBounds } from "@xyflow/react";
 import { evidencePath } from "./graphPresentation";
 
 export default function Graph({
@@ -18,19 +18,26 @@ export default function Graph({
   const flow = useRef(null);
   const fitFrame = useRef(null);
   const fitted = useRef(false);
+  const fitAttempts = useRef(0);
   function fitVisibleCanvas() {
     const bounds = canvas.current?.getBoundingClientRect();
-    if (fitted.current || !bounds?.width || !bounds?.height) return;
+    if (!canvas.current?.checkVisibility() || fitted.current || !bounds?.width || !bounds?.height) return;
     cancelAnimationFrame(fitFrame.current);
-    fitFrame.current = requestAnimationFrame(() => {
+    fitFrame.current = requestAnimationFrame(async () => {
       const visible = canvas.current?.getBoundingClientRect();
-      if (fitted.current || !flow.current || !visible?.width || !visible?.height) return;
-      fitted.current = true;
-      viewportCache?.current[viewKey]
-        ? flow.current?.setViewport(viewportCache.current[viewKey])
-        : flow.current?.fitView({
-            padding: (onExpand && !focused) || compact ? 0.25 : 0.1,
-          });
+      if (!canvas.current?.checkVisibility() || fitted.current || !flow.current || !visible?.width || !visible?.height) return;
+      const instance = flow.current;
+      const measuredNodes = instance.getNodes();
+      if (!measuredNodes.length || measuredNodes.some((n) => !instance.getInternalNode(n.id)?.measured?.width || !instance.getInternalNode(n.id)?.measured?.height)) {
+        if (++fitAttempts.current < 60) fitVisibleCanvas();
+        return;
+      }
+      const target = viewportCache?.current[viewKey] || getViewportForBounds(
+        instance.getNodesBounds(measuredNodes), visible.width, visible.height,
+        0.02, 1.5, (onExpand && !focused) || compact ? 0.25 : 0.1,
+      );
+      const result = await instance.setViewport(target);
+      if (result) fitted.current = true;
     });
   }
   useEffect(() => {
@@ -325,6 +332,7 @@ export default function Graph({
           onInit={(instance) => {
             flow.current = instance;
             fitted.current = false;
+            fitAttempts.current = 0;
             fitVisibleCanvas();
           }}
           key={nodes.map((n) => n.id).join("|")}
@@ -354,10 +362,6 @@ export default function Graph({
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable
-          fitView
-          fitViewOptions={{
-            padding: (onExpand && !focused) || compact ? 0.25 : 0.1,
-          }}
           minZoom={0.02}
           maxZoom={1.5}
           deleteKeyCode={null}
