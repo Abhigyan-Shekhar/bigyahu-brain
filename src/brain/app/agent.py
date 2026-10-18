@@ -12,6 +12,7 @@ from ..graph import GraphStore
 from ..memory import canonical
 from .activity import TOOLS
 from .evidence import verified_claims
+from .findings import FINDING_SCHEMA
 from .relevance import assess
 
 SCHEMA = {
@@ -24,9 +25,10 @@ SCHEMA = {
             "items": {
                 "type": "object",
                 "additionalProperties": False,
-                "required": ["text", "support"],
+                "required": ["text", "support", "finding"],
                 "properties": {
                     "text": {"type": "string"},
+                    "finding": FINDING_SCHEMA,
                     "support": {
                         "type": "array",
                         "items": {
@@ -113,6 +115,10 @@ def run_turn(state, project, session, turn):
             "For historical bug requests, use search_history with failure terms and file/symbol hints; inspect its patch evidence and coverage warnings before explaining a past fix. A file association is not proof that a specific function changed or a fix worked. memory_graph and memory_search can expose verified company paths only after the operator connects company evidence. "
             "To cite graph UIDs or relationships, quote text from a Native memory path checked_evidence item, not the memory prose item. Memory prose does not contain graph metadata. Return concise factual claims, each with supporting checked_evidence IDs issued by tools in THIS turn "
             "and exact literal quotations from those sources. Do not invent IDs, quotes, edges or history. "
+            "For an actionable vulnerability or defect attach finding metadata: a concise title, severity based on demonstrated impact, "
+            "category, recommended fix, and current code location only when it falls within a cited read_code excerpt. "
+            "Use location null when current code lines are unavailable and finding null for ordinary explanatory claims. "
+            "Do not invent findings, CVEs, exploitability or a clean security bill from incomplete coverage. "
             "Use limitations only for evidence gaps and capability limits, not uncited factual answers. "
             "Always carry material tool coverage warnings into limitations: partial GitHub sampling, "
             "history_candidate_bound, truncated callers/sources, or unavailable memory paths. "

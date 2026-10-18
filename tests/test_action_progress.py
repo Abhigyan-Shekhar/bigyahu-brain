@@ -90,3 +90,23 @@ def test_investigation_activity_uses_only_safe_recorded_tools(tmp_path):
     assert result["completed_tools"][1]["status"] == "unverified"
     assert "not public" not in str(result)
     assert result["elapsed_seconds"] is None
+
+
+def test_repair_progress_uses_current_attempt_trace(tmp_path):
+    state = SimpleNamespace(folder=lambda _: tmp_path)
+    folder = tmp_path / "actions" / "action" / "plan"
+    (folder / "repair").mkdir(parents=True)
+    for path, tool in [(folder, "search_history"), (folder / "repair", "repository_files")]:
+        (path / "trace.jsonl").write_text(
+            json.dumps({"type": "item.started", "item": {"type": "mcp_tool_call", "tool": tool}})
+        )
+    action = {
+        "id": "action",
+        "project": "project",
+        "phase": "planning",
+        "status": "running",
+        "plan_attempt": 2,
+    }
+    assert action_progress(state, action)["current_tool"] == "repository_files"
+    action.pop("plan_attempt")
+    assert action_progress(state, action)["current_tool"] == "search_history"

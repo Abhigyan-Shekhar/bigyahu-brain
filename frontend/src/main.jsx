@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import "@xyflow/react/dist/style.css";
 import "./style.css";
-import { api, send } from "./api";
+import { api, send, watchResource } from "./api";
 const AgentRuns = React.lazy(() => import("./AgentRuns"));
 import FixLauncher from "./FixLauncher";
 const GraphInspector = React.lazy(() => import("./GraphInspector"));
@@ -31,6 +31,7 @@ import Graph from "./GraphViewer";
 import { clusterGraph } from "./graphPresentation";
 import InvestigationContext from "./InvestigationContext";
 import InvestigationSummary from "./InvestigationSummary";
+import FindingAlerts from "./FindingAlerts";
 import { sourceNeighborhood } from "./investigationPresentation";
 import IngestionPanel from "./IngestionPanel";
 import PersonalBrain from "./PersonalBrain";
@@ -63,6 +64,13 @@ function App() {
     [historyRequired, setHistoryRequired] = useState(false),
     [expansion, setExpansion] = useState(null),
     [ingesting, setIngesting] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
+  useEffect(() => setContextOpen(false), [mode, project]);
+  useEffect(() => {
+    if (!selected && !contextOpen) return;
+    const frame = requestAnimationFrame(() => document.getElementById("context-panel")?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [selected, contextOpen]);
   const [memoryTab, setMemoryTab] = useState("personal");
   const [runId, setRunId] = useState(null);
   const [graphMode, setGraphMode] = useState("overview");
@@ -282,19 +290,10 @@ function App() {
   }, [project]);
   useEffect(() => {
     if (!session) return;
-    let active = true;
-    const refreshTurns = () =>
-      api(`/sessions/${session}/turns`)
-        .then((t) => {
-          if (active) setTurns(t);
-        })
-        .catch((e) => setError(e.message));
-    refreshTurns();
-    const id = setInterval(refreshTurns, 1500);
-    return () => {
-      active = false;
-      clearInterval(id);
-    };
+    return watchResource(
+      `/sessions/${session}/events`, `/sessions/${session}/turns`,
+      setTurns, (e) => setError(e.message),
+    );
   }, [session]);
   const graphRequest = useRef(0);
   const activeProject = useRef(project);
@@ -431,10 +430,10 @@ function App() {
       const actions = await api(`/turns/${turn.id}/actions`);
       if (scope !== activeProject.current) return;
       if (actions.length) openRun(actions.at(-1).id);
-      else
-        document
-          .getElementById(`fix-${turn.id}`)
-          ?.scrollIntoView({ block: "center" });
+      else {
+        if (mode !== "chat") returnToInvestigation({ session: turn.session, turn: turn.id });
+        requestAnimationFrame(() => document.getElementById(`fix-${turn.id}`)?.scrollIntoView({ block: "center" }));
+      }
     } catch (e) {
       if (scope === activeProject.current) setError(e.message);
     }
@@ -692,7 +691,7 @@ function App() {
             </button>
           </div>
           <span className="read-only">
-            <span className="dot ready" /> Graphify → FalkorDB → cited answers
+            <span className="dot ready" /> Local workspace
           </span>
         </header>
         {error && (
@@ -803,7 +802,8 @@ function App() {
                 : mode === "runs"
                   ? "runs-area"
                   : "") +
-              (graphSelection || selected ? " inspector-open" : "")
+              (graphSelection || selected ? " inspector-open" : "") +
+              (contextOpen ? " context-open" : "")
             }
           >
             <section
@@ -838,6 +838,12 @@ function App() {
                     </button>
                   )}
                 </div>
+                <div className="workspace-actions">
+                {mode === "chat" && <button className="context-toggle" aria-expanded={contextOpen}
+                  aria-controls="context-panel" onClick={() => {
+                    setContextOpen(!contextOpen);
+                    if (!contextOpen) requestAnimationFrame(() => document.getElementById("context-panel")?.focus());
+                  }}><Network size={15} />Sources & context</button>}
                 <label className="upload-button">
                   {uploading ? (
                     <LoaderCircle size={16} className="spin" />
@@ -851,7 +857,7 @@ function App() {
                     disabled={uploading || busy || ingesting}
                     onChange={upload}
                   />
-                </label>
+                </label>                </div>
               </div>
               {uploadNotice && (
                 <div className="coverage" role="status">
@@ -1183,6 +1189,7 @@ function App() {
                         ?.scrollTo({ top: 0 });
                     }}
                     onInvestigation={returnToInvestigation}
+                    onReviewFix={(run) => reviewTurnFix({ id: run.turn || run.id, session: run.session })}
                     onEvidence={(id, evidence, kind, origin) =>
                       citation(id, evidence, kind, origin)
                     }
@@ -1284,12 +1291,15 @@ function App() {
                                       </button>
                                     )}
                                   </div>
-                                  <InvestigationSummary
+                                  <FindingAlerts turn={t}
+                                    onEvidence={(id) => citation(t.id, id)}
+                                    onPlan={() => reviewTurnFix(t)} />
+                                  {!t.claims?.some((claim) => claim.finding) && <InvestigationSummary
                                     turn={t}
                                     onGraph={() => revealTurnEvidence(t)}
                                     onReview={() => reviewTurnFix(t)}
-                                  />
-                                  {t.claims?.map((c, i) => (
+                                  />}
+                                  {t.claims?.map((c, i) => !c.finding && (
                                     <details
                                       className={
                                         "claim " +
@@ -1300,7 +1310,7 @@ function App() {
                                       <summary>
                                         {i === 0
                                           ? "Detailed diagnosis & source paths"
-                                          : `Finding ${i + 1} · ${c.text.slice(0, 90)}${c.text.length > 90 ? "…" : ""}`}
+                                          : `${t.claims.some((claim) => claim.finding) ? "Additional context" : `Finding ${i + 1}`} · ${c.text.slice(0, 90)}${c.text.length > 90 ? "…" : ""}`}
                                       </summary>
                                       {i === 0 && (
                                         <span className="diagnosis-label">
@@ -1482,7 +1492,11 @@ function App() {
                 </>
               )}
             </section>
-            <aside className="evidence-panel">
+            <aside className="evidence-panel" id="context-panel" tabIndex={-1} aria-label="Sources and evidence" onKeyDown={(e) => {
+              if (e.key !== "Escape") return;
+              setSelected(null); setGraphSelection(null); setContextOpen(false);
+              requestAnimationFrame(() => document.querySelector(".context-toggle")?.focus());
+            }}>
               <div className="inspector-heading">
                 <span>
                   <Network size={16} />{" "}
@@ -1496,6 +1510,7 @@ function App() {
                           ? "Run context"
                           : "Investigation context"}
                 </span>
+                {contextOpen && !selected && !graphSelection && <button aria-label="Close sources and context" onClick={() => setContextOpen(false)}><PanelRightClose size={16} /></button>}
                 {selected && (
                   <button
                     aria-label="Close citation"

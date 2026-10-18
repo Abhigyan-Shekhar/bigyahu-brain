@@ -72,6 +72,9 @@ def assess(question, claims, folder, model, *, plan=None):
         "An authentic but unrelated quotation is unsupported. A root-cause claim needs a causal explanation supported by code, "
         "a relevant patch or concrete failure evidence. A matching file path, historical fix message or correlation alone does not prove causation. "
         "Do not infer correctness, testing, ownership or historical behavior absent evidence. Mark incomplete evidence uncertain. "
+        "When a claim includes finding metadata, assess its title, severity, category, location and recommended fix too. "
+        "Severity must follow from evidenced impact; do not treat every defect as a security vulnerability. "
+        "Unsupported classification or remediation makes the whole claim uncertain. "
         "Do not penalize an explicitly qualified recommendation for lacking a universal proof. Explain each verdict briefly.\n"
         + (
             "Also assess the ENTIRE proposed action: summary, every step, file scope, tests, and each claimed influence. "

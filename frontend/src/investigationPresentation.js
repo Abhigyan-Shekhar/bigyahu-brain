@@ -21,6 +21,7 @@ export const toolLabels = {
   find_owner: "Checking code ownership",
   trace_decision: "Tracing a recorded decision",
   search_code: "Finding relevant code",
+  repository_files: "Checking repository file layout",
   read_code: "Inspecting source code",
   search_history: "Searching repository history",
   memory_search: "Retrieving reviewed lessons",

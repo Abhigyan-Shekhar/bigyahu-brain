@@ -7,7 +7,7 @@ from fastmcp import FastMCP
 from ..config import load_config
 from ..graph import GraphStore
 from ..services import Services
-from .evidence import code_evidence, register, source_evidence
+from .evidence import code_evidence, register, repository_files_evidence, source_evidence
 from .memory_paths import path_evidence
 
 
@@ -156,6 +156,14 @@ def create_server(cfg, folder):
     @mcp.tool
     def trace_decision(decision_id: str = "", symbol_uid: str = "", topic: str = "") -> dict:
         return add_evidence(services.trace_decision(decision_id, symbol_uid, topic))
+
+    @mcp.tool
+    def repository_files(query: str = "") -> dict:
+        """Cite current file paths by substring (max 200). Inspect test/schema/migration layout before planning; this does not search contents. Read relevant files with read_code."""
+        try:
+            return {"checked_evidence": [register(folder, repository_files_evidence(store, query))]}
+        except (ValueError, OSError, UnicodeError) as exc:
+            return {"status": "error", "error": str(exc)}
 
     @mcp.tool
     def search_code(query: str) -> dict:

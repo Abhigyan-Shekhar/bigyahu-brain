@@ -8,19 +8,20 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 
 from ..config import load_config
 from ..graph import GraphStore, GraphUnavailable
 from . import exchange, personal, team
-from .actions import active_actions, approve, checked_action, execute, prepare_plan
+from .actions import active_actions, approve, checked_action, execute, plan_folder, prepare_plan
 from .agent import run_turn
 from .enrichment import active_ingestions, run_document_enrichment, run_enrichment
 from .evidence import canonical_graph, native_graph, ready, resolve
 from .sources import onboard, repository_url, upload_binary, upload_document
 from .state import State
+from .streaming import snapshots
 
 
 class TransferInput(BaseModel):
@@ -807,6 +808,29 @@ def create_app(state, token, origin, assets=None):
             {**t, "progress": investigation_progress(state, t)} for t in state.list("turn", session)
         ]
 
+    def event_stream(request, snapshot, *, terminal=False):
+        return StreamingResponse(
+            snapshots(request, snapshot, terminal=terminal),
+            media_type="text/event-stream",
+            headers={"X-Accel-Buffering": "no", "Cache-Control": "no-store"},
+        )
+
+    @app.get("/api/sessions/{session}/events")
+    def session_events(session: str, request: Request):
+        state.get(session, "session")
+        return event_stream(request, lambda: turns(session))
+
+    @app.get("/api/turns/{turn}/events")
+    def turn_events(turn: str, request: Request):
+        state.get(turn, "turn")
+        from .activity import investigation_progress
+
+        def snapshot():
+            value = state.get(turn, "turn")
+            return {**value, "progress": investigation_progress(state, value)}
+
+        return event_stream(request, snapshot, terminal=True)
+
     @app.post("/api/sessions/{session}/turns", status_code=202)
     def question(session: str, body: QuestionInput):
         chat = state.get(session, "session")
@@ -1009,6 +1033,11 @@ def create_app(state, token, origin, assets=None):
 
         return {**value, **verification_result(value), "progress": action_progress(state, value)}
 
+    @app.get("/api/actions/{action_id}/events")
+    def action_events(action_id: str, request: Request):
+        state.get(action_id, "action")
+        return event_stream(request, lambda: action_detail(action_id), terminal=True)
+
     @app.post("/api/actions/{action_id}/approve", status_code=202)
     def approve_action(action_id: str, body: ApprovalInput):
         with lock:
@@ -1050,14 +1079,7 @@ def create_app(state, token, origin, assets=None):
         ):
             raise HTTPException(404, "Citation is not part of this plan")
         checked_action(state, value)
-        path = (
-            state.folder(value["project"])
-            / "actions"
-            / action_id
-            / "plan"
-            / "evidence"
-            / (evidence_id + ".json")
-        )
+        path = plan_folder(state, value) / "evidence" / (evidence_id + ".json")
         saved = json.loads(path.read_text(encoding="utf-8"))
         return {"id": evidence_id, **resolve(GraphStore(state.config(value["project"])), saved)}
 

@@ -1,5 +1,7 @@
 """Executable plans and displayed drafts share the planner's declared limits."""
 
+import sys
+
 import pytest
 
 from brain.app import actions
@@ -63,6 +65,7 @@ def test_file_scope_still_rejects_annotations_escape_and_unsupported_files(tmp_p
         actions.validate_plan(candidate, tmp_path)
 
 
+@pytest.mark.skipif(sys.platform not in {"darwin", "linux"}, reason="requires supported OS sandbox")
 def test_npm_sandbox_launcher_resolves_node_without_expanding_child_path(tmp_path, monkeypatch):
     from brain.app import test_sandbox
 
@@ -81,6 +84,7 @@ def test_npm_sandbox_launcher_resolves_node_without_expanding_child_path(tmp_pat
     assert "network.enabled=false" in " ".join(command)
 
 
+@pytest.mark.skipif(sys.platform not in {"darwin", "linux"}, reason="requires supported OS sandbox")
 def test_npm_sandbox_launcher_reports_missing_node(tmp_path, monkeypatch):
     from brain.app import test_sandbox
 
