@@ -1,509 +1,254 @@
 # Company Brain
 
-A local MCP server that connects a planned code change to incoming callers,
-source-backed constraints and maintainer evidence in FalkorDB. Codex remains the
-code-editing agent. An opt-in memory extension connects personal, team and company
-knowledge through scoped graph paths. Source prose is untrusted evidence;
-remembering something creates a proposal, never an approved rule.
+**An engineering agent that connects code, documents, decisions and reviewed team knowledge in FalkorDB—and shows the sources behind a proposed change.**
 
-The [final hardening report](docs/final-hardening-2026-10-18.md) records byte-preserving
-patch replay, claim-and-action relevance review before approval, clearer evidence/coverage
-presentation and current release checks. The [submission draft](docs/submission-draft.md)
-now describes the current local React/FastAPI product and the separate demo follow-up.
+Company knowledge is scattered across repositories, issues, PR discussions and documents. Company Brain brings those connections into a local React/FastAPI workspace: ask about a bug, inspect the evidence and graph paths, review a fix plan, then approve an isolated patch with before/after test results.
 
+**Graph Hacks 2026 · Track 03: Company Brain**
 
-## Latest application demo — 18 October 2026
-
-The signed-token demonstration now continues through an approved code change,
-downloadable patch, original-code failures, patched tests and fresh-clone replay.
-Start with the [100-second captioned walkthrough](docs/submission-demo/walkthrough.mp4),
-[captions](docs/submission-demo/captions.srt), and
-[patches, receipts and reproduction instructions](docs/submission-demo/README.md).
-The video uses actual captured application states with waits omitted; it is an
-edited still-frame walkthrough, not continuous screen recording. Enable the
-selectable English captions if the player hides them.
-
-A fresh conversation began with only the signed-token crash symptom and selected
-the relevant company documents and code through 16 tool calls. Subsequent planning
-explicitly requested reviewed Personal and Team Brain contributions: a validation
-preference, an engineering lesson and a native path to `TimestampSigner.unsign`.
-These are human-approved synthetic demo seeds, not upstream policy or evidence
-of improved coding performance.
-
-| Validation of the three-brain patch | Original code | Patched code |
-| --- | --- | --- |
-| Approved unittest selection | 5 assertion failures and 18 errors across subtests in 8 methods | 8 methods passed |
-| Independent reproduction in fresh clones | 4/16 passed | 16/16 passed |
-| Additional pytest corpus from the earlier guided run | 14 failed, 112 passed | 126 passed |
-
-The app's strict automatic regression flag rejects baseline runner errors and
-remains false for this unittest run. The conversion errors were checked through
-the separate reproduction; the rule was not weakened. Neither patch was applied
-to the indexed checkout. A [traceback and full-suite follow-up](docs/submission-demo/traceback-review.md)
-accounts for all 18 errors and demonstrates a clean minimal assertion failure on
-the original and a pass on the patch under the same environment. All **297**
-original tests, **305** patched tests and **312** tests including follow-up checks
-pass; the separate minimal result satisfies the existing regression rule.
-The app now keeps extraction status visible during source
-inspection, exposes readable evidence links and before/after results, and exports
-valid Git patches without stripping their final newline. The demo’s targeted
-application check passed **36 tests** with a disposable FalkorDB instance, plus
-Ruff and the frontend production build. Use the
-[recording runbook](docs/submission-demo-runbook.md) for a new presentation.
-
-## Current architecture and status
-
-The default server exposes five company-code tools. Configuring a memory catalog
-adds `memory_search` and `memory_propose`; enabling native memory graphs adds
-`memory_graph`, for eight tools in total.
-
-```mermaid
-flowchart TD
-    A[Selected conversation turns] --> B[Consent and optional semantic span selection]
-    B --> C[SQLite memory catalog]
-    D[Reviewed sharing and .abhi/2 import/export] <--> C
-    C -->|Explicit operator sync| E[FalkorDB tenant memory graph]
-    F[Repository, Markdown/RST and PR snapshots] --> G[FalkorDB company graph]
-    G -->|Optional verified source and symbol bridge| E
-    E --> H[Exact/full-text search and authorized graph paths]
-    C -->|Current permission, review and expiry checks| H
-    H --> I[Company Brain MCP]
-    G --> I
-    I <--> J[Codex agent]
-```
-
-SQLite remains authoritative for records, permissions, reviews and audit history.
-FalkorDB stores the projected memory topology in a separate tenant namespace and
-performs native exact/full-text retrieval and bounded graph traversal. This route
-requires **no embedding model**. The explicit catalog backend retains optional
-local vectors stored and scored in SQLite. Projections must be refreshed by an
-operator; stale or unavailable native retrieval is reported without silent fallback.
-
-| Component | Implemented behavior |
+| Submission item | Where to find it |
 | --- | --- |
-| Personal memory | Exact-consent selected-turn import; deterministic or opt-in model-selected durable spans, literal entities and private proposals |
-| Team/company sharing | Selected reviewed records, current scope grants and destination proposals |
-| Portable memory | `.abhi/2` selected current topology and optional reviewed assertions, with validated import/export round trips |
-| Memory relationships | Separately reviewed, version-pinned `UPDATES`, `EXTENDS` and `RELATES_TO` assertions |
-| Native memory graph | Brain, person, team, memory, source, entity and version nodes; authorized cross-scope citation paths |
-| Graphify extractor | Pinned optional structural ingestion into revision-pinned advisory evidence; separate from authoritative Python calls |
-| Graph viewer | Local fixed-principal API and clickable authorized shared-memory slices |
-| Company bridge | Verified citations, lexical code identities and source-grounded named concept mentions connected to current company evidence |
-| Native retrieval | Exact/full-text seeds, scope-safe ranking, up to four graph hops, citations and supporting paths |
+| Public source code | [Abhigyan-Shekhar/bigyahu-brain](https://github.com/Abhigyan-Shekhar/bigyahu-brain) |
+| Working-project walkthrough | [Captioned MP4](docs/submission-demo/walkthrough.mp4) · [captions](docs/submission-demo/captions.srt) · [receipts and patch replay](docs/submission-demo/README.md) |
+| Run the product | [Complete local setup](#run-locally) below; no hosted deployment is required for this local application |
+| Graph data model | [Nodes, edges and provenance](#graph-data-model) |
+| Cypher and retrieval | [Queries the product depends on](#cypher-and-graph-retrieval) |
+| Original work and AI assistance | [Disclosure](#original-work-data-and-ai-assistance) · [NEW_WORK.md](NEW_WORK.md) |
 
-See [memory architecture](docs/memory-architecture.md),
-[three-brain graphs](docs/three-brain-graphs.md),
-[reviewed relationships](docs/memory-relationships.md),
-[company bridge](docs/memory-company-bridge.md) and
-[native retrieval](docs/falkor-memory-retrieval.md) for contracts and limitations.
+The included video is a **100-second edited, captioned walkthrough of captured application states**, with waits omitted; it is not continuous screen recording. It shows investigation, evidence, approval, patch and test results. A separately hosted final recording can be added later.
 
-The [Graphify and three-brain integration milestone](docs/graphify-three-brain-integration.md)
-adds a real structural runtime adapter, semantic span selection, bounded native
-frontier traversal, a permission-aware local viewer and a freshly verified guided
-Codex run. The runner's `--memory-graph` option enables search and inspection;
-write/administration tools remain excluded.
+## Why this fits Company Brain
 
-**Document semantic ingestion is now integrated:** PDF/Word uploads, Graphify’s
-semantic API and FalkorDB GraphRAG SDK ingestion, with native source-backed
-relationships. See [the ingestion guide](docs/semantic-document-ingestion.md).
-
-**Still planned:** whole-repository semantic automation, SDK vector retrieval,
-full-history graph portability, a hosted multi-user graph experience,
-and broader agent evaluation. [Named company concepts](docs/company-concepts.md)
-now have source-grounded mention paths; arbitrary semantic identity resolution is
-still unbuilt; automatic correction proposals require an explicit correction and
-an unambiguous code identifier. Hosted identity, application encryption,
-distributed synchronization and production-scale retrieval remain outstanding.
-See the [roadmap](docs/roadmap.md).
-
-The [named-concept extension](docs/company-concepts.md) connects model-selected
-conversation entities to current company document mentions without requiring an
-explicit code identifier or shared company citation. Labels remain advisory
-associations with checked source spans; no identity or policy authority is inferred.
-
-## Validation and measured results
-
-The previously recorded full isolated memory/graph/application suite passed **369 tests**, including real
-FalkorDBLite graph and process-lifecycle checks. Ruff and the publication scan
-pass. The portability workflow includes live Docker graph/memory regression
-checks and installs the optional Graphify extractor there. CI for these new changes
-is checked separately from the local result.
-
-A small synthetic retrieval comparison separates natural-language queries from
-three deliberately authored graph-path acceptance cases:
-
-| Retrieval backend | Natural-language Hit@3 (9 queries) | Graph-path Hit@3 (3 queries) |
-| --- | --- | --- |
-| Catalog exact/full-text | 6/9 | 0/3 |
-| Native FalkorDB exact/full-text + paths | 6/9 | 3/3 |
-| Catalog with optional local vectors | 8/9 | 1/3 |
-
-These fixtures show complementary strengths: graph links recover related evidence,
-while vectors help paraphrases. They do not establish production quality, a speed
-advantage or improved coding outcomes. See the
-[retrieval report](docs/falkor-memory-evaluation.json),
-[vector comparison](docs/falkor-memory-vector-comparison.json) and
-[methodology](docs/falkor-memory-retrieval.md).
-
-The new [guided three-brain agent run](docs/three-brain-agent-verification.json)
-retrieved personal memory, inspected authorized team/company paths and a verified
-source before editing a synthetic retry function. Its patch passed **15 independent
-oracle cases** and its own regression tests; another developer's private canary
-was excluded. This is an integration demonstration, not a baseline comparison.
-
-The earlier approved-v5 coding comparison completed **3 baseline + 3 graph
-sessions**: every run passed **12/12 independent oracle cases** and its selected
-upstream suite. Both conditions succeeded 3/3; **no correctness advantage was
-observed**. These historical company-graph experiments do not evaluate the new
-three-brain memory workflow. See [results and limitations](docs/v5-evaluation.md).
-
-The preserved v5/Browser verification passed 144 tests; the earlier
-[memory verification report](docs/memory-verification.md) records its separate
-183-test milestone. The [agent demonstration](docs/agent-demo-results.md),
-[runner](docs/agent-workflow.md) and [v5 reproduction](docs/v5-reproduction.md)
-retain the historical evidence and reproduction instructions. Human approval
-remains a separate interactive step.
-
-## Docker-free local setup (verified)
-
-See [Lite integration results and commands](docs/lite-integration.md). Install
-`libomp`, run `uv sync --frozen --extra lite --python 3.12`, and keep one owner running:
-
-```sh
-.venv/bin/python scripts/run_lite.py --db "$PWD/data/runtime/lite/brain.rdb"
-```
-
-Sync and MCP connect to that engine through the existing loopback configuration.
-Keep the entire ignored runtime directory for persistence. No paid Cloud resource
-or global Codex configuration change is required.
-
-## Enable optional memory graphs
-
-Copy `config/brain.memory.example.yaml` to an ignored local config and set the
-absolute checkout/catalog paths, tenant, principal and engine port. Uncomment
-`memory_graph_enabled: true`; omit `embedding_model_dir` for native retrieval.
-Use a separate runtime/catalog rather than the preserved approved demo database.
-
-Follow [memory operations](docs/memory-operations.md) to import consented turns,
-review records and configure sharing. After those records exist, refresh the
-projection and query it:
-
-```sh
-.venv/bin/python -m brain.memory_cli --config /ABSOLUTE/PATH/memory.local.yaml \
-  sync-graph --brain private:alice
-.venv/bin/python -m brain.memory_cli --config /ABSOLUTE/PATH/memory.local.yaml \
-  search --query 'upload replay' --backend falkor
-```
-
-Replace `alice` with the configured principal. Launch MCP with the same
-`BRAIN_CONFIG`. In graph mode, `memory_search` defaults to FalkorDB; select
-`backend="catalog"` explicitly to compare the optional vector baseline. Company
-paths require current company access and `sync-graph --include-company`, followed
-by search with `--include-graph`. See [portable exchange](docs/abhi-format.md) for
-selected `.abhi/2` export/import.
-
-## Company Brain application
-
-The [chat and knowledge workspace](docs/chat-knowledge-workspace.md) makes conversation
-the primary interface, runs Graphify during onboarding and automatically on uploaded
-documents, and shows quoted evidence with graph node identities beside the conversation.
-
-The local React/FastAPI application connects public GitHub onboarding, bounded
-indexing status, Markdown/RST/PDF/Word upload, conversational Codex investigation, a native
-graph explorer and clickable source inspection. Chat uses real read-only tools;
-the server checks citation IDs, source bytes, quotations and graph paths.
-
-See [the application run guide](docs/company-brain-app.md) for installation,
-launch commands, limits and verification. The application now supports repository →
-graph → cited answer → source → cited fix plan → explicit approval → isolated
-patch and test report. [Approved coding actions](docs/company-brain-actions.md)
-produce a downloadable diff without applying or publishing it.
-The [GitHub connector](docs/github-connector.md) lets chat prepare local issue,
-draft-PR and comment drafts for user review and publication. PRs use existing
-pushed branches; the connector uses GitHub CLI authentication on the app server.
-The [email connector](docs/email-connector.md) writes and sends project discussion
-emails from a recipient address and optional purpose, using an operator-configured
-SMTP sender. The Email panel records generated messages and delivery outcomes.
-The [Docs and Auto-investigate workflows](docs/documentation-workflows.md) add
-source-cited Markdown drafts, reviewed App Docs indexing, isolated documentation
-patches, and bounded research steps with a review queue for fix and connector drafts.
-[Personal Brain](docs/personal-brain-app.md) now supports private notes, exact-consent
-selected-turn proposals, source review, acceptance/rejection/revocation and reviewed
-coding lesson recall through FalkorDB. A fresh real-agent chat returned two checked
-claims citing an accepted lesson. [Team Brain](docs/team-brain-app.md) now supports
-selected sharing, separate team review, catalog roles and member views of permitted shared contributions.
-Fresh Codex chat can cite accepted team evidence. [Portable `.abhi` controls](docs/abhi-app.md)
-now preview selected exports, validate imports and keep record/assertion review
-independent. The [integrated synthetic demonstration](docs/application-integrated-demo.md)
-combines a reviewed import with company policy, approves and tests an isolated
-fix, then reviews its new lesson and recalls it in a fresh chat. Five regression
-tests and 15 held-out replay cases pass. Public onboarding and PDF/Word semantic
-ingestion retain their separate verification reports.
-
-The [PR #7 review fixes](docs/pr7-review-fixes.md) improve symbol search, semantic
-relationship inspection and source paths, distinguish passing tests from a
-baseline-failing regression, and make citation graph comparison order-independent.
-
-The [historical investigation and connected-memory guide](docs/application-investigation.md)
-describes ranked history with checked patches, explicit native company links,
-model-reviewed citation relevance, neighbor expansion and selected repository transfers.
-New connections acquire an explicitly partial sample of up to twenty recently
-updated GitHub issues/PRs. Each imported item retains complete child collections;
-incomplete items are skipped whole and coverage counts are shown. History returns
-distinct work items with checked support and native patch/file links. New memory
-transfers copy only selected text and minimal checked provenance. The
-[PR #8 correction report](docs/pr8-correction-verification.json) records validation.
-
-## Graphify, semantic extraction and graph viewing
-
-```sh
-uv sync --frozen --extra lite --extra graphify --python 3.12
-# First sync a clean configured checkout, then ingest selected tracked code:
-uv run python -m brain sync
-uv run --extra graphify python -m brain ingest-graphify src/example.py
-# Configure memory_graph_enabled and the trusted viewer principal first:
-uv run python -m brain.memory_viewer --config /ABSOLUTE/PATH/memory.local.yaml
-```
-
-Graphify accepts UTF-8 source bytes; alternative declared Python encodings are
-outside this adapter's supported inputs. Its relationships remain advisory company
-evidence, rather than automatic cross-language memory links. For a live demo,
-[prepare and validate concept annotations ahead of time](docs/company-concepts.md#prepare-before-presenting)
-and reuse the sealed fixture without extraction calls during presentation.
-
-The viewer prints a local session URL. It binds to loopback, requires a bearer
-session token and retrieves every graph slice through current catalog permissions.
-Clicking a member shows authored memory within the selected authorized scopes.
-It does not expose their private brain.
-
-Conversation import keeps deterministic extraction by default. Explicitly selecting
-`--semantic-model` opts into sending the consented selected turns to the named
-Codex model for durable-span/entity selection. Facts and suggested corrections
-remain proposals. See the [integration guide](docs/graphify-three-brain-integration.md)
-for the exact command, model boundary and reproduction steps.
-
-## Optional Cloud setup (not live-verified)
-
-[Cloud provisioning](docs/cloud-setup.md) and `config/brain.cloud.example.yaml`
-remain available. Remote connections require verified TLS and a protected local
-password file. Cloud provisioning is deferred while the hackathon uses Lite.
-
-## Alternative Docker setup
-
-Requires Python 3.11+, uv, Git, and a running FalkorDB 4.14.7 server. Python
-packages are pinned in uv.lock (tested with Python 3.12).
-
-```sh
-uv sync --frozen
-docker compose up -d
-cp config/brain.example.yaml config/brain.local.yaml
-# Edit repo_root, repo_id, repo_url and principal in the local config.
-export BRAIN_CONFIG="$PWD/config/brain.local.yaml"
-uv run python -m brain sync
-uv run python -m brain.mcp_server
-```
-
-With Podman, start an existing machine and use:
-
-```sh
-podman run -d --name company-brain-db \
-  -p 127.0.0.1:6379:6379 -p 127.0.0.1:3000:3000 \
-  -v company-brain-data:/data docker.io/falkordb/falkordb:v4.14.7
-```
-
-STDIO waits for MCP input; it does not print a success message. Configure an MCP
-client to launch the absolute `.venv/bin/python` path with arguments
-`["-m", "brain.mcp_server"]` and an absolute `BRAIN_CONFIG` environment value.
-Set `PYTHONPATH` to the absolute `src` directory in the MCP launcher as well, so
-module discovery remains reliable even if an editable-install path file is ignored.
-The server discovers its configured tools even while the database is down; dependent
-calls return `status: unavailable`.
-
-The local development checkout at `.checkouts/requests` is ignored. Recreate it:
-
-```sh
-mkdir -p .checkouts
-git clone https://github.com/psf/requests.git .checkouts/requests
-git -C .checkouts/requests checkout 611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60
-```
-
-## Tools and model
-
-| Tool | Purpose |
+| Track focus | Implemented in Company Brain |
 | --- | --- |
-| get_context | Exact ID / bounded full-text seeds, then connected paths |
-| trace_decision | Lifecycle, original evidence, replacement history |
-| find_owner | Explicit file CODEOWNERS, otherwise inferred Git maintainers |
-| check_change | Intended symbols, incoming callers, constraints and source-backed file history |
-| remember | A new non-binding proposal in org or configured private scope |
+| Connected company knowledge | Public repository code, Git history, bounded GitHub issue/PR discussions, repository docs and uploaded Markdown/RST/PDF/DOCX feed a company graph. |
+| Who owns what | CODEOWNERS rules, Git authorship and recorded PR reviews provide explicit ownership or clearly labeled maintainer evidence. |
+| Trace decisions to their sources | Decisions link to source excerpts and constrained symbols; supersession preserves the earlier decision and its evidence. |
+| Keep knowledge current | Revision and source-byte checks identify stale evidence; manual sync/reconciliation refreshes snapshots. Personal/team records support review and revocation. |
+| Answers with clear sources | Clickable citations reopen original text and native FalkorDB paths. The server checks quoted bytes, permissions and provenance. |
 
-Optional memory tools:
+Personal Brain and Team Brain extend the company workflow with selected, reviewed knowledge. Portable `.abhi/2` files transfer selected records and relationships for independent review. This submission enters **Company Brain**; these supporting features do not imply entry into another track.
 
-| Tool | Enabled by | Purpose |
-| --- | --- | --- |
-| memory_search | Memory catalog configuration | Scoped native or catalog retrieval with citations |
-| memory_propose | Memory catalog configuration | Create a non-binding memory proposal |
-| memory_graph | `memory_graph_enabled: true` | Browse bounded authorized memory/evidence paths |
+## What the working product does
 
+1. **Connect a public repository.** Onboarding clones a bounded checkout, indexes Python structure and Git history, imports a partial public GitHub history sample, and runs Graphify structural extraction.
+2. **Add company documents.** Upload supported documents and inspect extraction status, original text and advisory semantic relationships.
+3. **Investigate in chat.** A read-only Codex agent chooses code, impact, ownership, history and authorized memory tools. Published claims carry checked quotations and source IDs.
+4. **Inspect the graph.** Follow actual callers, source relationships and reviewed memory links behind the answer.
+5. **Review a fix plan.** Inspect claims, affected files and exact supported Python test commands before approving execution.
+6. **Compare and export.** Editing happens in an isolated clone. Inspect original versus patched test output and download the Git patch. Any new lesson remains a proposal until reviewed.
 
-The key relationship is `(caller)-[:CALLS]->(target)`. Decisions constrain symbols;
-Sources preserve provenance. Files declare Symbols, Projects contain Files,
-People author Commits that modify Files. CODEOWNERS edges carry the original rule.
-Public issue/PR/comment snapshots link to Source nodes. No invented organization
-hierarchy is added. Git author names are not automatically merged with GitHub users.
+[Application guide](docs/company-brain-app.md) · [Approved coding actions](docs/company-brain-actions.md) · [Personal Brain](docs/personal-brain-app.md) · [Team Brain](docs/team-brain-app.md) · [Portable memory](docs/abhi-app.md)
+
+## Run locally
+
+The supported product is a **single trusted operator's local application**, bound to loopback. You need Git, [uv](https://docs.astral.sh/uv/getting-started/installation/), Python 3.12, Node.js **20.19+ or 22.12+**, npm, an installed/authenticated Codex CLI with access to the selected model, and an authenticated GitHub CLI (`gh auth login`). Model calls consume your configured account's usage. No embedding model is required for native graph retrieval.
+
+Use macOS or Linux for the Lite path. On macOS, install its runtime prerequisite with `brew install libomp`. Native Windows Lite is unavailable; use Docker Desktop Linux containers or WSL. Approved editing/tests additionally require a supported Codex OS sandbox; Windows patch-portability checks do not establish native Windows execution support.
+
+### 1. Install the application
+
+```sh
+git clone https://github.com/Abhigyan-Shekhar/bigyahu-brain.git
+cd bigyahu-brain
+uv sync --frozen --extra app --extra lite --extra graphify --extra ingestion --python 3.12
+npm ci --prefix frontend
+npm run --prefix frontend build
+```
+
+### 2. Start FalkorDB
+
+In terminal 1, from the repository root:
+
+```sh
+uv run --frozen --extra app --extra lite python scripts/run_lite.py \
+  --db data/runtime/company-brain-app/brain.rdb --port 6398
+```
+
+Leave this process running. Wait for its `status: ready` output. Use exactly one Lite owner per database; keep the entire runtime directory for persistence. Ctrl-C saves and stops the engine.
+
+**Docker alternative:** install the same application extras without `--extra lite`, then run `docker compose up -d` instead of the Lite command. The pinned container exposes FalkorDB on `127.0.0.1:6379`; use `port: 6379` in the next step. Do not run both engines on the same port. The Docker image is FalkorDB 4.14.7; the recorded Lite integration used graph module 4.18.3.
+
+### 3. Configure and launch
+
+In terminal 2, from the repository root, create an ignored local configuration with the current absolute checkout path:
+
+```sh
+uv run python - <<'PY'
+from pathlib import Path
+import yaml
+Path('config/app.local.yaml').write_text(yaml.safe_dump({
+    'repo_root': str(Path.cwd().resolve()),
+    'repo_id': 'app-connection-template',
+    'principal': 'app_operator',
+    'host': '127.0.0.1',
+    'port': 6398,
+}))
+PY
+
+uv run --frozen --extra app python -m brain.app.server \
+  --config "$PWD/config/app.local.yaml" \
+  --data "$PWD/data/runtime/company-brain-app/sources" \
+  --model gpt-6.1-sol --port 8787
+```
+
+Choose a model available to your authenticated Codex account if needed. Open the **Open locally** session URL printed by the server, including its token fragment. Each restart creates a new token, so reopen the newly printed URL. The server checks and rebuilds outdated frontend assets on startup.
+
+### 4. Try the complete workflow
+
+Connect a small public Python repository such as `https://github.com/pallets/itsdangerous`. Wait for indexing and inspect coverage/extraction status. Upload your own synthetic engineering document if you want document-backed investigation, then ask a question about the indexed code. Open a citation and inspect its graph path before requesting a fix plan.
+
+For the recorded signed-token example, use the [demo artifacts and reproduction instructions](docs/submission-demo/README.md). The recording used revision `672971d66a2ef9f85151e53283113f33d642dabd`, synthetic company documents and human-reviewed demo memories; onboarding today's default branch is not an exact reproduction of that fixture. Personal/team memory contributions require their separate proposal, sharing and review steps.
+
+If onboarding or chat fails, check CLI authentication, model access, database readiness and visible job errors. Failed or partial ingestion is not a complete knowledge base. See the [full run guide](docs/company-brain-app.md) for update commands and limits, [Lite lifecycle guide](docs/lite-integration.md), and [optional Cloud setup](docs/cloud-setup.md) (not live-verified).
+
+## Graph data model
+
+FalkorDB is the **primary connected knowledge database**. It stores the company graph and optional native personal/team memory projections. SQLite stores memory records, permissions, review/lifecycle state and audit history; it does not replace company graph traversal. Original source bytes and local artifacts live on disk.
+
+| Nodes | Role |
+| --- | --- |
+| `Project`, `File`, `Symbol` | Repository identity, revision-pinned files and Python code identities |
+| `Person`, `Team`, `Commit` | Recorded contributors, explicit ownership and change evidence; no invented company hierarchy |
+| `Issue`, `PR`, `Comment` | Attributed public work-item and discussion snapshots |
+| `Document`, `Source`, `ConceptMention` | Documents, literal excerpts/provenance and advisory named-concept mentions |
+| `Decision`, `ReviewRecord` | Proposed/approved decisions and separate review evidence |
+| Native memory graph nodes | Brain, person, team, memory, source, entity and version nodes in a separate tenant namespace |
+
+Core paths, shown as schema patterns rather than claims that every project contains every edge:
+
+```text
+(Project)-[:CONTAINS]->(File)-[:DECLARES]->(Symbol)
+(Symbol caller)-[:CALLS]->(Symbol target)
+(Person)-[:AUTHORED]->(Commit)-[:MODIFIES]->(File)
+(owner)-[:CODEOWNER_OF]->(File)
+(Person)-[:REVIEWED]->(PR)-[:CHANGES]->(File)
+(PR)-[:REFERENCES]->(Issue)
+(PR or Issue)-[:DISCUSSED_IN]->(Comment)-[:SUPPORTS]->(Source)
+(Document)-[:SUPPORTS]->(Source)
+(Decision)-[:SUPPORTED_BY]->(Source)
+(Decision)-[:CONSTRAINS]->(Symbol)
+(new Decision)-[:SUPERSEDES]->(old Decision)
+```
+
+Nodes carry scoped identifiers such as `uid` and `repo_id`; current code includes revision/current-state metadata. Edges retain relevant resolution/confidence and source provenance. Static call resolution is conservative; dynamic dispatch and missing edges remain unknown. Git author identities are not automatically merged with GitHub users.
+
+Native memory can link a reviewed record through **`MENTIONS → RESOLVES_TO`** to a verified company symbol. Reviewed `UPDATES`, `EXTENDS` and `RELATES_TO` assertions preserve version-specific relationships. Catalog permissions, review and expiry are rechecked at retrieval time; imported assertions do not authenticate an author or become company policy.
+
+[Schema and adapter](src/brain/graph.py) · [Ingestion implementation](src/brain/ingest/) · [Memory architecture](docs/memory-architecture.md) · [Three-brain graphs](docs/three-brain-graphs.md)
+
+## Cypher and graph retrieval
+
+These parameterized examples use the product's implemented paths. `$repo` is the indexed repository ID, `$ids` contains selected symbol UIDs, and `$path` is a repository-relative file path. Execute them against that repository's graph. These examples illustrate retrieval; permission, freshness, review and output-bound checks remain in the application services.
+
+**Change impact: incoming callers up to two hops.** The service fetches 101 paths to detect overflow beyond its 100-path bound, then retrieves applicable decisions for targets and callers.
 
 ```cypher
-MATCH path=(caller:Symbol)-[:CALLS*1..2]->(target:Symbol)
+MATCH p=(caller:Symbol)-[:CALLS*1..2]->(target:Symbol)
 WHERE target.uid IN $ids
-RETURN [n IN nodes(path) | n.uid] AS path
-LIMIT 100
+  AND all(n IN nodes(p) WHERE n.current=true AND n.repo_id=$repo)
+RETURN DISTINCT [n IN nodes(p) | n.uid] AS path,
+       [r IN relationships(p) | r.confidence] AS confidence,
+       [r IN relationships(p) | r.resolution] AS resolution
+ORDER BY path LIMIT 101
 ```
 
-The service then queries decisions for the complete bounded set of targets and
-callers in one batch. `must_preserve` requires active, human-approved constraint
-metadata, source evidence, a matching approved revision and a clean checkout.
-Proposals and stale evidence appear in `review`. Both contain IDs and metadata;
-prose stays in `untrusted_source_excerpts`.
+**Decision provenance.** Fetch candidate constraints with their supporting sources. Only active, human-approved, source-backed constraints at the approved revision can enter `must_preserve`; proposals and stale evidence remain review material.
 
-`check_change` also follows recorded historical Issue/PR → File associations
-for the target and its bounded incoming callers, including PR references to
-issues. It can return original source bodies and discussion without a Decision.
-These file-level links and untrusted reference mentions are advisory evidence,
-not symbol constraints or proof that an issue was fixed. Missing call edges do
-not prove missing dependencies. Overflow is disclosed through `status="incomplete"`
-and `truncated`, including the final union of context file associations.
-
-## Evidence and operator approval
-
-`data/sources/manifest.json` records 21 public Requests issues/PRs, collection time,
-pinned code revision, URLs, content hash and pagination omissions. These are real
-public snapshots, not synthetic chat messages. Requests is Apache-2.0 licensed;
-public discussion text retains its original attribution and applicable terms.
-Snapshot ingestion is manual:
-
-```sh
-uv run python -m brain ingest-snapshots data/sources
+```cypher
+MATCH (d:Decision {repo_id:$repo, scope:'org'})-[:CONSTRAINS]->
+      (s:Symbol {repo_id:$repo, current:true})
+WHERE s.uid IN $ids
+OPTIONAL MATCH (d)-[:SUPPORTED_BY]->(src:Source {repo_id:$repo})
+RETURN d.uid AS decision, d.status AS status, d.approval AS approval,
+       d.approved_revision AS approved_revision,
+       collect(DISTINCT s.uid) AS subjects,
+       collect(DISTINCT src.uid)[0..21] AS sources
+ORDER BY decision LIMIT 101
 ```
 
-The CLI supports `list-proposals`, `inspect <id>`, and `approve <id>`. A separate
-human-controlled terminal must set `BRAIN_OPERATOR_SESSION=1`, inspect source,
-text, subject and any replacement, then type the exact confirmation. **Do not
-put this flag in the MCP environment or have the agent approve its own proposal.**
-Approval checks and supersession run in one conditional database mutation.
+**Who knows this file?** Authorship provides inferred maintainer evidence; explicit CODEOWNERS rules take precedence in `find_owner`. Commit counts do not establish organizational authority.
 
-This is an application workflow boundary, not hostile-shell isolation. An agent
-with unrestricted shell or database write access can bypass it. The environment
-flag is a workflow guard, not a secret credential. The MVP must not be described
-as tamper-proof. Private data is routed to a separate configured graph; it is not
-protected from database administrators. Browser recordings must show only org_demo.
-Browser 2.7.0 attaches to Lite and opens `/graph?graph=org_demo` directly;
-see the [verified procedure and initial missing-corpus finding](docs/browser-verification.md).
-That Browser inspection found Requests rather than the original eligible corpus. A separate
-[reconstructed public-source Browser demo](docs/browser-demo/README.md) now
-verifies the document and caller paths and includes sampled Browser footage;
-its human-approved D-2 → superseded D-1 path and retained sources are now
-verified in Browser. The runbook includes reproduction commands and final footage.
+```cypher
+MATCH (p:Person {repo_id:$repo})-[:AUTHORED]->
+      (c:Commit {repo_id:$repo})-[:MODIFIES]->
+      (f:File {repo_id:$repo, path:$path, current:true})
+RETURN p.uid AS person, p.name AS name, count(DISTINCT c) AS commits,
+       collect(DISTINCT c.uid)[0..20] AS evidence_commits
+ORDER BY commits DESC, person LIMIT 6
+```
 
-## Verification
+The full algorithms also use FalkorDB exact/full-text seeds followed by bounded connected paths, recorded Issue/PR → File associations, decision supersession and authorized native memory traversal up to four hops. Source ranking and result bounds are explicit; truncation and unavailable context are reported.
+
+[Actual service queries](src/brain/services/core.py) · [Evidence retrieval](src/brain/services/evidence.py) · [Native memory retrieval](docs/falkor-memory-retrieval.md) · [MCP contracts](contracts.md)
+
+### Why FalkorDB is essential
+
+The graph is in the answer and action path, not just the visualization. `check_change` traverses incoming callers and their connected constraints; ownership and history retrieval join people, changes, files and sources. Citation validation checks native company relationships, and connected memory retrieval follows authorized source/symbol paths.
+
+Removing FalkorDB makes those operations unavailable. The company graph adapter has **no offline query fallback**, and stale/unavailable native memory retrieval does not silently fall back to another backend. An explicit optional catalog-search mode exists for comparison, but cannot replace the connected company workflow. This architecture establishes a graph dependency; it does not by itself prove better coding performance.
+
+## Architecture and trust boundaries
+
+```text
+Public repo + public history + synthetic/authorized documents
+    → AST/Git indexer + Graphify + optional GraphRAG SDK ingestion
+    → FalkorDB company graph ← verified bridge → native memory graph
+    → scoped read-only MCP tools → Codex investigation
+    → checked citations + source inspector + graph explorer
+    → reviewed plan → explicit human approval → isolated patch + tests
+
+SQLite memory catalog → permission/review checks → native memory projection
+React UI ↔ local FastAPI server ↔ graph, catalog and isolated agent processes
+```
+
+Source prose and extracted relationships are untrusted evidence. Deterministic checks establish source bytes, access and graph provenance; model relevance review is fallible. Human approval is separate from investigation. Approved actions use bounded file scope, exact test selections and a network-disabled Codex OS sandbox; exporting a patch does not apply or publish it upstream. An unrestricted host administrator can bypass local workflow controls.
+
+The default standalone MCP server exposes `get_context`, `trace_decision`, `find_owner`, `check_change` and `remember`. Optional memory configuration adds up to three tools. The application exposes its own nine-tool read-only investigation surface; see the [application guide](docs/company-brain-app.md). Semantic extraction uses Graphify and the optional FalkorDB GraphRAG SDK ingestion pipeline; SDK vector retrieval/completion is not implemented.
+
+## Demonstration and verification
+
+The signed-token demo follows a symptom-only investigation through code/document evidence, reviewed personal/team contributions, a human-approved patch and test output. The planning request explicitly asked for memory contributions; the synthetic team note included an implementation hint and exact code identity. Those are disclosed demo inputs, not upstream maintainer policy.
+
+| Recorded check | Original code | Patched code |
+| --- | --- | --- |
+| Independent 16-case reproduction | 4/16 passed | 16/16 passed |
+| Separate minimal extreme-timestamp regression | 1 assertion failure, 0 errors | 1 passed |
+| Complete upstream suite, with patch tests where present | 297 passed | 305 passed |
+| Patched suite including follow-up checks | — | 312 passed |
+
+The historical three-brain action's automatic regression flag remains **false** because its baseline included conversion errors. The separate minimal reproduction satisfies the existing rule; it does not rewrite that historical action. [Receipts, patches and replay](docs/submission-demo/README.md) · [Full follow-up](docs/submission-demo/traceback-review.md) · [Current hardening report](docs/final-hardening-2026-10-18.md).
+
+A small historical baseline/graph coding comparison succeeded 3/3 in both conditions; **no correctness advantage was observed**. A synthetic retrieval comparison recovered 3/3 deliberately authored graph-path cases with native traversal versus 0/3 with catalog exact/full-text search; both achieved 6/9 natural-language Hit@3. These are bounded integration results, not production or general performance claims. [Coding evaluation](docs/v5-evaluation.md) · [Retrieval methodology](docs/falkor-memory-retrieval.md).
+
+Reproduce checks from the repository root after installing the extras above:
 
 ```sh
-uv run pytest -q
+uv run --extra app pytest -q
 uv run ruff check src tests scripts
-# Disposable Lite owner, isolated catalog and full memory/graph/lifecycle suite:
-.venv/bin/python scripts/validate_memory_foundation.py
-# Only against a local disposable/test database:
-BRAIN_TEST_CONFIG=/absolute/path/to/isolated-test.yaml \
-  BRAIN_INTEGRATION=1 BRAIN_LITE_TESTS=1 uv run pytest -q
+npm run --prefix frontend test
+npm run --prefix frontend build
+# Isolated live FalkorDBLite suite; creates its own disposable runtime:
+uv run --frozen --extra app --extra lite --extra graphify --extra ingestion \
+  python scripts/validate_memory_foundation.py
 ```
 
-The disposable runner requires the `lite` extra installed in the local environment.
-Reproduce the synthetic native retrieval benchmark without a model using:
+Historical test counts and receipts describe their recorded revisions; they are not a claim that all checks were rerun for this README edit.
 
-```sh
-PYTHONPATH=src .venv/bin/python scripts/benchmark_falkor_memory.py \
-  --output "$PWD/data/validation/native-retrieval.json"
-```
+## Limits
 
-Unit/contract checks cover poisoning proposals, private routing, scope/path
-validation, CODEOWNERS precedence, caller constraints, stale revision behavior,
-admin rejection, exact five-tool discovery, and real STDIO launch from another
-working directory with the database unavailable. The live suite has now verified
-Cypher on the measured Lite engine; mocks alone
-do not prove compatibility. Set BRAIN_INTEGRATION=1 and BRAIN_LITE_TESTS=1 to
-include the live graph and process-lifecycle checks.
+This is a local, single-operator product, not hosted multi-user SaaS. Onboarding is bounded: a shallow checkout of up to 100 commits, partial public GitHub acquisition, and capped repository/document/graph results. Synchronization is manual, not always-on. Large repositories, unresolved static calls, missing history, extraction/model latency and fallible relevance judgments can limit answers. Citation provenance does not establish semantic truth. Source revocation can deny reopening a citation without erasing older report text.
 
-The live suite verifies repository/private graph boundaries, source poisoning,
-independent approval, two-hop callers, Issue → PR → File history, explicit
-re-exports, stale revisions and sync recovery. Separate-process STDIO tests
-verify exactly five tools and real source-backed responses. The publication
-workflow scans indexed content and reachable history; it does **not** run pytest.
+See [application limits](docs/company-brain-app.md), [retention boundary](docs/company-brain-actions.md#historical-retention-and-revocation-boundary), [roadmap](docs/roadmap.md), and [evaluation limitations](docs/v5-evaluation.md).
 
-## Recorded Codex coding experiments
+## Original work, data and AI assistance
 
-Saved urllib3 #5181 experiments used pin
-`a37bc93b65d6bcf00d3dc43d966bab6bd130ecd8`. The first graph attempt's MCP call
-was denied and also used an invalid scope; its patch passed 10/12 independent
-socket cases and regressed 303 body disposal. An older six-attempt paired batch
-completed only three coding sessions; usage limits interrupted the others, and
-the completed graph session selected empty private scope. A separate early
-guided run retrieved history but passed only 9/12 oracle cases.
+Work began on **15 October 2026** in this previously empty repository, as recorded in [NEW_WORK.md](NEW_WORK.md). Original work includes the ingestion adapters, source-backed graph services, MCP integration, React/FastAPI workspace, reviewed memory workflows, approval-controlled editing and verification harnesses. FalkorDB, FastMCP, Graphify, the GraphRAG SDK and other open-source packages are dependencies and retain their respective attribution/licenses.
 
-Two later graph-only workflow demonstrations each passed 12/12 socket cases
-and 131 selected upstream tests. A subsequently frozen matched baseline/graph
-pair completed both sessions: **both passed 9/12 socket cases and 131 selected
-upstream tests**, with the same failed-tell first-upload regressions. The graph
-session retrieved org evidence and checked impact before editing, but reported
-that the history did not change its implementation. These are separate protocols;
-the successful graph-only runs cannot be treated as comparison wins.
+**AI assistance disclosure:** OpenAI Codex assisted with implementation, debugging, tests and documentation. Waggle supports development conversation memory; its implementation is not copied into this product. Participant contribution, verification and understanding remain the team's responsibility; generated output alone is not evidence of correctness.
 
-Eligible comparison history included merged #5161/#3780, with solution-revealing
-#5181/#5191/#5242 content excluded before execution. Related merged history is
-additional information, not evidence of independent discovery. No measured
-baseline coding improvement has been demonstrated. The reviewed runner and evaluation code are now integrated on a fresh branch
-from the merged backend. A new failed attempt (9/12 oracle cases) and a final
-passing graph-aware attempt (12/12) are recorded in
-[agent-demo-results.md](docs/agent-demo-results.md). Raw traces and experiment
-data stay local and are not publication inputs.
+The submission demos use public upstream repositories/history and synthetic company documents/notes. Public source snapshots retain provenance and attribution; synthetic decisions are not upstream policies. For hackathon reproduction, use public or synthetic material you are permitted to use, and exclude private, login-protected, paywalled, personal or otherwise restricted information. Personal Brain denotes the product's scope model; demonstrate it with synthetic notes rather than real personal information.
 
-## Remaining release gates
+Prepared against the [full Graph Hacks rules](https://www.wemakedevs.org/hackathons/falkordb/rules) and [WeMakeDevs Code of Conduct](https://www.wemakedevs.org/coc). Entry track: **Company Brain**. Deadline: **18 October 2026, 11:59 PM IST**. This repository documents the project; it does not constitute a submitted entry or certify team eligibility.
 
-- Browser traversal and human-approved supersession are recorded for the
-  [separate reconstructed demo](docs/browser-demo/README.md). Visual verification
-  of the frozen v5 experiment graph remains pending; keep these corpora labeled.
-- Record a new video using the fresh graph-2 run, real approval/supersession
-  evidence, complete comparison table and disclosed retrieval limits.
-- Inspect the actual submission form and its required links/declarations.
-- On Saturday 17 October, scan the final release history, manually review source
-  and binary/video exports, make the repository public, and verify logged-out access.
-- Submit by early evening Sunday 18 October, ahead of the 11:59 PM IST deadline.
-
-Broader evaluation and runtime call resolution remain future work. The separate
-[Docker demo check](docs/browser-demo/docker-review.md) exercised FalkorDB 4.14.7;
-the frozen coding trials used Lite 4.18.3. Neither run certifies other versions.
-
-Static calls cover conservative same-module lexical calls, deterministic direct
-imports and explicit Python `from`-import re-export chains, including aliases and
-relative imports in repository-root and src layouts. Ambiguous modules, star or
-conditional imports, reassignment, re-export cycles, decorated targets, closures,
-inheritance and runtime dispatch remain unresolved rather than guessed. Existing
-self/cls method edges are heuristic. Dirty checkout detection
-is intentionally conservative across the entire repository. Graph queries have
-explicit bounds and no offline answer cache. Synchronization is single-operator;
-concurrent writers are not supported. Python dependency warnings currently come
-from FastMCP's Authlib integration.
-
-See docs/plan.md and docs/implementation.md for intended scope, contracts.md for
-current interfaces, and NEW_WORK.md for AI assistance disclosure. Planned event
-tracks: Company Brain and Agents That Act on Connected Data; eligibility and final
-submission requirements remain to be verified.
-
-## Publication boundary
-
-Raw agent traces, experiment runs, validation logs and database state are local-only.
-Use the reviewed [demo export](docs/demo/README.md), and run
-`python scripts/check_publication.py --history` against the Git index and all
-reachable history before publishing.
-See [exposure remediation](docs/security-remediation.md) for the confirmed prior
-public trace exposure and completed history rewrite.
-Old local branches must be rebased or have their changes transplanted onto the
-cleaned history; merging old history can reintroduce exposed records.
+Before publishing artifacts, follow the [publication boundary](docs/security-remediation.md) and run `python scripts/check_publication.py --history` against the intended release index/history. Raw traces, databases and local runtime state are not publication artifacts.
