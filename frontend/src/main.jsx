@@ -33,6 +33,27 @@ if (fragment) {
   history.replaceState(null, "", location.pathname);
 }
 function Graph({ graph, compact = false, onExpand }) {
+  const canvas = useRef(null);
+  const flow = useRef(null);
+  const fitFrame = useRef(null);
+  function fitVisibleCanvas() {
+    const bounds = canvas.current?.getBoundingClientRect();
+    if (!bounds?.width || !bounds?.height) return;
+    cancelAnimationFrame(fitFrame.current);
+    fitFrame.current = requestAnimationFrame(() =>
+      flow.current?.fitView({ padding: onExpand || compact ? 0.25 : 0.1 }),
+    );
+  }
+  useEffect(() => {
+    // A collapsed <details> has no usable viewport. Refit after its real canvas
+    // dimensions become available, including in Personal and Team Brain panels.
+    const observer = new ResizeObserver(fitVisibleCanvas);
+    if (canvas.current) observer.observe(canvas.current);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(fitFrame.current);
+    };
+  }, []);
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [expandTarget, setExpandTarget] = useState("");
   const [pathTarget, setPathTarget] = useState("");
@@ -68,7 +89,9 @@ function Graph({ graph, compact = false, onExpand }) {
         ? { x: path.nodes.indexOf(n.id) * 280, y: 0 }
         : compact
           ? { x: (nodeIndex % 2) * 180, y: Math.floor(nodeIndex / 2) * 95 }
-          : { x: key * 260, y: i * 95 },
+          : !onExpand
+            ? { x: (nodeIndex % 3) * 260, y: Math.floor(nodeIndex / 3) * 110 }
+            : { x: key * 260, y: i * 95 },
       data: {
         label: (
           <>
@@ -213,18 +236,24 @@ function Graph({ graph, compact = false, onExpand }) {
           )}
         </aside>
       )}
-      <div className="graph-canvas">
+      <div className="graph-canvas" ref={canvas}>
         <ReactFlow
+          onInit={(instance) => {
+            flow.current = instance;
+            fitVisibleCanvas();
+          }}
           key={nodes.map((n) => n.id).join("|")}
           nodes={nodes}
           edges={edges}
           onNodeDoubleClick={(_, node) => onExpand?.(node.id)}
           onEdgeClick={(_, edge) => setSelectedEdge(edge.data)}
+          zoomOnScroll={false}
+          preventScrolling={false}
           nodesDraggable={false}
           nodesConnectable={false}
           elementsSelectable
           fitView
-          fitViewOptions={{ padding: 0.25 }}
+          fitViewOptions={{ padding: onExpand || compact ? 0.25 : 0.1 }}
           minZoom={0.02}
           maxZoom={1.5}
           deleteKeyCode={null}

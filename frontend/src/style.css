@@ -2316,3 +2316,7 @@ h2 {
 .action-focus .workflow-target {
   scroll-margin-top: 150px;
 }
+
+.private-graph .graph {
+  min-height: 500px;
+}
