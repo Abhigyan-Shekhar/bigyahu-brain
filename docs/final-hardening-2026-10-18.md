@@ -228,3 +228,7 @@ what informed the change. Disclose the synthetic hints and show the second
 signed-token action's conservative false flag beside its separate clean regression
 and 297/305/312 full-suite follow-up. Do not claim the graph was necessary, that
 passing tests alone verify a fix, or that the historical demo used the new gate.
+
+The subsequent [demo usability follow-up](demo-usability-2026-10-18.md) records
+the stopped-plan diagnosis, clearer counts, focused views, activity display and
+actual Windows CI acceptance for the original hardening commit.

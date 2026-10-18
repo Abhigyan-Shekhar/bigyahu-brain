@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Check,
   LoaderCircle,
@@ -8,7 +8,9 @@ import {
   Download,
   GitBranch,
 } from "lucide-react";
+import { createPortal } from "react-dom";
 import { api, send } from "./api";
+import { elapsedLabel, testSummary } from "./actionPresentation";
 
 function contributionLabel(support) {
   if (support.kind === "code")
@@ -47,6 +49,15 @@ export default function ActionPanel({
   onEvidence,
   onReviewMemory,
 }) {
+  const [focused, setFocused] = useState(false);
+  const dialog = useRef(null);
+  const focusButton = useRef(null);
+  const wasFocused = useRef(false);
+  useEffect(() => {
+    if (focused) dialog.current?.showModal();
+    else if (wasFocused.current) focusButton.current?.focus();
+    wasFocused.current = focused;
+  }, [focused]);
   const [action, setAction] = useState(null),
     [form, setForm] = useState(false),
     [objective, setObjective] = useState(turn.question),
@@ -60,7 +71,10 @@ export default function ActionPanel({
         if (list.length) return api(`/actions/${list.at(-1).id}`);
       })
       .then((a) => {
-        if (active && a) setAction(a);
+        if (active && a) {
+          setAction(a);
+          setObjective(a.objective || turn.question);
+        }
       })
       .catch((e) => setError(e.message));
     return () => {
@@ -125,18 +139,38 @@ export default function ActionPanel({
   const baselineErrors = action?.baseline_tests?.some((t) =>
     /errors=[1-9]\d*|\b[1-9]\d* errors?\b/.test(t.output || ""),
   );
+  const summaryClaims = [
+    ...new Set(
+      [
+        action?.claims?.[0],
+        action?.claims?.find((c) =>
+          c.support.some(
+            (s) => s.kind === "memory" || s.brain?.startsWith("private:"),
+          ),
+        ),
+        action?.claims?.find((c) =>
+          c.support.some(
+            (s) => s.kind === "team_memory" || s.brain?.startsWith("team:"),
+          ),
+        ),
+        ...(action?.claims || []),
+      ].filter(Boolean),
+    ),
+  ].slice(0, 3);
   const stages = ["Investigate", "Plan", "Approve", "Edit", "Verify"];
   const stageIndex = !action
     ? 0
     : action.status === "complete" ||
-        action.stage?.startsWith("Running approved tests")
+        /^(Running approved tests|Testing |Checking exported patch)/.test(
+          action.stage || "",
+        )
       ? 4
       : action.phase === "execution"
         ? 3
         : action.status === "awaiting_approval"
           ? 2
           : 1;
-  return (
+  const panel = (
     <section
       className="action-panel"
       id={`fix-${turn.id}`}
@@ -145,9 +179,26 @@ export default function ActionPanel({
       <div className="action-heading">
         <GitBranch size={14} />
         <strong>From investigation to a fix</strong>
+        <button ref={focusButton} onClick={() => setFocused(!focused)}>
+          {focused ? "Close focused review" : "Open focused review"}
+        </button>
+        {action?.patch && (
+          <button onClick={() => download(action)}>
+            <Download size={13} /> Download final patch
+          </button>
+        )}
         {!busy && !form && (
-          <button onClick={() => setForm(true)}>
-            {action ? "Plan another change" : "Plan a change"}
+          <button
+            onClick={() => {
+              setObjective(action?.objective || objective);
+              setForm(true);
+            }}
+          >
+            {action?.status === "failed"
+              ? "Review objective and retry"
+              : action
+                ? "Plan another change"
+                : "Plan a change"}
           </button>
         )}
       </div>
@@ -168,6 +219,13 @@ export default function ActionPanel({
           <label htmlFor={`objective-${turn.id}`}>
             What should the fix accomplish?
           </label>
+          {action?.status === "failed" && (
+            <p>
+              Correct the issue described above in this objective before
+              retrying. A retry creates a new read-only plan and requires fresh
+              approval before any editing.
+            </p>
+          )}
           <textarea
             id={`objective-${turn.id}`}
             rows={3}
@@ -209,7 +267,154 @@ export default function ActionPanel({
               <strong>{action.stage}</strong>
             </div>
           </div>
-          {action.error && <p className="failure">{action.error}</p>}
+          {action.error && (
+            <div className="failure" role="alert">
+              <strong>
+                {action.phase === "execution"
+                  ? "Execution stopped"
+                  : "Plan could not be prepared"}
+              </strong>
+              <p>
+                {action.error ===
+                "This milestone edits bounded Python, documentation and TOML files"
+                  ? "The model returned a path outside the supported file scope. Use literal Python, documentation or TOML filenames without annotations such as '(new)'. No execution was approved. Review the objective and retry."
+                  : action.error}
+              </p>
+            </div>
+          )}
+          {action.progress && (
+            <div className="action-progress">
+              <span>
+                {elapsedLabel(action.progress.elapsed_seconds)} ·{" "}
+                {action.progress.completed_count} completed tool actions
+              </span>
+              {action.progress.current_tool && (
+                <span>Current tool: {action.progress.current_tool}</span>
+              )}
+              <details>
+                <summary>
+                  Tool activity{" "}
+                  {action.progress.trace_bounded ? "(bounded trace)" : ""}
+                </summary>
+                {action.progress.completed_tools.length ? (
+                  <ol>
+                    {action.progress.completed_tools.map((item, i) => (
+                      <li key={i}>
+                        {item.tool} · {item.status}
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p>No completed tool actions recorded yet.</p>
+                )}
+                <small>
+                  Tool names and completion events only. Evidence review and
+                  test stages are reported above; no progress percentage is
+                  estimated.
+                </small>
+              </details>
+            </div>
+          )}
+          {action.status === "complete" && (
+            <div className="action-outcome">
+              <div
+                className="test-comparison"
+                aria-label="Before and after test results"
+              >
+                {[
+                  ["Original + proposed tests", action.baseline_tests],
+                  ["Patched code", action.tests],
+                ].map(([label, results]) => (
+                  <div key={label}>
+                    <strong>{label}</strong>
+                    {results?.length ? (
+                      results.map((t, i) => {
+                        const summary = testSummary(t);
+                        return (
+                          <div key={i} className="test-count-summary">
+                            <p
+                              className={
+                                t.passed && t.tests_reported > 0
+                                  ? "test-pass"
+                                  : "failure"
+                              }
+                            >
+                              {t.passed && t.tests_reported > 0
+                                ? "Command passed"
+                                : t.outcome === "exited" && t.exit_code !== 0
+                                  ? "Command failed"
+                                  : "Unverified"}{" "}
+                              · exit {t.exit_code ?? "unknown"}
+                            </p>
+                            <p>
+                              {summary.count ?? "Unknown"} {summary.unit}
+                            </p>
+                            {summary.failures !== null && (
+                              <p>
+                                {summary.failures} assertion failures
+                                {summary.errors !== null
+                                  ? ` · ${summary.errors} runner errors`
+                                  : ""}
+                              </p>
+                            )}
+                            {summary.subtests > 0 && (
+                              <p>
+                                {summary.detailsComplete
+                                  ? summary.subtests
+                                  : `At least ${summary.subtests}`}{" "}
+                                subtest failures
+                                {summary.detailsComplete
+                                  ? ` · ${summary.failures - summary.subtests} method/case failures`
+                                  : " visible in retained log; failure details may be truncated"}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p>No test results recorded</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <p className="action-note">
+                Verification:{" "}
+                {action.regression_demonstrated
+                  ? "matched baseline failures resolved in approved tests; independent bug confirmation still requires review."
+                  : "fix remains unverified; inspect the test report below."}
+              </p>
+            </div>
+          )}
+          {action.plan && (
+            <div className="action-brief">
+              <strong>{action.plan.summary}</strong>
+              <p>
+                {action.plan.files.length} permitted files ·{" "}
+                {action.claims?.length || 0} evidence contributions
+              </p>
+              <h4>Why this fix?</h4>
+              {summaryClaims.map((claim, i) => (
+                <p className="contribution-brief" key={i}>
+                  <strong>
+                    {[...new Set(claim.support.map(contributionLabel))].join(
+                      " · ",
+                    )}
+                  </strong>
+                  : {claim.influence || claim.text}
+                </p>
+              ))}
+              {action.claims?.length > summaryClaims.length && (
+                <small>
+                  {action.claims.length - summaryClaims.length} more
+                  contributions in the full plan below.
+                </small>
+              )}
+              <p className="action-note">
+                Reviewed memories are advisory evidence. Inspect the full plan
+                and sources before approval.
+              </p>
+            </div>
+          )}
           {action.plan && (
             <details
               className="plan-detail"
@@ -268,7 +473,10 @@ export default function ActionPanel({
                     ].map((s) => (
                       <button
                         key={s.evidence_id}
-                        onClick={() => onEvidence(action.id, s.evidence_id)}
+                        onClick={() => {
+                          setFocused(false);
+                          onEvidence(action.id, s.evidence_id);
+                        }}
                       >
                         <FileText size={12} />
                         {s.title.split("/").slice(-2).join("/")}
@@ -301,48 +509,6 @@ export default function ActionPanel({
           )}
           {action.status === "complete" && (
             <div className="execution-report">
-              <div
-                className="test-comparison"
-                aria-label="Before and after test results"
-              >
-                {[
-                  ["Original + proposed tests", action.baseline_tests],
-                  ["Patched code", action.tests],
-                ].map(([label, results]) => (
-                  <div key={label}>
-                    <strong>{label}</strong>
-                    {results?.length ? (
-                      results.map((t, i) => (
-                        <p
-                          key={i}
-                          className={
-                            t.passed && t.tests_reported > 0
-                              ? "test-pass"
-                              : "failure"
-                          }
-                        >
-                          {t.passed && t.tests_reported > 0
-                            ? "Passed"
-                            : t.outcome === "exited" && t.exit_code !== 0
-                              ? "Failed"
-                              : "Unverified"}{" "}
-                          · exit {t.exit_code} · {t.tests_reported ?? "Unknown"}{" "}
-                          {t.argv?.[2] === "pytest"
-                            ? "reported passing tests"
-                            : "reported tests"}
-                          {t.output?.trim() && (
-                            <span className="test-run-summary">
-                              {t.output.trim().split("\n").at(-1).slice(0, 500)}
-                            </span>
-                          )}
-                        </p>
-                      ))
-                    ) : (
-                      <p>No test results recorded</p>
-                    )}
-                  </div>
-                ))}
-              </div>
               <details>
                 <summary>Implementation handoff before test validation</summary>
                 <p>{action.summary}</p>
@@ -358,7 +524,7 @@ export default function ActionPanel({
               >
                 {action.tests_passed
                   ? action.regression_demonstrated
-                    ? "Approved tests passed · baseline failures resolved"
+                    ? "Test regression signal · matched baseline failures resolved"
                     : baselineErrors
                       ? "Tests passed · baseline errors need review"
                       : "Tests passed · fix remains unverified"
@@ -381,7 +547,7 @@ export default function ActionPanel({
                 committed, or pushed.
               </p>
               {action.baseline_tests && (
-                <details open>
+                <details>
                   <summary>Original code with proposed tests</summary>
                   <p>
                     {action.baseline_includes_proposed_tests
@@ -400,7 +566,7 @@ export default function ActionPanel({
                   ))}
                 </details>
               )}
-              <details open>
+              <details>
                 <summary>Patched code test results</summary>
                 {action.tests.map((t, i) => (
                   <div key={i}>
@@ -413,7 +579,7 @@ export default function ActionPanel({
                   </div>
                 ))}
               </details>
-              <details open>
+              <details>
                 <summary>
                   Final diff{" "}
                   <button
@@ -471,4 +637,17 @@ export default function ActionPanel({
       )}
     </section>
   );
+  return focused
+    ? createPortal(
+        <dialog
+          className="action-focus"
+          ref={dialog}
+          aria-label="Focused plan and execution review"
+          onCancel={() => setFocused(false)}
+        >
+          {panel}
+        </dialog>,
+        document.body,
+      )
+    : panel;
 }

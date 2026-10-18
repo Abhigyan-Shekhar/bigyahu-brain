@@ -14,10 +14,69 @@ from ..graph import GraphStore
 from ..ingest.git_parser import git
 from ..memory import canonical, digest
 from .action_mcp import target
-from .agent import SCHEMA, command
+from .agent import SCHEMA, TOOLS, command
 from .evidence import ready, verified_claims
 from .relevance import assess
 from .test_sandbox import run_tests
+
+
+def action_progress(state, action):
+    """Project only allowlisted tool names/statuses from existing execution traces."""
+    folder = action_folder(state, action)
+    trace = folder / ("editor" if action.get("phase") == "execution" else "plan") / "trace.jsonl"
+    completed, current, bounded = [], None, False
+    try:
+        with trace.open("rb") as stream:
+            # Bound polling work and ignore incomplete lines at the read boundary.
+            data = stream.read(2_000_000)
+            bounded = bool(stream.read(1))
+        for line in data.splitlines():
+            try:
+                event = json.loads(line)
+            except (ValueError, UnicodeError):
+                continue
+            if not isinstance(event, dict):
+                continue
+            item = event.get("item", {})
+            if not isinstance(item, dict):
+                continue
+            if not isinstance(item.get("tool"), str):
+                continue
+            if item.get("type") != "mcp_tool_call" or item.get("tool") not in {
+                *TOOLS,
+                "read_file",
+                "write_file",
+            }:
+                continue
+            if event.get("type") == "item.started":
+                current = item["tool"]
+            elif event.get("type") == "item.completed":
+                completed.append(
+                    {
+                        "tool": item["tool"],
+                        "status": "completed" if item.get("status") == "completed" else "failed",
+                    }
+                )
+                current = None
+    except OSError:
+        pass
+    seconds = None
+    running = action.get("status") in {"queued", "running"}
+    if action.get("phase_started_at") and (action.get("phase_finished_at") or running):
+        start = datetime.fromisoformat(action["phase_started_at"])
+        end = (
+            datetime.fromisoformat(action["phase_finished_at"])
+            if action.get("phase_finished_at")
+            else datetime.now(UTC)
+        )
+        seconds = max(0, (end - start).total_seconds())
+    return {
+        "completed_tools": completed[-12:],
+        "completed_count": len(completed),
+        "current_tool": current if running else None,
+        "elapsed_seconds": seconds,
+        "trace_bounded": bounded,
+    }
 
 
 def verification_result(action):
@@ -172,7 +231,9 @@ def validate_plan(plan, root):
     for path in files:
         file = target(root, path)
         if file.suffix not in {".py", ".md", ".rst", ".txt", ".toml"} or len(path) > 200:
-            raise ValueError("This milestone edits bounded Python, documentation and TOML files")
+            raise ValueError(
+                "Invalid planned file path: use literal repository-relative Python, documentation or TOML filenames without annotations such as '(new)'. Edit the objective and retry planning; no execution was approved."
+            )
         if file.exists() and (not file.is_file() or file.stat().st_size > 100000):
             raise ValueError("Approved files must be text files under 100 KB")
     if (
@@ -330,6 +391,8 @@ def prepare_plan(state, uid):
         {"status": "queued", "phase": "planning"},
         status="running",
         stage="Investigating fix plan",
+        phase_started_at=datetime.now(UTC).isoformat(),
+        phase_finished_at=None,
     ):
         return
     try:
@@ -346,7 +409,7 @@ def prepare_plan(state, uid):
             "For each claim include influence: how that evidence informs this specific proposed change or its validation. "
             "Do not invent used sources, causal contributions, or binding policy from personal/team preferences. "
             "Propose the smallest justified change for the user objective, explicit relative files (including new tests), "
-            "steps, and one to three pytest/unittest path selections. There is no shell, dependency installation or execution at this stage. "
+            "steps, and one to three pytest/unittest path selections. Every file and test path must be a literal repository-relative path; put annotations such as (new) only in steps, never in paths. There is no shell, dependency installation or execution at this stage. "
             "Do not approve anything. The human will review these files and exact generated test commands before isolated execution. "
             "If unsupported or insufficient evidence, return plan null and explain limitations. Use Python tests that run with the existing "
             "operator-installed runtime; do not assume dependencies can be downloaded.\n"
@@ -416,6 +479,7 @@ def prepare_plan(state, uid):
             status="awaiting_approval",
             phase="review",
             stage="Review the plan before execution",
+            phase_finished_at=datetime.now(UTC).isoformat(),
             base_revision=sha,
             plan=plan,
             claims=claims,
@@ -431,9 +495,12 @@ def prepare_plan(state, uid):
             uid,
             status="failed",
             stage="Plan stopped",
+            phase_finished_at=datetime.now(UTC).isoformat(),
             error=str(exc)[:500]
             if isinstance(exc, ValueError)
-            else "Planning failed; no execution approved.",
+            else "Planning timed out; the model did not finish within the time limit. Retry planning; no execution was approved."
+            if isinstance(exc, subprocess.TimeoutExpired)
+            else "Planning could not complete; no execution was approved. Retry planning or inspect local diagnostics.",
         )
 
 
@@ -542,6 +609,8 @@ def execute(state, uid):
         {"status": "queued", "phase": "execution"},
         status="running",
         stage="Preparing isolated checkout",
+        phase_started_at=datetime.now(UTC).isoformat(),
+        phase_finished_at=None,
     ):
         return
     run = action_folder(state, action)
@@ -591,13 +660,16 @@ def execute(state, uid):
                 destination.unlink()
         baseline_run = run / "baseline-results"
         baseline_run.mkdir()
+        state.update(uid, stage="Testing original code with proposed regression tests")
         baseline_tests = run_tests(baseline, baseline_run, action["plan"]["commands"])
+        state.update(uid, stage="Testing patched code with the same approved commands")
         tests = run_tests(work, run, action["plan"]["commands"])
         # Tests can write within the isolated clone; don't publish unexpected modifications.
         names, patch = patch_for(work, action["plan"]["files"])
         checked_action(state, action)
         # Check the exported artifact against a fresh base, rather than the
         # baseline clone which already contains the proposed tests.
+        state.update(uid, stage="Checking exported patch against a fresh base clone")
         replay = run / "patch-replay"
         clone_at(cfg.repo_root, replay, action["base_revision"])
         subprocess.run(
@@ -620,6 +692,7 @@ def execute(state, uid):
             uid,
             status="complete",
             stage="Patch and test report ready",
+            phase_finished_at=datetime.now(UTC).isoformat(),
             patch=patch,
             patch_replay={
                 "status": "applies_to_base",
@@ -653,6 +726,7 @@ def execute(state, uid):
             uid,
             status="failed",
             stage="Execution stopped",
+            phase_finished_at=datetime.now(UTC).isoformat(),
             error=str(exc)[:500]
             if isinstance(exc, ValueError)
             else "Isolated execution failed; original source was not modified.",

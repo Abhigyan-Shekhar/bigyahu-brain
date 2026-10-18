@@ -849,9 +849,9 @@ def create_app(state, token, origin, assets=None):
     @app.get("/api/actions/{action_id}")
     def action_detail(action_id: str):
         value = state.get(action_id, "action")
-        from .actions import verification_result
+        from .actions import action_progress, verification_result
 
-        return {**value, **verification_result(value)}
+        return {**value, **verification_result(value), "progress": action_progress(state, value)}
 
     @app.post("/api/actions/{action_id}/approve", status_code=202)
     def approve_action(action_id: str, body: ApprovalInput):

@@ -22,6 +22,7 @@ import "@xyflow/react/dist/style.css";
 import "./style.css";
 import { api, send } from "./api";
 import ActionPanel from "./ActionPanel";
+import { evidencePath } from "./graphPresentation";
 import IngestionPanel from "./IngestionPanel";
 import PersonalBrain from "./PersonalBrain";
 import TeamBrain from "./TeamBrain";
@@ -34,6 +35,9 @@ if (fragment) {
 function Graph({ graph, compact = false, onExpand }) {
   const [selectedEdge, setSelectedEdge] = useState(null);
   const [expandTarget, setExpandTarget] = useState("");
+  const [pathTarget, setPathTarget] = useState("");
+  const [pathOnly, setPathOnly] = useState(false);
+  const path = pathOnly ? evidencePath(graph, expandTarget, pathTarget) : null;
   useEffect(() => setSelectedEdge(null), [graph]);
   const groups = {};
   const visibleIds = new Set();
@@ -46,8 +50,8 @@ function Graph({ graph, compact = false, onExpand }) {
     if (!visibleIds.size)
       (graph?.nodes || []).slice(0, 6).forEach((n) => visibleIds.add(n.id));
   }
-  const visibleNodes = (graph?.nodes || []).filter(
-    (n) => !compact || visibleIds.has(n.id),
+  const visibleNodes = (graph?.nodes || []).filter((n) =>
+    path ? path.nodes.includes(n.id) : !compact || visibleIds.has(n.id),
   );
   const kinds = [...new Set(visibleNodes.map((n) => n.labels?.[0] || "Node"))];
   const nodes = visibleNodes.map((n, nodeIndex) => {
@@ -60,9 +64,11 @@ function Graph({ graph, compact = false, onExpand }) {
       displayLabel: n.label,
       sourcePosition: "right",
       targetPosition: "left",
-      position: compact
-        ? { x: (nodeIndex % 2) * 180, y: Math.floor(nodeIndex / 2) * 95 }
-        : { x: key * 260, y: i * 95 },
+      position: path
+        ? { x: path.nodes.indexOf(n.id) * 280, y: 0 }
+        : compact
+          ? { x: (nodeIndex % 2) * 180, y: Math.floor(nodeIndex / 2) * 95 }
+          : { x: key * 260, y: i * 95 },
       data: {
         label: (
           <>
@@ -76,10 +82,16 @@ function Graph({ graph, compact = false, onExpand }) {
   });
   const ids = new Set(nodes.map((n) => n.id));
   const edges = (graph?.edges || [])
-    .filter((e) => ids.has(e.source) && ids.has(e.target))
-    .map((e, i) => ({
+    .map((e, i) => ({ ...e, recordedIndex: i }))
+    .filter(
+      (e) =>
+        ids.has(e.source) &&
+        ids.has(e.target) &&
+        (!path || path.edges.includes(e.recordedIndex)),
+    )
+    .map((e) => ({
       ...e,
-      id: String(i),
+      id: String(e.recordedIndex),
       label: e.relation,
       data: e,
       markerEnd: { type: MarkerType.ArrowClosed },
@@ -88,48 +100,99 @@ function Graph({ graph, compact = false, onExpand }) {
     }));
   return (
     <div className={"graph " + (compact ? "compact" : "")}>
-      {onExpand && !compact && (
-        <div className="graph-node-picker">
-          <select
-            aria-label="Node to expand"
-            value={expandTarget}
-            onChange={(e) => setExpandTarget(e.target.value)}
-          >
-            <option value="">Choose a node…</option>
-            {nodes.map((n) => (
-              <option key={n.id} value={n.id}>
-                {n.displayLabel}
-              </option>
-            ))}
-          </select>
-          <button
-            disabled={!expandTarget}
-            onClick={() => onExpand(expandTarget)}
-          >
-            Expand neighbors
-          </button>
+      {!compact && (
+        <div className="graph-toolbar" aria-label="Graph controls">
+          {onExpand && !compact && (
+            <div className="graph-node-picker">
+              <select
+                aria-label="Start node or node to expand"
+                value={expandTarget}
+                onChange={(e) => {
+                  setExpandTarget(e.target.value);
+                  setPathOnly(false);
+                }}
+              >
+                <option value="">Choose a node…</option>
+                {(graph?.nodes || []).map((n) => (
+                  <option key={n.id} value={n.id}>
+                    {n.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                disabled={!expandTarget}
+                onClick={() => onExpand(expandTarget)}
+              >
+                Expand neighbors
+              </button>
+            </div>
+          )}
+          {edges.length > 0 && !compact && (
+            <select
+              className="graph-edge-picker"
+              aria-label="Inspect relationship"
+              value={
+                edges.find(
+                  (e) => e.data.recordedIndex === selectedEdge?.recordedIndex,
+                )?.id ?? ""
+              }
+              onChange={(event) =>
+                setSelectedEdge(
+                  edges.find((e) => e.id === event.target.value)?.data ?? null,
+                )
+              }
+            >
+              <option value="">Inspect a relationship…</option>
+              {edges.map((edge) => (
+                <option key={edge.id} value={edge.id}>
+                  {nodes.find((n) => n.id === edge.source)?.displayLabel} →{" "}
+                  {edge.label} →{" "}
+                  {nodes.find((n) => n.id === edge.target)?.displayLabel}
+                </option>
+              ))}
+            </select>
+          )}
+          {onExpand && (
+            <div className="graph-path-controls">
+              <select
+                aria-label="Evidence path destination"
+                value={pathTarget}
+                onChange={(e) => {
+                  setPathTarget(e.target.value);
+                  setPathOnly(false);
+                }}
+              >
+                <option value="">Choose path destination…</option>
+                {(graph?.nodes || []).map((n) => (
+                  <option key={n.id} value={n.id}>
+                    {n.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                disabled={!expandTarget || !pathTarget}
+                onClick={() => {
+                  setSelectedEdge(null);
+                  setPathOnly(true);
+                }}
+              >
+                Focus evidence path
+              </button>
+              {pathOnly && (
+                <button onClick={() => setPathOnly(false)}>
+                  Show all loaded nodes
+                </button>
+              )}
+              {pathOnly && (
+                <small role="status">
+                  {path
+                    ? `${path.nodes.length} nodes · ${path.edges.length} stored relationships. Arrows retain recorded direction; connection does not prove causality.`
+                    : "No connecting path in the loaded graph. Load or expand more evidence."}
+                </small>
+              )}
+            </div>
+          )}
         </div>
-      )}
-      {edges.length > 0 && !compact && (
-        <select
-          className="graph-edge-picker"
-          aria-label="Inspect relationship"
-          value={edges.find((e) => e.data === selectedEdge)?.id ?? ""}
-          onChange={(event) =>
-            setSelectedEdge(
-              edges.find((e) => e.id === event.target.value)?.data ?? null,
-            )
-          }
-        >
-          <option value="">Inspect a relationship…</option>
-          {edges.map((edge) => (
-            <option key={edge.id} value={edge.id}>
-              {nodes.find((n) => n.id === edge.source)?.displayLabel} →{" "}
-              {edge.label} →{" "}
-              {nodes.find((n) => n.id === edge.target)?.displayLabel}
-            </option>
-          ))}
-        </select>
       )}
       {selectedEdge && (
         <aside className="graph-edge-detail">
@@ -150,25 +213,27 @@ function Graph({ graph, compact = false, onExpand }) {
           )}
         </aside>
       )}
-      <ReactFlow
-        key={nodes.map((n) => n.id).join("|")}
-        nodes={nodes}
-        edges={edges}
-        onNodeDoubleClick={(_, node) => onExpand?.(node.id)}
-        onEdgeClick={(_, edge) => setSelectedEdge(edge.data)}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable
-        fitView
-        fitViewOptions={{ padding: 0.25 }}
-        minZoom={0.02}
-        maxZoom={1.5}
-        deleteKeyCode={null}
-        proOptions={{ hideAttribution: false }}
-      >
-        <Background color="#dcd9e5" gap={22} />
-        <Controls showInteractive={false} />
-      </ReactFlow>
+      <div className="graph-canvas">
+        <ReactFlow
+          key={nodes.map((n) => n.id).join("|")}
+          nodes={nodes}
+          edges={edges}
+          onNodeDoubleClick={(_, node) => onExpand?.(node.id)}
+          onEdgeClick={(_, edge) => setSelectedEdge(edge.data)}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable
+          fitView
+          fitViewOptions={{ padding: 0.25 }}
+          minZoom={0.02}
+          maxZoom={1.5}
+          deleteKeyCode={null}
+          proOptions={{ hideAttribution: false }}
+        >
+          <Background color="#dcd9e5" gap={22} />
+          <Controls showInteractive={false} />
+        </ReactFlow>
+      </div>
     </div>
   );
 }
@@ -983,7 +1048,7 @@ function App() {
                     <textarea
                       id="question"
                       placeholder="Ask a question, explore a past approach, or describe a change…"
-                      rows={2}
+                      rows={1}
                       value={question}
                       disabled={busy || ingesting}
                       onChange={(e) => setQuestion(e.target.value)}
