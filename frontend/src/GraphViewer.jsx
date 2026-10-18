@@ -17,21 +17,26 @@ export default function Graph({
   const canvas = useRef(null);
   const flow = useRef(null);
   const fitFrame = useRef(null);
+  const fitted = useRef(false);
   function fitVisibleCanvas() {
     const bounds = canvas.current?.getBoundingClientRect();
-    if (!bounds?.width || !bounds?.height) return;
+    if (fitted.current || !bounds?.width || !bounds?.height) return;
     cancelAnimationFrame(fitFrame.current);
-    fitFrame.current = requestAnimationFrame(() =>
+    fitFrame.current = requestAnimationFrame(() => {
+      const visible = canvas.current?.getBoundingClientRect();
+      if (fitted.current || !flow.current || !visible?.width || !visible?.height) return;
+      fitted.current = true;
       viewportCache?.current[viewKey]
         ? flow.current?.setViewport(viewportCache.current[viewKey])
         : flow.current?.fitView({
             padding: (onExpand && !focused) || compact ? 0.25 : 0.1,
-          }),
-    );
+          });
+    });
   }
   useEffect(() => {
     // A collapsed <details> has no usable viewport. Refit after its real canvas
-    // dimensions become available, including in Personal and Team Brain panels.
+    // dimensions first become available. Later resizes preserve pan and zoom;
+    // the existing Fit View control remains the explicit way to reset them.
     const observer = new ResizeObserver(fitVisibleCanvas);
     if (canvas.current) observer.observe(canvas.current);
     return () => {
@@ -319,11 +324,15 @@ export default function Graph({
         <ReactFlow
           onInit={(instance) => {
             flow.current = instance;
+            fitted.current = false;
             fitVisibleCanvas();
           }}
           key={nodes.map((n) => n.id).join("|")}
           nodes={nodes}
           edges={edges}
+          onMoveStart={(event) => {
+            if (event) fitted.current = true;
+          }}
           onNodeDoubleClick={(_, node) => onExpand?.(node.id)}
           onNodeClick={(_, node) =>
             onInspect?.({
