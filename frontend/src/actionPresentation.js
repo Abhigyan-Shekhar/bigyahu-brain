@@ -14,7 +14,8 @@ export function testSummary(result) {
       errors: lastCount(/(\d+) errors?/g),
     };
   const failures =
-    lastCount(/failures=(\d+)/g) ?? (/^OK\s*$/m.test(output) ? 0 : null);
+    lastCount(/failures=(\d+)/g) ??
+    (/^OK\s*$/m.test(output) || /FAILED \(/.test(output) ? 0 : null);
   const errors =
     lastCount(/errors=(\d+)/g) ??
     (/^OK\s*$/m.test(output) || /FAILED \(/.test(output) ? 0 : null);

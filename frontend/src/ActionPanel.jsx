@@ -349,9 +349,11 @@ export default function ActionPanel({
                             <p>
                               {summary.count ?? "Unknown"} {summary.unit}
                             </p>
-                            {summary.failures !== null && (
+                            {(summary.failures !== null ||
+                              summary.errors !== null) && (
                               <p>
-                                {summary.failures} assertion failures
+                                {summary.failures ?? "Unknown"} assertion
+                                failures
                                 {summary.errors !== null
                                   ? ` · ${summary.errors} runner errors`
                                   : ""}

@@ -25,6 +25,13 @@ test("unittest distinguishes method failures, subtest failures, and runner error
   assert.equal(s.subtests, 1);
   assert.equal(s.errors, 1);
   assert.equal(s.detailsComplete, true);
+  const errorsOnly = testSummary({
+    argv: ["python", "-m", "unittest"],
+    output: "Ran 8 tests in 0.1s\nFAILED (errors=18)",
+  });
+  assert.equal(errorsOnly.count, 8);
+  assert.equal(errorsOnly.failures, 0);
+  assert.equal(errorsOnly.errors, 18);
 });
 test("missing output stays unknown; pytest passing count is not total count", () => {
   assert.equal(testSummary({ argv: ["python", "-m", "unittest"] }).count, null);
