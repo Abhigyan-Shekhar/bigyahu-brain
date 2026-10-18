@@ -217,3 +217,57 @@ def test_legacy_plan_requires_new_review_before_approval(planning):
     old = state.update(action["id"], status="awaiting_approval", plan_digest="old")
     with pytest.raises(ValueError):
         actions.approve(state, old["id"], "old")
+
+
+@pytest.mark.parametrize("failure", ["review", "timeout", "invalid_path", "missing_evidence"])
+def test_planning_failure_preserves_display_only_plan(planning, monkeypatch, failure):
+    state, action, _ = planning
+    original = actions._codex
+
+    def generate(*args, **kwargs):
+        if failure == "timeout":
+            raise subprocess.TimeoutExpired("planner", 240)
+        output = original(*args, **kwargs)
+        if failure == "invalid_path":
+            output["plan"]["files"] = ["frontend/widget.jsx"]
+        if failure == "missing_evidence":
+            output["claims"] = []
+        return output
+
+    def review(*args, **kwargs):
+        raise ValueError("Reviewer unavailable")
+
+    monkeypatch.setattr(actions, "_codex", generate)
+    monkeypatch.setattr(actions, "assess", review)
+    actions.prepare_plan(state, action["id"])
+    result = state.get(action["id"])
+    assert result["status"] == "failed"
+    draft = result["draft_plan"]
+    assert draft["summary"] and draft["steps"]
+    assert "commands" not in draft and not result.get("plan_digest")
+    if failure == "timeout":
+        assert draft["origin"] == "starting_outline" and not draft["files"]
+        assert action["objective"] in draft["summary"]
+    else:
+        assert draft["origin"] == "model"
+        assert draft["summary"] == "Guard timestamp conversion without changing signature checks"
+    with pytest.raises(ValueError, match="stale"):
+        actions.approve(state, action["id"], None)
+
+
+def test_malformed_draft_is_bounded_and_never_exposes_commands():
+    draft = actions.draft_plan(
+        "fix bug",
+        {
+            "plan": {
+                "summary": "x" * 10000,
+                "steps": [None, "", "step"] * 20,
+                "files": [False, "file.py"],
+                "commands": ["arbitrary shell"],
+            }
+        },
+    )
+    assert len(draft["summary"]) == 3000
+    assert len(draft["steps"]) == actions.MAX_PLAN_STEPS
+    assert draft["files"] == ["file.py"]
+    assert "commands" not in draft

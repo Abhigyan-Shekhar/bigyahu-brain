@@ -85,6 +85,12 @@ def verification_result(action):
     }
 
 
+MAX_PLAN_STEPS = 20
+MAX_STEP_CHARS = 2000
+MAX_PLAN_STEP_CHARS = 20000
+PLAN_FILE_SUFFIXES = {".py", ".md", ".rst", ".txt", ".toml", ".sql"}
+
+
 PLAN_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -110,18 +116,34 @@ PLAN_SCHEMA = {
                     "additionalProperties": False,
                     "required": ["summary", "steps", "files", "tests"],
                     "properties": {
-                        "summary": {"type": "string"},
-                        "steps": {"type": "array", "items": {"type": "string"}},
-                        "files": {"type": "array", "items": {"type": "string"}},
+                        "summary": {"type": "string", "minLength": 1, "maxLength": 3000},
+                        "steps": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": MAX_PLAN_STEPS,
+                            "items": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": MAX_STEP_CHARS,
+                            },
+                        },
+                        "files": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 12,
+                            "items": {"type": "string", "minLength": 1, "maxLength": 200},
+                        },
                         "tests": {
                             "type": "array",
+                            "minItems": 1,
+                            "maxItems": 3,
                             "items": {
                                 "type": "object",
                                 "additionalProperties": False,
                                 "required": ["runner", "path"],
                                 "properties": {
                                     "runner": {"type": "string", "enum": ["pytest", "unittest"]},
-                                    "path": {"type": "string"},
+                                    "path": {"type": "string", "minLength": 1, "maxLength": 200},
                                 },
                             },
                         },
@@ -185,18 +207,21 @@ def validate_plan(plan, root):
         raise ValueError("Select one to twelve unique files")
     for path in files:
         file = target(root, path)
-        if file.suffix not in {".py", ".md", ".rst", ".txt", ".toml"} or len(path) > 200:
+        if file.suffix not in PLAN_FILE_SUFFIXES or len(path) > 200:
             raise ValueError(
-                "Invalid planned file path: use literal repository-relative Python, documentation or TOML filenames without annotations such as '(new)'. Edit the objective and retry planning; no execution was approved."
+                "Invalid planned file path: use literal repository-relative Python, documentation, TOML or SQL filenames without annotations such as '(new)'. No execution was approved."
             )
         if file.exists() and (not file.is_file() or file.stat().st_size > 100000):
             raise ValueError("Approved files must be text files under 100 KB")
-    if (
-        not isinstance(plan.get("steps"), list)
-        or not 1 <= len(plan["steps"]) <= 10
-        or any(not isinstance(s, str) or len(s) > 2000 for s in plan["steps"])
-    ):
-        raise ValueError("Plan steps exceed bounds")
+    steps = plan.get("steps")
+    if not isinstance(steps, list) or not 1 <= len(steps) <= MAX_PLAN_STEPS:
+        count = len(steps) if isinstance(steps, list) else "invalid"
+        raise ValueError(f"Plan has {count} steps; select 1 to {MAX_PLAN_STEPS} steps.")
+    for index, step in enumerate(steps, 1):
+        if not isinstance(step, str) or not step.strip() or len(step) > MAX_STEP_CHARS:
+            raise ValueError(f"Plan step {index} must contain 1 to {MAX_STEP_CHARS} characters.")
+    if sum(map(len, steps)) > MAX_PLAN_STEP_CHARS:
+        raise ValueError(f"Plan steps exceed {MAX_PLAN_STEP_CHARS} characters in total.")
     return {**plan, "commands": commands_for(plan["tests"], root)}
 
 
@@ -339,6 +364,40 @@ def _codex(state, project, run, prompt, schema, edit=None):
     return json.loads(output.read_text(encoding="utf-8"))
 
 
+def draft_plan(objective, output=None):
+    """Retain useful planning text even when execution requirements cannot be met.
+
+    This display-only draft never contains executable commands or an approval digest.
+    Missing model output is explicitly a starting outline, not a source-backed diagnosis.
+    """
+    candidate = output.get("plan") if isinstance(output, dict) else None
+    candidate = candidate if isinstance(candidate, dict) else {}
+
+    def strings(key, count, size):
+        values = candidate.get(key, [])
+        if not isinstance(values, list):
+            return []
+        return [v.strip()[:size] for v in values if isinstance(v, str) and v.strip()][:count]
+
+    summary = candidate.get("summary")
+    steps = strings("steps", MAX_PLAN_STEPS, MAX_STEP_CHARS)
+    return {
+        "summary": summary.strip()[:3000]
+        if isinstance(summary, str) and summary.strip()
+        else "Starting plan: " + objective[:2000],
+        "steps": steps
+        or [
+            "Locate the code responsible for the requested behavior: " + objective[:1000],
+            "Reproduce the reported behavior and identify the expected result and edge cases.",
+            "Make the smallest change that meets the objective while preserving existing behavior.",
+            "Add regression coverage for the reported case and nearby boundary cases.",
+            "Run the relevant tests and review the change against the objective.",
+        ],
+        "files": strings("files", 12, 200),
+        "origin": "model" if candidate else "starting_outline",
+    }
+
+
 def prepare_plan(state, uid):
     action = state.get(uid, "action")
     if not state.transition(
@@ -350,6 +409,7 @@ def prepare_plan(state, uid):
         phase_finished_at=None,
     ):
         return
+    output = None
     try:
         cfg = state.config(action["project"])
         sha = ready(GraphStore(cfg))
@@ -364,13 +424,19 @@ def prepare_plan(state, uid):
             "For each claim include influence: how that evidence informs this specific proposed change or its validation. "
             "Do not invent used sources, causal contributions, or binding policy from personal/team preferences. "
             "Propose the smallest justified change for the user objective, explicit relative files (including new tests), "
-            "steps, and one to three pytest/unittest path selections. Every file and test path must be a literal repository-relative path; put annotations such as (new) only in steps, never in paths. There is no shell, dependency installation or execution at this stage. "
+            "one to twenty nonempty steps (at most 2000 characters each and 20000 characters total), a summary under 3000 characters, one to twelve unique Python/documentation/TOML/SQL files, and one to three pytest/unittest path selections. SQL files are patch artifacts only; do not propose applying migrations during tests or startup. Every file and test path must be a literal repository-relative path under 200 characters; put annotations such as (new) only in steps, never in paths. There is no shell, dependency installation or execution at this stage. "
             "Do not approve anything. The human will review these files and exact generated test commands before isolated execution. "
-            "If unsupported or insufficient evidence, return plan null and explain limitations. Use Python tests that run with the existing "
-            "operator-installed runtime; do not assume dependencies can be downloaded.\n"
+            "Always return a useful plan. If evidence is insufficient, provide tentative investigation and implementation steps, "
+            "leave unsupported claims out, and explain assumptions and missing evidence in limitations. "
+            "Never invent file paths or citations. Use Python tests that run with the existing "
+            "operator-installed runtime; do not assume dependencies can be downloaded. The backend derives exact test commands from runner/path selections: for a unittest .py path it uses python -m unittest PATH -v; for a directory it uses python -m unittest discover -s PATH -p test_*.py -v. Do not write conflicting alternative commands in steps.\n"
             + canonical(
                 {
                     "objective": action["objective"],
+                    "execution_runtime": {
+                        "python_version": sys.version.split()[0],
+                        "standard_library_unittest": True,
+                    },
                     "previous_question": turn["question"],
                     "previous_claims": turn.get("claims", []),
                 }
@@ -449,9 +515,10 @@ def prepare_plan(state, uid):
         state.update(
             uid,
             status="failed",
-            stage="Plan stopped",
+            stage="Draft plan ready; execution checks incomplete",
+            draft_plan=draft_plan(action["objective"], output),
             phase_finished_at=datetime.now(UTC).isoformat(),
-            error=str(exc)[:500]
+            error=str(exc)[:4000]
             if isinstance(exc, ValueError)
             else "Planning timed out; the model did not finish within the time limit. Retry planning; no execution was approved."
             if isinstance(exc, subprocess.TimeoutExpired)

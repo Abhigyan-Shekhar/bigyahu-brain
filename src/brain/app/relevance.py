@@ -2,6 +2,7 @@
 
 import json
 import subprocess
+import sys
 
 from ..memory import canonical
 from ..semantic_model import structured_extract
@@ -84,7 +85,9 @@ def assess(question, claims, folder, model, *, plan=None):
             "Return action verdict supported only if ALL material recommendations follow from the supplied evidence, "
             "including preservation requirements and an appropriate verification plan.\n"
             "Application capabilities supplied by the operator: the isolated editor can edit the listed files, "
-            "and the backend supplies the Python runtime and standard-library unittest runner in its OS sandbox. "
+            "and the backend supplies Python "
+            + sys.version.split()[0]
+            + " and its standard-library unittest runner in its OS sandbox. "
             "Selecting these capabilities does not require a repository citation. Optional project dependencies "
             "remain an execution limitation unless established; do not infer that they are installed.\n"
             if plan is not None
