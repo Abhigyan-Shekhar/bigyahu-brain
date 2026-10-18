@@ -505,6 +505,26 @@ def test_repository_run_list_links_only_its_investigations_and_actions(tmp_path)
             assert [a["id"] for a in data["items"]] == [action["id"]]
             assert data["items"][0]["session"] == session["id"]
             assert [t["id"] for t in data["investigations"]] == [turn["id"]]
+            # Navigation cards must use the same verification gate as run detail.
+            state.update(
+                action["id"], status="complete", baseline_includes_proposed_tests=True,
+                plan={"summary": "Normalize timestamp conversion"},
+                baseline_tests=[{
+                    "argv": ["python", "-m", "unittest"], "passed": False,
+                    "exit_code": 1, "outcome": "exited", "tests_reported": 7,
+                    "output": "FAILED (failures=37)",
+                }],
+                tests=[{
+                    "argv": ["python", "-m", "unittest"], "passed": True,
+                    "exit_code": 0, "outcome": "exited", "tests_reported": 7,
+                }],
+            )
+            card = client.get(route, headers={"Authorization": "Bearer token"}).json()["items"][0]
+            assert card["tests_passed"] and card["regression_demonstrated"]
+            assert card["title"] == "Normalize timestamp conversion"
+            state.update(action["id"], tests=[])
+            card = client.get(route, headers={"Authorization": "Bearer token"}).json()["items"][0]
+            assert not card["tests_passed"] and not card["regression_demonstrated"]
             for i in range(21):
                 newer = state.create(
                     "turn",

@@ -864,6 +864,8 @@ def create_app(state, token, origin, assets=None):
 
     @app.get("/api/repositories/{project}/actions")
     def repository_actions(project: str):
+        from .actions import verification_result
+
         state.get(project, "repository")
         items = []
         for action in state.list("action", project):
@@ -878,6 +880,8 @@ def create_app(state, token, origin, assets=None):
                         k: action.get(k)
                         for k in ("id", "turn", "status", "phase", "stage", "objective")
                     },
+                    **verification_result(action),
+                    "title": (action.get("plan") or {}).get("summary") or turn["question"],
                     "question": turn["question"],
                     "session": parent["parent"] if parent else None,
                 }

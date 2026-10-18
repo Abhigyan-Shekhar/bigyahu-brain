@@ -28,6 +28,10 @@ const GraphInspector = React.lazy(() => import("./GraphInspector"));
 import ActivityStream from "./ActivityStream";
 import { selectionContext, graphQuestion } from "./workspaceContext";
 import Graph from "./GraphViewer";
+import { clusterGraph } from "./graphPresentation";
+import InvestigationContext from "./InvestigationContext";
+import InvestigationSummary from "./InvestigationSummary";
+import { sourceNeighborhood } from "./investigationPresentation";
 import IngestionPanel from "./IngestionPanel";
 import PersonalBrain from "./PersonalBrain";
 import TeamBrain from "./TeamBrain";
@@ -75,6 +79,14 @@ function App() {
   const graphViewport = useRef({});
   const graphPreferences = useRef({});
   const pendingTurn = useRef(null);
+  const pendingGraphReveal = useRef(false);
+  useEffect(() => {
+    if (mode !== "graph" || !pendingGraphReveal.current) return;
+    pendingGraphReveal.current = false;
+    document
+      .querySelector(".graph-workspace .graph")
+      ?.scrollIntoView({ block: "start" });
+  }, [mode, graphMode, graph]);
   const inspectRequest = useRef(0);
   const evidenceRequest = useRef(0);
   useEffect(() => {
@@ -157,6 +169,7 @@ function App() {
       setGraphMode("explore");
       setGraphSelection(null);
       await loadGraph("", 0, filters);
+      pendingGraphReveal.current = true;
       return;
     }
     const request = ++inspectRequest.current;
@@ -185,7 +198,8 @@ function App() {
     }
   }
   function inspectGraphUid(uid) {
-    const node = graph?.nodes?.find((n) => n.id === uid) ||
+    const node = overviewGraph.nodes.find((n) => n.id === uid) ||
+      graph?.nodes?.find((n) => n.id === uid) ||
       selected?.graph?.nodes?.find((n) => n.id === uid) || {
         id: uid,
         label: uid,
@@ -194,6 +208,7 @@ function App() {
     inspectGraph({ kind: "node", node });
   }
   function exploreEvidence(evidence, turn = null) {
+    ++graphRequest.current;
     setGraph({
       ...evidence.graph,
       revision: evidence.revision,
@@ -206,6 +221,7 @@ function App() {
     setMode("graph");
     setGraphSelection(null);
     setExpansion(null);
+    pendingGraphReveal.current = true;
   }
   async function openMemorySource(source) {
     if (source.kind === "lesson") {
@@ -220,15 +236,7 @@ function App() {
       returnToInvestigation({ session: source.session, turn: source.turn });
     }
   }
-  const overviewGraph = {
-    nodes: (overview?.groups || []).map((g) => ({
-      id: `cluster:${grouping}:${g.key}`,
-      label: `${g.key} · ${g.count} entities`,
-      labels: ["Cluster"],
-      clusterKey: g.key,
-    })),
-    edges: [],
-  };
+  const overviewGraph = clusterGraph(overview, grouping);
   const repo = repos.find((r) => r.id === project),
     busy = turns.some((t) => ["running", "queued"].includes(t.status));
   const entityCounts = graph?.entity_counts;
@@ -417,6 +425,52 @@ function App() {
       setError(e.message);
     }
   }
+  async function reviewTurnFix(turn) {
+    const scope = project;
+    try {
+      const actions = await api(`/turns/${turn.id}/actions`);
+      if (scope !== activeProject.current) return;
+      if (actions.length) openRun(actions.at(-1).id);
+      else
+        document
+          .getElementById(`fix-${turn.id}`)
+          ?.scrollIntoView({ block: "center" });
+    } catch (e) {
+      if (scope === activeProject.current) setError(e.message);
+    }
+  }
+  async function revealTurnEvidence(turn) {
+    const first = turn.claims?.[0]?.support?.[0];
+    if (!first) return;
+    const scope = project;
+    try {
+      const proof = await api(
+        `/turns/${turn.id}/evidence/${first.evidence_id}`,
+      );
+      if (scope !== activeProject.current) return;
+      let connection = proof.graph;
+      const file = proof.graph.nodes.find((n) => n.labels?.includes("File"));
+      if (file) {
+        try {
+          const adjacent = await api(
+            `/repositories/${scope}/graph/neighbors?uid=${encodeURIComponent(file.id)}`,
+          );
+          connection = sourceNeighborhood(
+            proof,
+            adjacent,
+            turn.claims.map((c) => c.text).join("\n"),
+          );
+        } catch {
+          /* The original checked citation remains usable without added context. */
+        }
+      }
+      if (scope !== activeProject.current) return;
+      setSelected(null);
+      exploreEvidence({ ...proof, graph: connection }, turn.id);
+    } catch (e) {
+      setError(e.message);
+    }
+  }
   async function citation(turn, id, kind = "turns", origin = null) {
     setGraphOrigin(
       origin || (kind === "turns" ? { session, turn } : graphOrigin),
@@ -507,7 +561,11 @@ function App() {
           onClick={() => setMode("graph")}
         >
           <Network size={17} /> Explore Graph
-          {graph && <span className="count">{graph.nodes.length}</span>}
+          {overview && (
+            <span className="count" title="Total indexed entities">
+              {overview.total_nodes.toLocaleString()}
+            </span>
+          )}
         </button>
         <button
           className={"nav " + (mode === "runs" ? "active" : "")}
@@ -592,6 +650,13 @@ function App() {
             application.
           </p>
         </details>
+        <div className="graph-stack">
+          <Network size={16} />
+          <span>
+            <strong>FalkorDB</strong>
+            <small>Graph storage · React Flow rendering</small>
+          </span>
+        </div>
         <div className="operator">
           <span className="avatar">LO</span>
           <span>
@@ -756,7 +821,7 @@ function App() {
                   </span>
                   <h2>
                     {mode === "chat"
-                      ? "Investigate your code. Understand its history. Fix with context."
+                      ? "From an issue to an evidence-backed fix."
                       : mode === "runs"
                         ? "Agent runs"
                         : "Explore your knowledge graph"}
@@ -866,7 +931,7 @@ function App() {
                       aria-pressed={graphMode === "overview"}
                       onClick={() => setGraphMode("overview")}
                     >
-                      Entire graph · overview
+                      Entire graph
                     </button>
                     <button
                       aria-pressed={graphMode !== "overview"}
@@ -877,7 +942,7 @@ function App() {
                       }
                     >
                       {graphScope !== "index"
-                        ? "Focused evidence"
+                        ? "Evidence graph"
                         : "Explore loaded entities"}
                     </button>
                     {graphOrigin && (
@@ -889,31 +954,38 @@ function App() {
                     )}
                   </nav>
                   {graphMode === "overview" && (
-                    <div className="graph-summary">
-                      <label>
-                        Group entire index by{" "}
-                        <select
-                          aria-label="Group entire index by"
-                          value={grouping}
-                          onChange={(e) => setGrouping(e.target.value)}
-                        >
-                          <option value="type">Entity type</option>
-                          <option value="folder">Top-level folder</option>
-                        </select>
-                      </label>
-                      <p>
-                        {overview?.total_nodes ?? "Loading"} indexed entities ·{" "}
-                        {overview?.groups.length || 0} clusters. Select a
-                        cluster to explore its members. Counts cover the current
-                        index; the detailed canvas loads bounded pages.
-                      </p>
-                      {overview?.truncated && (
-                        <p className="coverage">
-                          First {overview.group_limit} groups shown. Search and
-                          filters remain available across the index.
+                    <>
+                      <div className="graph-summary">
+                        <label>
+                          Group entire index by{" "}
+                          <select
+                            aria-label="Group entire index by"
+                            value={grouping}
+                            onChange={(e) => setGrouping(e.target.value)}
+                          >
+                            <option value="type">Entity type</option>
+                            <option value="folder">Top-level folder</option>
+                          </select>
+                        </label>
+                        <p>
+                          {overview?.total_nodes ?? "Loading"} indexed entities
+                          · {overview?.groups.length || 0} knowledge clusters ·
+                          Select a cluster to explore.
                         </p>
-                      )}
-                    </div>
+                        {overview?.relationships_truncated && (
+                          <p className="coverage">
+                            Showing the 200 largest relationship groups. Drill
+                            into a cluster for detailed connections.
+                          </p>
+                        )}
+                        {overview?.truncated && (
+                          <p className="coverage">
+                            First {overview.group_limit} groups shown. Search
+                            and filters remain available across the index.
+                          </p>
+                        )}
+                      </div>
+                    </>
                   )}
                   {graphMode === "focused" && (
                     <p className="coverage">
@@ -924,148 +996,159 @@ function App() {
                       </button>
                     </p>
                   )}
-                  <form
-                    className="graph-filter"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      setGraphMode("explore");
-                      loadGraph();
-                    }}
+                  <details
+                    className="graph-query-tools"
+                    open={graphMode === "overview"}
                   >
-                    <input
-                      aria-label="Filter graph"
-                      placeholder="Filter files, symbols, or documents…"
-                      value={filter}
-                      onChange={(e) => setFilter(e.target.value)}
-                    />
-                    <button>
-                      {clusterFilter.kind || clusterFilter.folder
-                        ? "Search within cluster"
-                        : "Search index"}
-                    </button>
-                    {(clusterFilter.kind || clusterFilter.folder) && (
+                    <summary>Search index & loaded context</summary>
+                    <form
+                      className="graph-filter"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        setGraphMode("explore");
+                        loadGraph();
+                      }}
+                    >
+                      <input
+                        aria-label="Filter graph"
+                        placeholder="Filter files, symbols, or documents…"
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                      />
+                      <button>
+                        {clusterFilter.kind || clusterFilter.folder
+                          ? "Search within cluster"
+                          : "Search index"}
+                      </button>
+                      {(clusterFilter.kind || clusterFilter.folder) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setClusterFilter({});
+                            setGraphMode("explore");
+                            loadGraph(filter, 0, {});
+                          }}
+                        >
+                          Search entire index
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => {
+                          setFilter("");
                           setClusterFilter({});
                           setGraphMode("explore");
-                          loadGraph(filter, 0, {});
+                          loadGraph("", 0, {});
                         }}
                       >
-                        Search entire index
+                        Clear filters
                       </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFilter("");
-                        setClusterFilter({});
-                        setGraphMode("explore");
-                        loadGraph("", 0, {});
-                      }}
+                    </form>
+                    <div
+                      className="graph-meta"
+                      hidden={graphMode === "overview"}
                     >
-                      Clear filters
-                    </button>
-                  </form>
-                  <div className="graph-meta">
-                    {graphMode === "overview"
-                      ? "Cluster overview; detailed slice retained: "
-                      : "Loaded slice: "}
-                    {graph?.nodes.length || 0} nodes ·{" "}
-                    {graph?.edges.length || 0} recorded relationships
-                    {graph?.truncated
-                      ? " · Bounded slice; filter to explore more"
-                      : ""}
-                  </div>
-                  {graph?.paging_bound_reached && (
-                    <p className="coverage">
-                      Page limit reached. Narrow the search or cluster to
-                      discover additional indexed entities.
-                    </p>
-                  )}
-                  {graphMode !== "overview" && (
-                    <p className="graph-instruction">
-                      Select a node for its inspector; double-click or expand to
-                      load another hop. At low zoom, labels are hidden to keep
-                      the canvas readable.
-                    </p>
-                  )}
-                  {expansion?.next_offset != null && (
-                    <button
-                      onClick={() =>
-                        expandNode(expansion.root, expansion.next_offset)
-                      }
-                    >
-                      More neighbors
-                    </button>
-                  )}
-                  {graphMode !== "overview" &&
-                    graphScope === "index" &&
-                    graph?.offset != null && (
-                      <div className="graph-pages">
-                        <button
-                          disabled={!graph?.offset}
-                          onClick={() =>
-                            loadGraph(filter, Math.max(0, graph.offset - 100))
-                          }
-                        >
-                          Previous nodes
-                        </button>
-                        <button
-                          disabled={graph?.next_offset == null}
-                          onClick={() => loadGraph(filter, graph.next_offset)}
-                        >
-                          Next nodes
-                        </button>
-                      </div>
-                    )}
-                  {(clusterFilter.kind || clusterFilter.folder) &&
-                    graphMode !== "overview" && (
+                      {graphMode === "overview"
+                        ? "Cluster overview; detailed slice retained: "
+                        : "Loaded slice: "}
+                      {graph?.nodes.length || 0} nodes ·{" "}
+                      {graph?.edges.length || 0} recorded relationships
+                      {graph?.truncated
+                        ? " · Bounded slice; filter to explore more"
+                        : ""}
+                    </div>
+                    {graph?.paging_bound_reached && (
                       <p className="coverage">
-                        Active cluster:{" "}
-                        {clusterFilter.kind || clusterFilter.folder}
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={!!clusterFilter.context}
-                            onChange={(e) => {
-                              const next = {
-                                ...clusterFilter,
-                                context: e.target.checked,
-                              };
-                              setClusterFilter(next);
-                              loadGraph(filter, 0, next);
-                            }}
-                          />
-                          Show cross-cluster relationships
-                        </label>
-                        {graph?.context_count > 0 && (
-                          <span>
-                            {" "}
-                            · {graph.context_count} directly connected context
-                            entities (up to 50).{" "}
-                          </span>
-                        )}
-                        {graph?.context_truncated && (
-                          <span>
-                            {" "}
-                            More neighbors available; expand a node to
-                            explore.{" "}
-                          </span>
-                        )}
-                        <button
-                          onClick={() =>
-                            explainSelection({
-                              kind: "cluster",
-                              grouping: clusterFilter.kind ? "type" : "folder",
-                              key: clusterFilter.kind || clusterFilter.folder,
-                            })
-                          }
-                        >
-                          Explain cluster in chat
-                        </button>
+                        Page limit reached. Narrow the search or cluster to
+                        discover additional indexed entities.
                       </p>
                     )}
+                    {graphMode !== "overview" && (
+                      <p className="graph-instruction">
+                        Select a node for its inspector; double-click or expand
+                        to load another hop. At low zoom, labels are hidden to
+                        keep the canvas readable.
+                      </p>
+                    )}
+                    {expansion?.next_offset != null && (
+                      <button
+                        onClick={() =>
+                          expandNode(expansion.root, expansion.next_offset)
+                        }
+                      >
+                        More neighbors
+                      </button>
+                    )}
+                    {graphMode !== "overview" &&
+                      graphScope === "index" &&
+                      graph?.offset != null && (
+                        <div className="graph-pages">
+                          <button
+                            disabled={!graph?.offset}
+                            onClick={() =>
+                              loadGraph(filter, Math.max(0, graph.offset - 100))
+                            }
+                          >
+                            Previous nodes
+                          </button>
+                          <button
+                            disabled={graph?.next_offset == null}
+                            onClick={() => loadGraph(filter, graph.next_offset)}
+                          >
+                            Next nodes
+                          </button>
+                        </div>
+                      )}
+                    {(clusterFilter.kind || clusterFilter.folder) &&
+                      graphMode !== "overview" && (
+                        <p className="coverage">
+                          Active cluster:{" "}
+                          {clusterFilter.kind || clusterFilter.folder}
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={!!clusterFilter.context}
+                              onChange={(e) => {
+                                const next = {
+                                  ...clusterFilter,
+                                  context: e.target.checked,
+                                };
+                                setClusterFilter(next);
+                                loadGraph(filter, 0, next);
+                              }}
+                            />
+                            Show cross-cluster relationships
+                          </label>
+                          {graph?.context_count > 0 && (
+                            <span>
+                              {" "}
+                              · {graph.context_count} directly connected context
+                              entities (up to 50).{" "}
+                            </span>
+                          )}
+                          {graph?.context_truncated && (
+                            <span>
+                              {" "}
+                              More neighbors available; expand a node to
+                              explore.{" "}
+                            </span>
+                          )}
+                          <button
+                            onClick={() =>
+                              explainSelection({
+                                kind: "cluster",
+                                grouping: clusterFilter.kind
+                                  ? "type"
+                                  : "folder",
+                                key: clusterFilter.kind || clusterFilter.folder,
+                              })
+                            }
+                          >
+                            Explain cluster in chat
+                          </button>
+                        </p>
+                      )}
+                  </details>
                   <Graph
                     key={`${project}:${graphMode}:${JSON.stringify(clusterFilter)}:${graph?.offset || 0}`}
                     viewKey={`${project}:${graphMode}:${JSON.stringify(clusterFilter)}:${graph?.offset || 0}`}
@@ -1079,9 +1162,9 @@ function App() {
                     onExplain={explainSelection}
                   />
                   <p className="graph-caption">
-                    Overview summarizes the entire current index. Detailed
-                    search and neighbor pages are bounded; path finding uses
-                    only loaded relationships. Labels appear as you zoom in.
+                    {graphMode === "overview"
+                      ? "Overview arrows aggregate stored FalkorDB relationships; internal links stay within clusters. Open a cluster to explore its entities."
+                      : "Directed links come from FalkorDB. The focused view uses loaded connections; expand a node to fetch more, or show all loaded entities. A graph connection is navigation context, not proof of causality."}
                   </p>
                 </>
               ) : mode === "runs" ? (
@@ -1201,8 +1284,29 @@ function App() {
                                       </button>
                                     )}
                                   </div>
+                                  <InvestigationSummary
+                                    turn={t}
+                                    onGraph={() => revealTurnEvidence(t)}
+                                    onReview={() => reviewTurnFix(t)}
+                                  />
                                   {t.claims?.map((c, i) => (
-                                    <div className="claim" key={i}>
+                                    <details
+                                      className={
+                                        "claim " +
+                                        (i === 0 ? "primary-diagnosis" : "")
+                                      }
+                                      key={`${t.id}:${i}`}
+                                    >
+                                      <summary>
+                                        {i === 0
+                                          ? "Detailed diagnosis & source paths"
+                                          : `Finding ${i + 1} · ${c.text.slice(0, 90)}${c.text.length > 90 ? "…" : ""}`}
+                                      </summary>
+                                      {i === 0 && (
+                                        <span className="diagnosis-label">
+                                          WHAT THE BRAIN FOUND
+                                        </span>
+                                      )}
                                       <p>{c.text}</p>
                                       <button
                                         className="evidence-graph-link"
@@ -1275,7 +1379,7 @@ function App() {
                                           </button>
                                         ))}
                                       </div>
-                                    </div>
+                                    </details>
                                   ))}
                                   {!t.claims?.length && (
                                     <p>
@@ -1293,12 +1397,17 @@ function App() {
                                       ))}
                                     </details>
                                   )}
-                                  <div className="tools">
-                                    {t.tools?.length || 0} tool calls ·{" "}
-                                    {t.model} · Source provenance checked
-                                    {t.relevance_review &&
-                                      " · Citation relevance model-reviewed"}
-                                  </div>
+                                  <details className="investigation-audit">
+                                    <summary>
+                                      Investigation details & source review
+                                    </summary>
+                                    <div className="tools">
+                                      {t.tools?.length || 0} tool calls ·{" "}
+                                      {t.model} · Source provenance checked
+                                      {t.relevance_review &&
+                                        " · Citation relevance model-reviewed"}
+                                    </div>
+                                  </details>
                                   <FixLauncher turn={t} onRun={openRun} />
                                 </>
                               )}
@@ -1381,7 +1490,11 @@ function App() {
                     ? "Context inspector"
                     : selected
                       ? "Cited evidence"
-                      : "Knowledge & sources"}
+                      : busy
+                        ? "Live investigation"
+                        : mode === "runs"
+                          ? "Run context"
+                          : "Investigation context"}
                 </span>
                 {selected && (
                   <button
@@ -1392,18 +1505,6 @@ function App() {
                   </button>
                 )}
               </div>
-              <div hidden={!!selected || !!graphSelection || mode !== "chat"}>
-                <IngestionPanel
-                  key={project}
-                  project={project}
-                  refresh={uploadNotice}
-                  onComplete={() => {
-                    setGraphRefresh((n) => n + 1);
-                    loadGraph("");
-                  }}
-                  onStatus={setIngesting}
-                />
-              </div>
               {graphSelection ? (
                 <React.Suspense
                   fallback={<p role="status">Loading entity inspector…</p>}
@@ -1413,7 +1514,11 @@ function App() {
                     linkedEvidence={selected}
                     detail={graphInspection}
                     loading={graphInspectLoading}
-                    graph={graph}
+                    graph={
+                      mode === "graph" && graphMode === "overview"
+                        ? overviewGraph
+                        : graph
+                    }
                     onClose={() => setGraphSelection(null)}
                     onNode={inspectGraphUid}
                     onExpand={expandNode}
@@ -1525,6 +1630,26 @@ function App() {
                     interpretation.
                   </div>
                 </>
+              ) : mode === "chat" ? (
+                <InvestigationContext
+                  project={project}
+                  turn={turns.at(-1)}
+                  graph={graph}
+                  onEvidence={(turn, id) => citation(turn, id)}
+                  onGraph={() => setMode("graph")}
+                  onRun={openRun}
+                  onMemory={() => {
+                    setMemoryTab("personal");
+                    setMode("memory");
+                  }}
+                  onExpandEvidence={(proof, turnId, connection) => {
+                    setSelected(null);
+                    exploreEvidence(
+                      { ...proof, graph: connection || proof.graph },
+                      turnId,
+                    );
+                  }}
+                />
               ) : (
                 <div className="knowledge-overview">
                   <div className="knowledge-heading">
@@ -1594,6 +1719,18 @@ function App() {
                   </div>
                 </div>
               )}
+              <div hidden={!!selected || !!graphSelection || mode !== "chat"}>
+                <IngestionPanel
+                  key={project}
+                  project={project}
+                  refresh={uploadNotice}
+                  onComplete={() => {
+                    setGraphRefresh((n) => n + 1);
+                    loadGraph("");
+                  }}
+                  onStatus={setIngesting}
+                />
+              </div>
             </aside>
           </div>
         )}

@@ -12,6 +12,15 @@ export default function AgentRuns({
   onReviewMemory,
 }) {
   const [bounded, setBounded] = useState(false);
+  const [browseRuns, setBrowseRuns] = useState(
+    () => matchMedia("(min-width: 1051px)").matches,
+  );
+  useEffect(() => {
+    const query = matchMedia("(min-width: 1051px)");
+    const resize = () => setBrowseRuns(query.matches);
+    query.addEventListener("change", resize);
+    return () => query.removeEventListener("change", resize);
+  }, []);
   const [runs, setRuns] = useState([]),
     [error, setError] = useState("");
   useEffect(() => {
@@ -70,45 +79,68 @@ export default function AgentRuns({
   return (
     <div className="runs-workspace">
       <aside className="run-list">
-        <h3>Investigations & fixes</h3>
-        <p>
-          Actual plans and execution reports. A run never starts from navigation
-          alone.
-        </p>
-        {error && (
-          <p role="alert" className="failure">
-            {error}
-          </p>
-        )}
-        {bounded && (
-          <p className="coverage">
-            Showing the latest 20 fix runs and 20 investigations. Older runs
-            remain available from their conversations and saved lessons.
-          </p>
-        )}
-        {!runs.length && (
+        <details
+          open={browseRuns}
+          onToggle={(e) => setBrowseRuns(e.currentTarget.open)}
+        >
+          <summary>
+            Investigations & fixes <small>{runs.length} runs</small>
+          </summary>
           <p>
-            No fix runs yet. Investigate in Ask Brain, then choose Plan a
-            change.
+            Follow the investigation, review the change, and compare the test
+            outcome.
           </p>
-        )}
-        {[...runs.filter((r) => r.run_kind !== "investigation")]
-          .reverse()
-          .concat(runs.filter((r) => r.run_kind === "investigation"))
-          .map((r) => (
-            <button
-              className={run?.id === r.id ? "selected" : ""}
-              key={r.id}
-              onClick={() => onSelect(r.id)}
-            >
-              <span className={`run-status ${r.status}`}>
-                {r.run_kind === "investigation" ? "Investigation · " : "Fix · "}
-                {r.status.replaceAll("_", " ")}
-              </span>
-              <strong>{r.objective}</strong>
-              <small>{r.stage}</small>
-            </button>
-          ))}
+          {error && (
+            <p role="alert" className="failure">
+              {error}
+            </p>
+          )}
+          {bounded && (
+            <p className="coverage">
+              Showing the latest 20 fix runs and 20 investigations. Older runs
+              remain available from their conversations and saved lessons.
+            </p>
+          )}
+          {!runs.length && (
+            <p>
+              No fix runs yet. Investigate in Ask Brain, then choose Plan a
+              change.
+            </p>
+          )}
+          {[...runs.filter((r) => r.run_kind !== "investigation")]
+            .reverse()
+            .concat(runs.filter((r) => r.run_kind === "investigation"))
+            .map((r) => (
+              <button
+                className={run?.id === r.id ? "selected" : ""}
+                key={r.id}
+                onClick={() => onSelect(r.id)}
+              >
+                <span className={`run-status ${r.status}`}>
+                  {r.run_kind === "investigation"
+                    ? "Investigation · "
+                    : "Fix · "}
+                  {r.status === "complete"
+                    ? r.run_kind === "investigation"
+                      ? "Finished"
+                      : "Execution finished"
+                    : r.status.replaceAll("_", " ")}
+                </span>
+                <strong title={r.objective}>
+                  {r.title || r.question || r.objective}
+                </strong>
+                <small>{r.stage}</small>
+                {r.run_kind !== "investigation" && r.status === "complete" && (
+                  <span className="run-result">
+                    {r.tests_passed ? "Tests passed" : "Tests need review"} ·{" "}
+                    {r.regression_demonstrated
+                      ? "Regression demonstrated"
+                      : "Fix unverified"}
+                  </span>
+                )}
+              </button>
+            ))}
+        </details>
       </aside>
       <div className="run-review">
         {run ? (
@@ -123,8 +155,10 @@ export default function AgentRuns({
           ) : (
             <>
               <div className="run-origin">
-                <strong>Investigation</strong>
-                <p>{run.question}</p>
+                <details>
+                  <summary>Original investigation</summary>
+                  <p>{run.question}</p>
+                </details>
                 <button onClick={() => onInvestigation(run)}>
                   Return to investigation
                 </button>

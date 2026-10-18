@@ -45,6 +45,13 @@ export default function GraphInspector({
       {edge ? (
         <>
           <h3>{edge.relation}</h3>
+          {edge.aggregate && (
+            <p>
+              {edge.count.toLocaleString()} stored relationships aggregated
+              between these clusters. Open either cluster to inspect individual
+              entities and sources.
+            </p>
+          )}
           <button onClick={() => onNode(edge.source)}>
             {label(edge.source)}
           </button>
@@ -167,14 +174,17 @@ export default function GraphInspector({
           </button>
         </>
       )}
-      <div className="inspector-actions">
-        <button className="primary" onClick={() => onExplain(selection)}>
-          Explain in chat
-        </button>
-        <p>
-          Attaches this selection to the composer. You review it before sending.
-        </p>
-      </div>
+      {!edge?.aggregate && (
+        <div className="inspector-actions">
+          <button className="primary" onClick={() => onExplain(selection)}>
+            Explain in chat
+          </button>
+          <p>
+            Attaches this selection to the composer. You review it before
+            sending.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

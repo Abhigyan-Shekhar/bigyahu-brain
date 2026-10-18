@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api, send } from "./api";
+import { conciseText } from "./investigationPresentation";
 
 function SourceRecord({ source }) {
   if (source.kind === "lesson") {
@@ -41,6 +42,7 @@ export default function PersonalBrain({
   renderGraph,
   onOpenSource,
 }) {
+  const [memoryFilter, setMemoryFilter] = useState("all");
   const [items, setItems] = useState([]),
     [graph, setGraph] = useState(null),
     [detail, setDetail] = useState(null),
@@ -270,177 +272,44 @@ export default function PersonalBrain({
           {notice}
         </p>
       )}
-      <div className="coverage">
-        <p>
-          Company links resolve explicit code identifiers and verified source
-          matches. For example: <code>`retry.delay_ms`</code>. This grants this
-          local operator company-read access for memory traversal; team readers
-          keep their existing permissions.
-        </p>
-        <button
-          disabled={working}
-          onClick={() =>
-            perform(() =>
-              send(`/repositories/${project}/memory/company-bridge`, {
-                enabled: !companyEnabled,
-              }),
-            )
-          }
-        >
-          {companyEnabled
-            ? "Disconnect company evidence"
-            : "Connect company evidence"}
-        </button>
-      </div>
-      <details className="conversation-import">
-        <summary>Transfer selected memories from another repository</summary>
-        <p>
-          Copies selected accepted private memories into this repository as
-          proposals. Only the selected memory and minimal checked provenance are
-          included in the exact preview. Copies are independent; later source
-          revocation does not revoke an accepted destination copy.
-        </p>
-        <label>
-          Source repository
-          <select
-            aria-label="Transfer source repository"
-            value={origin}
-            onChange={(e) => setOrigin(e.target.value)}
+      <nav className="memory-overview" aria-label="Filter remembered knowledge">
+        {[
+          ["accepted", "Accepted knowledge"],
+          ["proposed", "Awaiting review"],
+          ["all", "All records"],
+        ].map(([state, label]) => (
+          <button
+            key={state}
+            aria-pressed={memoryFilter === state}
+            onClick={() => setMemoryFilter(state)}
           >
-            <option value="">Choose repository…</option>
-            {repositories
-              .filter((r) => r.id !== project && r.status === "ready")
-              .map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-          </select>
-        </label>
-        {transferItems.map((item) => (
-          <label className="source-selection" key={item.uid}>
-            <input
-              type="checkbox"
-              checked={transferSelected.includes(item.uid)}
-              onChange={(e) => {
-                setTransferSelected((v) =>
-                  e.target.checked
-                    ? [...v, item.uid]
-                    : v.filter((id) => id !== item.uid),
-                );
-                setTransferPreview(null);
-              }}
-            />
-            {item.text}
-          </label>
+            <strong>
+              {items.filter((i) => state === "all" || i.state === state).length}
+            </strong>
+            <span>{label}</span>
+            <small>
+              {state === "accepted"
+                ? "Available to the agent"
+                : state === "proposed"
+                  ? "Your decision comes first"
+                  : "Inspect, correct, or revoke"}
+            </small>
+          </button>
         ))}
-        <button
-          disabled={
-            working || !transferSelected.length || transferSelected.length > 10
-          }
-          onClick={prepareTransfer}
-        >
-          Preview repository transfer
-        </button>
-        {transferPreview && (
-          <div>
-            <pre>{JSON.stringify(transferPreview, null, 2)}</pre>
-            <button disabled={working} onClick={confirmTransfer}>
-              Confirm exact transfer as proposals
-            </button>
-          </div>
-        )}
-      </details>
+      </nav>
       <div className="memory-layout">
         <div>
-          <form className="memory-create" onSubmit={add}>
-            <label htmlFor="memory-note">
-              Add a decision, preference or lesson
-            </label>
-            <textarea
-              id="memory-note"
-              required
-              maxLength={4000}
-              rows={3}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-            <button className="primary" disabled={working || !note.trim()}>
-              Propose private memory
-            </button>
-          </form>
-          <details className="conversation-import">
-            <summary>Extract from selected conversation turns</summary>
-            <p>
-              Choose user turns from the current conversation. Assistant answers
-              are excluded. Nothing is imported until you review and confirm the
-              exact preview.
-            </p>
-            <form onSubmit={prepare}>
-              <div className="source-selections">
-                {turns
-                  .filter((t) => t.status === "complete")
-                  .map((t) => (
-                    <label key={t.id}>
-                      <input
-                        type="checkbox"
-                        checked={selected.includes(t.id)}
-                        onChange={(e) => {
-                          setSelected((v) =>
-                            e.target.checked
-                              ? [...v, t.id]
-                              : v.filter((id) => id !== t.id),
-                          );
-                          setPreview(null);
-                        }}
-                      />
-                      {t.question}
-                    </label>
-                  ))}
-              </div>
-              <button
-                disabled={
-                  !session || !selected.length || working || activeImport
-                }
-              >
-                Preview selected turns
-              </button>
-            </form>
-            {preview && (
-              <div>
-                <pre>
-                  {preview.payload.turns.map((t) => t.text).join("\n\n")}
-                </pre>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={semantic}
-                    onChange={(e) => setSemantic(e.target.checked)}
-                  />{" "}
-                  Use the configured Codex model to select durable spans. Sends
-                  only this previewed text and consumes account usage.
-                </label>
-                <p>
-                  Without model selection, non-question user lines become
-                  verbatim proposals.
-                </p>
-                <button
-                  className="primary"
-                  disabled={working || activeImport}
-                  onClick={importTurns}
-                >
-                  Confirm exact selection and extract proposals
-                </button>
-              </div>
-            )}
-            {imports.at(-1) && (
-              <p role="status">
-                {imports.at(-1).stage}
-                {imports.at(-1).error ? `: ${imports.at(-1).error}` : ""}
-              </p>
-            )}
-          </details>
-          <h3>Memories awaiting review and accepted lessons</h3>
+          <h3>
+            {memoryFilter === "accepted"
+              ? "What your agent remembers"
+              : memoryFilter === "proposed"
+                ? "Ready for your review"
+                : "Your remembered knowledge"}
+          </h3>
+          {items.length > 0 &&
+            !items.some(
+              (i) => memoryFilter === "all" || i.state === memoryFilter,
+            ) && <p>No records in this view.</p>}
           {!items.length && (
             <p>
               No memories yet. Add a private note or send a completed coding
@@ -451,25 +320,31 @@ export default function PersonalBrain({
             <p className="coverage">Showing the latest 100 records.</p>
           )}
           <div className="memory-list">
-            {items.map((item) => (
-              <button
-                key={item.uid}
-                className={detail?.uid === item.uid ? "selected" : ""}
-                onClick={() => inspect(item)}
-              >
-                <span className={`memory-state ${item.state}`}>
-                  {item.state}
-                </span>
-                <span>{item.text}</span>
-                <small>
-                  {item.collection === "coding-lessons"
-                    ? "Coding lesson"
-                    : item.collection?.startsWith("conversation:")
-                      ? "Selected conversation"
-                      : "Operator note"}
-                </small>
-              </button>
-            ))}
+            {items
+              .filter(
+                (item) => memoryFilter === "all" || item.state === memoryFilter,
+              )
+              .map((item) => (
+                <button
+                  key={item.uid}
+                  className={detail?.uid === item.uid ? "selected" : ""}
+                  onClick={() => inspect(item)}
+                >
+                  <span className={`memory-state ${item.state}`}>
+                    {item.state}
+                  </span>
+                  <span className="memory-title">
+                    {conciseText(item.text, 125)}
+                  </span>
+                  <small>
+                    {item.collection === "coding-lessons"
+                      ? "Coding lesson"
+                      : item.collection?.startsWith("conversation:")
+                        ? "Selected conversation"
+                        : "Operator note"}
+                  </small>
+                </button>
+              ))}
           </div>
           {relationships.length > 0 && (
             <details>
@@ -485,6 +360,96 @@ export default function PersonalBrain({
               </p>
             </details>
           )}
+          <details className="memory-compose">
+            <summary>Add knowledge or learn from a conversation</summary>
+            <form className="memory-create" onSubmit={add}>
+              <label htmlFor="memory-note">
+                Add a decision, preference or lesson
+              </label>
+              <textarea
+                id="memory-note"
+                required
+                maxLength={4000}
+                rows={3}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+              <button className="primary" disabled={working || !note.trim()}>
+                Propose private memory
+              </button>
+            </form>
+            <details className="conversation-import">
+              <summary>Extract from selected conversation turns</summary>
+              <p>
+                Choose user turns from the current conversation. Assistant
+                answers are excluded. Nothing is imported until you review and
+                confirm the exact preview.
+              </p>
+              <form onSubmit={prepare}>
+                <div className="source-selections">
+                  {turns
+                    .filter((t) => t.status === "complete")
+                    .map((t) => (
+                      <label key={t.id}>
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(t.id)}
+                          onChange={(e) => {
+                            setSelected((v) =>
+                              e.target.checked
+                                ? [...v, t.id]
+                                : v.filter((id) => id !== t.id),
+                            );
+                            setPreview(null);
+                          }}
+                        />
+                        {t.question}
+                      </label>
+                    ))}
+                </div>
+                <button
+                  disabled={
+                    !session || !selected.length || working || activeImport
+                  }
+                >
+                  Preview selected turns
+                </button>
+              </form>
+              {preview && (
+                <div>
+                  <pre>
+                    {preview.payload.turns.map((t) => t.text).join("\n\n")}
+                  </pre>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={semantic}
+                      onChange={(e) => setSemantic(e.target.checked)}
+                    />{" "}
+                    Use the configured Codex model to select durable spans.
+                    Sends only this previewed text and consumes account usage.
+                  </label>
+                  <p>
+                    Without model selection, non-question user lines become
+                    verbatim proposals.
+                  </p>
+                  <button
+                    className="primary"
+                    disabled={working || activeImport}
+                    onClick={importTurns}
+                  >
+                    Confirm exact selection and extract proposals
+                  </button>
+                </div>
+              )}
+              {imports.at(-1) && (
+                <p role="status">
+                  {imports.at(-1).stage}
+                  {imports.at(-1).error ? `: ${imports.at(-1).error}` : ""}
+                </p>
+              )}
+            </details>
+          </details>
         </div>
         <aside className="memory-inspector">
           {detail ? (
@@ -587,6 +552,92 @@ export default function PersonalBrain({
         {graph?.graph?.truncated && (
           <p>Graph view is bounded to 150 nodes and 300 edges.</p>
         )}
+      </details>
+      <details className="memory-advanced">
+        <summary>Memory connections & repository transfer</summary>
+        <div className="coverage">
+          <p>
+            Company links resolve explicit code identifiers and verified source
+            matches. For example: <code>`retry.delay_ms`</code>. This grants
+            this local operator company-read access for memory traversal; team
+            readers keep their existing permissions.
+          </p>
+          <button
+            disabled={working}
+            onClick={() =>
+              perform(() =>
+                send(`/repositories/${project}/memory/company-bridge`, {
+                  enabled: !companyEnabled,
+                }),
+              )
+            }
+          >
+            {companyEnabled
+              ? "Disconnect company evidence"
+              : "Connect company evidence"}
+          </button>
+        </div>
+        <details className="conversation-import">
+          <summary>Transfer selected memories from another repository</summary>
+          <p>
+            Copies selected accepted private memories into this repository as
+            proposals. Only the selected memory and minimal checked provenance
+            are included in the exact preview. Copies are independent; later
+            source revocation does not revoke an accepted destination copy.
+          </p>
+          <label>
+            Source repository
+            <select
+              aria-label="Transfer source repository"
+              value={origin}
+              onChange={(e) => setOrigin(e.target.value)}
+            >
+              <option value="">Choose repository…</option>
+              {repositories
+                .filter((r) => r.id !== project && r.status === "ready")
+                .map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+          {transferItems.map((item) => (
+            <label className="source-selection" key={item.uid}>
+              <input
+                type="checkbox"
+                checked={transferSelected.includes(item.uid)}
+                onChange={(e) => {
+                  setTransferSelected((v) =>
+                    e.target.checked
+                      ? [...v, item.uid]
+                      : v.filter((id) => id !== item.uid),
+                  );
+                  setTransferPreview(null);
+                }}
+              />
+              {item.text}
+            </label>
+          ))}
+          <button
+            disabled={
+              working ||
+              !transferSelected.length ||
+              transferSelected.length > 10
+            }
+            onClick={prepareTransfer}
+          >
+            Preview repository transfer
+          </button>
+          {transferPreview && (
+            <div>
+              <pre>{JSON.stringify(transferPreview, null, 2)}</pre>
+              <button disabled={working} onClick={confirmTransfer}>
+                Confirm exact transfer as proposals
+              </button>
+            </div>
+          )}
+        </details>
       </details>
     </section>
   );
