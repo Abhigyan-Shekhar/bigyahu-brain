@@ -221,6 +221,12 @@ produce a downloadable diff without applying or publishing it.
 The [GitHub connector](docs/github-connector.md) lets chat prepare local issue,
 draft-PR and comment drafts for user review and publication. PRs use existing
 pushed branches; the connector uses GitHub CLI authentication on the app server.
+The [email connector](docs/email-connector.md) writes and sends project discussion
+emails from a recipient address and optional purpose, using an operator-configured
+SMTP sender. The Email panel records generated messages and delivery outcomes.
+The [Docs and Auto-investigate workflows](docs/documentation-workflows.md) add
+source-cited Markdown drafts, reviewed App Docs indexing, isolated documentation
+patches, and bounded research steps with a review queue for fix and connector drafts.
 [Personal Brain](docs/personal-brain-app.md) now supports private notes, exact-consent
 selected-turn proposals, source review, acceptance/rejection/revocation and reviewed
 coding lesson recall through FalkorDB. A fresh real-agent chat returned two checked

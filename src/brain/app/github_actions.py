@@ -14,6 +14,10 @@ class GitHubConnectionError(ValueError):
     """A bounded, credential-free error suitable for the local UI."""
 
 
+class GitHubRejectedError(GitHubConnectionError):
+    """GitHub explicitly rejected a request without accepting the write."""
+
+
 def request(method, endpoint, payload=None):
     argv = [
         "gh",
@@ -43,7 +47,31 @@ def request(method, endpoint, payload=None):
         raise GitHubConnectionError(
             "GitHub CLI is unavailable or the request timed out. Check gh auth status on the app server."
         ) from exc
-    if result.returncode or len(result.stdout.encode()) > 2_000_000:
+    if len(result.stdout.encode()) > 2_000_000:
+        raise GitHubConnectionError(
+            "GitHub request failed. Check gh auth status, repository permissions and request details."
+        )
+    if result.returncode:
+        # Only a structured, explicit rejection establishes a known failure. Do
+        # not expose remote prose or CLI stderr, which may contain credentials.
+        try:
+            error = json.loads(result.stdout)
+            status = str(error.get("status", "")) if isinstance(error, dict) else ""
+        except ValueError:
+            status = ""
+        reasons = {
+            "400": "GitHub rejected the request as invalid (HTTP 400).",
+            "401": "GitHub authentication was rejected (HTTP 401). Check gh auth status.",
+            "403": "GitHub denied this operation (HTTP 403). Check token permissions and repository policies.",
+            "404": "GitHub could not access the target (HTTP 404). Check the repository, target and account permissions.",
+            "405": "GitHub does not allow this operation on the target (HTTP 405).",
+            "410": "GitHub reports this feature is unavailable (HTTP 410). For issue creation, check whether Issues are enabled.",
+            "415": "GitHub rejected the request format (HTTP 415).",
+            "422": "GitHub rejected the submitted fields (HTTP 422). Review the title, body and target.",
+            "429": "GitHub rejected the request due to rate limiting (HTTP 429).",
+        }
+        if status in reasons:
+            raise GitHubRejectedError(reasons[status])
         raise GitHubConnectionError(
             "GitHub request failed. Check gh auth status, repository permissions and request details."
         )
@@ -98,12 +126,22 @@ def branch(value, *, head=False):
     return value
 
 
+def check_issue_creation(kind, slug, remote):
+    if kind == "issue" and remote.get("has_issues") is False:
+        raise ValueError(
+            f"GitHub Issues are disabled for {slug}. Ask a repository administrator "
+            "to enable Issues in repository settings, or select another repository. "
+            "No issue was submitted."
+        )
+
+
 def preview(state, project, values):
     account = connection()
     if not account["connected"]:
         raise ValueError(account["error"] + " Run " + account["setup"] + " on the app server.")
     slug, remote = repository(state, project)
     kind, body = values.get("kind"), values.get("body", "")
+    check_issue_creation(kind, slug, remote)
     if not isinstance(body, str) or not body.strip() or len(body) > 60000:
         raise ValueError("Use a nonempty body of at most 60000 characters")
     payload = {"body": body}
@@ -172,12 +210,17 @@ def publish(state, project, uid, expected_digest):
         raise ValueError(
             "This GitHub publication was already attempted; inspect GitHub before retrying"
         )
+    if draft.get("source_workflow"):
+        from . import orchestrator
+
+        orchestrator.context(state, orchestrator.scoped(state, project, draft["source_workflow"]))
     account = connection()
     if not account["connected"] or account["login"] != draft["login"]:
         raise ValueError("Connected GitHub account changed; prepare a new draft")
     slug, remote = repository(state, project)
     if slug != draft["repository"] or remote["id"] != draft["repository_id"]:
         raise ValueError("GitHub repository changed; prepare a new draft")
+    check_issue_creation(draft["operation"], slug, remote)
     if not state.transition(
         uid, {"status": "draft", "consent_digest": expected_digest}, status="publishing"
     ):
@@ -195,6 +238,9 @@ def publish(state, project, uid, expected_digest):
         return state.update(
             uid, status="published", url=url, published_at=datetime.now(UTC).isoformat()
         )
+    except GitHubRejectedError as exc:
+        state.update(uid, status="rejected", error=str(exc))
+        raise
     except Exception as exc:
         # A timeout may follow a successful write. Never retry the mutation automatically.
         state.update(

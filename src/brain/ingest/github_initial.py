@@ -32,7 +32,10 @@ def selected_item(api, base, number):
     comments = api.pages(base + f"/issues/{number}/comments", max_pages=10)
     if len(comments) != item.get("comments"):
         raise ValueError("Issue comment coverage incomplete")
-    record = {k: item.get(k) for k in ("number", "title", "body", "html_url", "state")}
+    record = {k: item.get(k) for k in (
+        "number", "title", "body", "html_url", "state", "user",
+        "created_at", "updated_at", "closed_at", "milestone",
+    )}
     record["comments_snapshot"] = [{**c, "id": "issue:" + str(c["id"])} for c in comments]
     pull = None
     if "pull_request" in item:

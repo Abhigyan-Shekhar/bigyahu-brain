@@ -12,6 +12,8 @@ from brain.app.server import create_app
 from brain.app.state import State
 from brain.config import Config
 
+REAL_REQUEST = gh.request
+
 
 @pytest.mark.asyncio
 async def test_chat_tool_prepares_local_draft_but_cannot_publish(connected, tmp_path, monkeypatch):
@@ -66,14 +68,19 @@ def connected(tmp_path, monkeypatch):
     state = State(tmp_path / "app", Config(tmp_path, "fixture"), "fixture")
     repo = state.create("repository", url="https://github.com/example/project", status="ready")
     calls = []
-    control = {"login": "alice", "fail_write": False}
+    control = {"login": "alice", "fail_write": False, "has_issues": True}
 
     def request(method, endpoint, payload=None):
         calls.append((method, endpoint, payload))
         if endpoint == "user":
             return {"login": control["login"]}
         if method == "GET" and endpoint == "repos/example/project":
-            return {"id": 123, "full_name": "example/project", "default_branch": "main"}
+            return {
+                "id": 123,
+                "full_name": "example/project",
+                "default_branch": "main",
+                "has_issues": control["has_issues"],
+            }
         if method == "GET" and endpoint == "repos/example/project/issues/42":
             return {"number": 42}
         if method == "POST":
@@ -157,6 +164,95 @@ def test_timeout_is_unknown_and_never_automatically_retried(connected):
     with pytest.raises(ValueError, match="already attempted"):
         gh.publish(state, project, draft["id"], draft["consent_digest"])
     assert sum(method == "POST" for method, *_ in calls) == 1
+
+
+def test_disabled_issues_block_preview_without_writing(connected):
+    state, project, calls, control = connected
+    control["has_issues"] = False
+    with pytest.raises(ValueError, match="Issues are disabled.*No issue was submitted"):
+        gh.preview(state, project, {"kind": "issue", "title": "Fix", "body": "Details"})
+    assert state.list("github_action", project) == []
+    assert not any(method == "POST" for method, *_ in calls)
+
+
+def test_issues_disabled_after_preview_block_publication_without_writing(connected):
+    state, project, calls, control = connected
+    draft = gh.preview(state, project, {"kind": "issue", "title": "Fix", "body": "Details"})
+    control["has_issues"] = False
+    with pytest.raises(ValueError, match="Issues are disabled"):
+        gh.publish(state, project, draft["id"], draft["consent_digest"])
+    assert state.get(draft["id"])["status"] == "draft"
+    assert not any(method == "POST" for method, *_ in calls)
+
+
+@pytest.mark.parametrize(
+    "kind,fields",
+    [("comment", {"number": 42}), ("pull_request", {"title": "Fix", "head": "fix"})],
+)
+def test_disabled_issues_do_not_block_prs_or_comments(connected, kind, fields):
+    state, project, calls, control = connected
+    control["has_issues"] = False
+    draft = gh.preview(state, project, {"kind": kind, "body": "Details", **fields})
+    assert gh.publish(state, project, draft["id"], draft["consent_digest"])["status"] == "published"
+    assert sum(method == "POST" for method, *_ in calls) == 1
+
+
+def test_explicit_github_rejection_is_saved_and_never_retried(connected, monkeypatch):
+    state, project, calls, _ = connected
+    draft = gh.preview(state, project, {"kind": "issue", "title": "Fix", "body": "Details"})
+    original = gh.request
+
+    def rejected(method, endpoint, payload=None):
+        if method == "POST":
+            calls.append((method, endpoint, payload))
+            raise gh.GitHubRejectedError("GitHub denied this operation (HTTP 403).")
+        return original(method, endpoint, payload)
+
+    monkeypatch.setattr(gh, "request", rejected)
+    with pytest.raises(gh.GitHubRejectedError, match="HTTP 403"):
+        gh.publish(state, project, draft["id"], draft["consent_digest"])
+    saved = state.get(draft["id"])
+    assert saved["status"] == "rejected" and "HTTP 403" in saved["error"]
+    with pytest.raises(ValueError, match="already attempted"):
+        gh.publish(state, project, draft["id"], draft["consent_digest"])
+    assert sum(method == "POST" for method, *_ in calls) == 1
+
+
+@pytest.mark.parametrize("status", [400, 401, 403, 404, 405, 410, 415, 422, 429])
+def test_cli_distinguishes_structured_rejection_without_exposing_remote_text(monkeypatch, status):
+    monkeypatch.setattr(
+        gh.subprocess,
+        "run",
+        lambda *_a, **_k: SimpleNamespace(
+            returncode=1,
+            stdout=__import__("json").dumps({"status": str(status), "message": "secret-token"}),
+            stderr="secret-token",
+        ),
+    )
+    with pytest.raises(gh.GitHubRejectedError) as error:
+        gh.request("POST", "repos/example/project/issues", {"title": "Fix", "body": "Details"})
+    assert f"HTTP {status}" in str(error.value)
+    assert "secret-token" not in str(error.value)
+
+
+@pytest.mark.parametrize("output", ['{"status":"500"}', '{"status":"408"}', "bad response"])
+def test_cli_ambiguous_failures_remain_unknown(connected, monkeypatch, output):
+    state, project, _calls, _ = connected
+    draft = gh.preview(state, project, {"kind": "issue", "title": "Fix", "body": "Details"})
+    original = gh.request
+
+    def post_using_cli(method, endpoint, payload=None):
+        return original(method, endpoint, payload) if method == "GET" else cli(method, endpoint, payload)
+
+    # The fixture replaces request; retain the actual CLI adapter for the POST.
+    cli = REAL_REQUEST
+    monkeypatch.setattr(gh, "request", post_using_cli)
+    monkeypatch.setattr(
+        gh.subprocess, "run", lambda *_a, **_k: SimpleNamespace(returncode=1, stdout=output)
+    )
+    with pytest.raises(ValueError, match="outcome is unknown"):
+        gh.publish(state, project, draft["id"], draft["consent_digest"])
+    assert state.get(draft["id"])["status"] == "unknown"
 
 
 def test_repository_url_casing_uses_github_canonical_identity(connected, monkeypatch):

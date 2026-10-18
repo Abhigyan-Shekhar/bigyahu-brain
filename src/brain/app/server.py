@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from ..config import load_config
 from ..graph import GraphStore, GraphUnavailable
-from . import exchange, github_actions, personal, team
+from . import email_connector, exchange, github_actions, personal, team
 from .actions import (
     active_actions,
     approve,
@@ -68,6 +68,14 @@ class GitHubDraftInput(BaseModel):
 class GitHubPublishInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     consent_digest: str = Field(pattern="^[a-f0-9]{64}$")
+
+
+class EmailInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    recipient: str = Field(min_length=3, max_length=254)
+    purpose: str = Field(default="", max_length=4000)
+    turn: str | None = Field(default=None, min_length=32, max_length=32)
+    request_id: str = Field(pattern="^[a-f0-9-]{36}$")
 
 
 class ApprovalInput(BaseModel):
@@ -204,6 +212,10 @@ def create_app(state, token, origin, assets=None):
             raise HTTPException(409, "Repository is not ready")
         return value
 
+    from .authoring_api import install as install_authoring
+
+    install_authoring(app, state, workers, lock, project_ready)
+
     @app.get("/api/status")
     def status():
         return {
@@ -223,6 +235,7 @@ def create_app(state, token, origin, assets=None):
                 "source_inspection",
                 "approved_isolated_patch_tests",
                 "reviewed_github_issues_pull_requests_comments",
+                "ai_project_email",
             ],
             "deferred": ["hosted_identity"],
         }
@@ -234,6 +247,44 @@ def create_app(state, token, origin, assets=None):
     @app.get("/api/github/connection")
     def github_connection():
         return github_actions.connection()
+
+    @app.get("/api/email/connection")
+    def email_connection():
+        return email_connector.connection()
+
+    @app.post("/api/email/connection/check")
+    def email_connection_check():
+        return email_connector.connection(verify=True)
+
+    @app.get("/api/repositories/{project}/emails")
+    def email_history(project: str):
+        state.get(project, "repository")
+        return {
+            "items": [email_connector.public(job) for job in state.list("email", project)[-20:]]
+        }
+
+    @app.post("/api/repositories/{project}/emails", status_code=202)
+    def email_send(project: str, body: EmailInput):
+        project_ready(project)
+        job, created = email_connector.enqueue(
+            state,
+            project,
+            body.recipient,
+            body.purpose,
+            body.turn,
+            body.request_id,
+        )
+        if created:
+            workers.submit(email_connector.run_email, state, job["id"])
+        return email_connector.public(job)
+
+    @app.get("/api/repositories/{project}/emails/{email_id}")
+    def email_detail(project: str, email_id: str):
+        state.get(project, "repository")
+        job = state.get(email_id, "email")
+        if job["project"] != project:
+            raise KeyError("Unknown resource")
+        return email_connector.public(job)
 
     @app.get("/api/repositories/{project}/github/actions")
     def github_history(project: str):
@@ -704,12 +755,23 @@ def create_app(state, token, origin, assets=None):
 
     @app.get("/api/repositories/{project}/graph/node")
     def graph_node(project: str, uid: str):
-        from .graph_workspace import inspect_node
+        from .graph_workspace import active_node_runs, inspect_node
 
         project_ready(project)
         if not 1 <= len(uid) <= 2000:
             raise ValueError("Choose a bounded entity identifier")
-        return inspect_node(GraphStore(state.config(project)), uid)
+        result = inspect_node(GraphStore(state.config(project)), uid)
+        result["highlights"]["live"] = active_node_runs(
+            state, project, result["properties"].get("path")
+        )
+        return result
+
+    @app.get("/api/repositories/{project}/deadlines")
+    def repository_deadlines(project: str):
+        from .graph_workspace import work_timeline
+
+        project_ready(project)
+        return work_timeline(GraphStore(state.config(project)))
 
     @app.get("/api/repositories/{project}/graph/neighbors")
     def graph_neighbors(project: str, uid: str, offset: int = 0):
@@ -930,6 +992,12 @@ def create_app(state, token, origin, assets=None):
             raise HTTPException(409, "Cited evidence changed; ask again")
         return {"id": evidence_id, **checked}
 
+    @app.get("/api/repositories/{project}/activity")
+    def repository_activity(project: str):
+        from .live_work import snapshot
+
+        return snapshot(state, project)
+
     @app.get("/api/repositories/{project}/actions")
     def repository_actions(project: str):
         from .actions import verification_result
@@ -937,6 +1005,8 @@ def create_app(state, token, origin, assets=None):
         state.get(project, "repository")
         items = []
         for action in state.list("action", project):
+            if action.get("source_workflow"):
+                continue  # Workflow fix plans are reviewed in their owning workflow timeline.
             turn = state.get(action["turn"], "turn")
             with state.connect() as db:
                 parent = db.execute(

@@ -9,12 +9,15 @@ export async function api(path, options = {}) {
     },
   });
   const value = await response.json();
-  if (!response.ok)
-    throw Error(
+  if (!response.ok) {
+    const error = Error(
       typeof value.detail === "string"
         ? value.detail
         : "Request could not be completed",
     );
+    error.status = response.status;
+    throw error;
+  }
   return value;
 }
 export const send = (path, body) =>

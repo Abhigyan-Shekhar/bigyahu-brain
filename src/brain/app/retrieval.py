@@ -2,6 +2,8 @@
 
 import asyncio
 import json
+import os
+import sqlite3
 from pathlib import Path
 
 from fastmcp.exceptions import ToolError
@@ -12,6 +14,20 @@ from ..memory import canonical, digest
 MAX_RETRIEVAL_CALLS = 20
 MAX_CONTEXT_CALLS = 6
 MAX_IDENTICAL_CALLS = 2
+
+
+def reserve_workflow_call(folder):
+    folder = Path(folder)
+    folder.mkdir(parents=True, exist_ok=True)
+    with sqlite3.connect(folder / "retrieval-budget.sqlite", timeout=10) as db:
+        db.execute("CREATE TABLE IF NOT EXISTS budget (id INTEGER PRIMARY KEY, used INTEGER)")
+        db.execute("BEGIN IMMEDIATE")
+        db.execute("INSERT OR IGNORE INTO budget VALUES(1,0)")
+        count = db.execute("SELECT used FROM budget WHERE id=1").fetchone()[0]
+        if count >= 60:
+            return False
+        db.execute("UPDATE budget SET used=used+1 WHERE id=1")
+    return True
 
 
 class RetrievalBudget(Middleware):
@@ -42,6 +58,12 @@ class RetrievalBudget(Middleware):
                 )
             elif self.repeated.get(key, 0) >= MAX_IDENTICAL_CALLS:
                 reason = "Identical lookup already performed twice; use its checked evidence"
+            if (
+                reason is None
+                and os.environ.get("BRAIN_WORKFLOW_BUDGET")
+                and not reserve_workflow_call(os.environ["BRAIN_WORKFLOW_BUDGET"])
+            ):
+                reason = "Aggregate workflow retrieval budget reached"
             if reason:
                 self.blocked += 1
             else:

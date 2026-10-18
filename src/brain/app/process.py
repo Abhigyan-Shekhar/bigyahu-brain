@@ -3,9 +3,10 @@
 import os
 import signal
 import subprocess
+import time
 
 
-def model_process(argv, prompt, trace, err, env, timeout):
+def model_process(argv, prompt, trace, err, env, timeout, *, cancel_check=None):
     process = subprocess.Popen(
         argv,
         stdin=subprocess.PIPE,
@@ -18,7 +19,21 @@ def model_process(argv, prompt, trace, err, env, timeout):
         creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
     )
     try:
-        process.communicate(input=prompt, timeout=timeout)
+        if cancel_check is None:
+            process.communicate(input=prompt, timeout=timeout)
+        else:
+            deadline = time.monotonic() + timeout
+            first = True
+            while True:
+                cancel_check()
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired(argv, timeout)
+                try:
+                    process.communicate(input=prompt if first else None, timeout=min(1, remaining))
+                    break
+                except subprocess.TimeoutExpired:
+                    first = False
         return process.returncode
     except subprocess.TimeoutExpired as exc:
         raise subprocess.TimeoutExpired(argv, timeout) from exc

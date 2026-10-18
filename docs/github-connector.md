@@ -17,6 +17,12 @@ The account needs permission for the operation in the selected repository.
 Organization policies and token permissions can restrict writes even when account
 connection succeeds. The current connector targets github.com.
 
+Issue drafts and publication check whether the repository has Issues enabled.
+If disabled, no issue is submitted; a repository administrator must enable Issues
+in repository settings, or the operator must select another repository. Public
+issue creation does not generally require push access. Disabling Issues does not
+disable this connector's draft PR or PR-comment workflows.
+
 Open **GitHub** in the repository workspace. Choose an issue, draft PR or comment,
 edit its text, then choose **Review draft**. The review shows the destination,
 connected account and exact body. **Publish** sends that reviewed draft and
@@ -41,8 +47,12 @@ Draft consent binds the exact payload, repository identity and account. Account
 or payload changes require review again. Concurrent publication retries consume
 one local transition, and retrying a successfully published draft returns its
 saved link. A timeout or failed response after a write starts leaves an **unknown**
-outcome: inspect GitHub before making another draft. The connector never retries
-the write automatically.
+outcome: inspect GitHub before making another draft. Structured, explicit GitHub
+rejections (such as permission denial or invalid fields) are recorded as
+**rejected**, with a credential-free HTTP status explanation. Transport failures,
+timeouts, server errors and unrecognized responses remain **unknown**. The
+connector never retries the write automatically. Earlier unknown records are
+retained as recorded; newer diagnostics do not rewrite their history.
 
 Protocol references: [creating issues](https://docs.github.com/en/rest/issues/issues#create-an-issue),
 [creating PRs](https://docs.github.com/en/rest/pulls/pulls#create-a-pull-request),
