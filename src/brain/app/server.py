@@ -6,6 +6,7 @@ import secrets
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
@@ -14,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from ..config import load_config
 from ..graph import GraphStore, GraphUnavailable
-from . import exchange, personal, team
+from . import exchange, github_actions, personal, team
 from .actions import (
     active_actions,
     approve,
@@ -52,6 +53,21 @@ class RepositoryInput(BaseModel):
 
 class QuestionInput(BaseModel):
     question: str = Field(min_length=1, max_length=8000)
+
+
+class GitHubDraftInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    kind: Literal["issue", "pull_request", "comment"]
+    title: str = Field(default="", max_length=256)
+    body: str = Field(min_length=1, max_length=60000)
+    number: int | None = Field(default=None, ge=1, le=1_000_000_000)
+    head: str = Field(default="", max_length=200)
+    base: str = Field(default="", max_length=200)
+
+
+class GitHubPublishInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    consent_digest: str = Field(pattern="^[a-f0-9]{64}$")
 
 
 class ApprovalInput(BaseModel):
@@ -206,6 +222,7 @@ def create_app(state, token, origin, assets=None):
                 "reviewed_lesson_recall",
                 "source_inspection",
                 "approved_isolated_patch_tests",
+                "reviewed_github_issues_pull_requests_comments",
             ],
             "deferred": ["hosted_identity"],
         }
@@ -213,6 +230,25 @@ def create_app(state, token, origin, assets=None):
     @app.get("/api/repositories")
     def repositories():
         return state.list("repository")
+
+    @app.get("/api/github/connection")
+    def github_connection():
+        return github_actions.connection()
+
+    @app.get("/api/repositories/{project}/github/actions")
+    def github_history(project: str):
+        state.get(project, "repository")
+        return {"items": state.list("github_action", project)[-20:]}
+
+    @app.post("/api/repositories/{project}/github/actions", status_code=201)
+    def github_draft(project: str, body: GitHubDraftInput):
+        project_ready(project)
+        return github_actions.preview(state, project, body.model_dump())
+
+    @app.post("/api/repositories/{project}/github/actions/{draft_id}/publish")
+    def github_publish(project: str, draft_id: str, body: GitHubPublishInput):
+        project_ready(project)
+        return github_actions.publish(state, project, draft_id, body.consent_digest)
 
     @app.post("/api/repositories", status_code=202)
     def connect(body: RepositoryInput):

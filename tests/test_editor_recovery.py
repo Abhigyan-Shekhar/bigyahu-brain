@@ -86,6 +86,101 @@ def stop_editor(monkeypatch):
     monkeypatch.setattr(actions, "_codex", editor)
 
 
+@pytest.mark.parametrize("partial_edit", [False, True])
+def test_blocked_editor_never_runs_verification_or_publishes_success(
+    approved, monkeypatch, partial_edit
+):
+    state, action, _ = approved
+
+    def editor(*_args, edit, **_kwargs):
+        work, allowed = edit
+        if partial_edit:
+            write_file(work, allowed, "x.py", "value = 2\n", read_file(work, "x.py")["digest"])
+        return {
+            "status": "blocked",
+            "blockers": ["Required document 04 is unavailable"],
+            "summary": "Implementation incomplete",
+            "lesson": "",
+        }
+
+    monkeypatch.setattr(actions, "_codex", editor)
+    monkeypatch.setattr(actions, "run_tests", lambda *_: pytest.fail("Blocked work ran tests"))
+    actions.execute(state, action["id"])
+    result = state.get(action["id"])
+    assert result["status"] == "failed"
+    assert result["failure_kind"] == "implementation_blocked"
+    assert "document 04" in result["error"]
+    assert result["summary"] == "Implementation incomplete"
+    assert not result.get("tests") and not result.get("patch_replay")
+    assert not result.get("lesson_proposal")
+    assert (state.base.repo_root / "x.py").read_text() == "value = 1\n"
+
+
+def test_editor_missing_selected_test_stops_before_test_loader_error(approved, monkeypatch):
+    state, action, _ = approved
+
+    def editor(*_args, edit, **_kwargs):
+        work, allowed = edit
+        write_file(work, allowed, "x.py", "value = 2\n", read_file(work, "x.py")["digest"])
+        return {"status": "implemented", "blockers": [], "summary": "Edited", "lesson": ""}
+
+    monkeypatch.setattr(actions, "_codex", editor)
+    monkeypatch.setattr(actions, "run_tests", lambda *_: pytest.fail("Missing target ran tests"))
+    actions.execute(state, action["id"])
+    result = state.get(action["id"])
+    assert result["status"] == "failed" and result["failure_kind"] == "missing_test_target"
+    assert result["missing_test_targets"] == ["test_x.py"]
+    assert "Tests have not started" in result["error"]
+    assert not result.get("tests") and not result.get("patch_replay")
+
+
+def test_editor_receives_revalidated_planning_document_without_search(approved, monkeypatch):
+    from brain.app import evidence
+
+    state, action, _ = approved
+    proof = {
+        "kind": "source",
+        "ref": {},
+        "title": "04 schema",
+        "text": "The existing jobs table uses a unique job_id.",
+        "revision": action["base_revision"],
+        "digest": digest("schema"),
+        "graph": {"nodes": [], "edges": []},
+    }
+    item = evidence.register(actions.plan_folder(state, action) / "evidence", proof)
+    action = state.update(action["id"], claims=[{"support": [{"evidence_id": item["id"]}]}])
+    action = state.update(
+        action["id"],
+        relevance_review={
+            **action["relevance_review"],
+            "input_digest": actions.review_digest(action),
+        },
+    )
+    state.update(
+        action["id"],
+        plan_digest=actions.plan_digest(action),
+        approval={**action["approval"], "plan_digest": actions.plan_digest(action)},
+    )
+    monkeypatch.setattr(evidence, "resolve", lambda *_: proof)
+    seen = []
+
+    def editor(_state, _project, run, prompt, *_args, edit, **_kwargs):
+        assert proof["text"] in prompt and "revalidated_planning_evidence" in prompt
+        assert (run / "evidence" / (item["id"] + ".json")).exists()
+        seen.append(prompt)
+        return {
+            "status": "blocked",
+            "blockers": ["Another prerequisite"],
+            "summary": "",
+            "lesson": "",
+        }
+
+    monkeypatch.setattr(actions, "_codex", editor)
+    actions.execute(state, action["id"])
+    assert len(seen) == 1
+    assert state.get(action["id"])["editor_reused_evidence_count"] == 1
+
+
 def test_timeout_then_resume_preserves_work_and_runs_all_verification(approved, monkeypatch):
     state, action, checks = approved
     uid = action["id"]
@@ -127,7 +222,7 @@ def test_timeout_then_resume_preserves_work_and_runs_all_verification(approved, 
         work, allowed = edit
         assert (work / "x.py").read_text() == "value = 2\n"
         write_file(work, allowed, "test_x.py", "assert True\n", digest(""))
-        return {"summary": "Finished", "lesson": ""}
+        return {"status": "implemented", "blockers": [], "summary": "Finished", "lesson": ""}
 
     monkeypatch.setattr(actions, "_codex", finish)
     actions.execute(state, uid)

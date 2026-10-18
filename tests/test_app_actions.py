@@ -167,7 +167,12 @@ def test_execution_publishes_only_byte_equivalent_replay(tmp_path, monkeypatch, 
         work, allowed = edit
         write_file(work, allowed, "x.py", "value = 2  \r\n", read_file(work, "x.py")["digest"])
         write_file(work, allowed, "test_x.py", "assert True\r\n", digest(""))
-        return {"summary": "Fixture edit", "lesson": "Fixture proposal"}
+        return {
+            "status": "implemented",
+            "blockers": [],
+            "summary": "Fixture edit",
+            "lesson": "Fixture proposal",
+        }
 
     monkeypatch.setattr(actions, "_codex", editor)
     monkeypatch.setattr(

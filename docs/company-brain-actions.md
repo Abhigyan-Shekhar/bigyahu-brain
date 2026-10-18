@@ -2,6 +2,9 @@
 
 The local application can turn a completed cited investigation into a fix plan,
 then produce an isolated patch and test report after explicit operator approval.
+
+The [GitHub connector](github-connector.md) separately supports reviewed issues,
+draft PRs from existing pushed branches, and issue/PR conversation comments.
 The original indexed source remains unchanged. There is no apply, commit, push,
 merge or memory-acceptance endpoint.
 
@@ -26,6 +29,12 @@ merge or memory-acceptance endpoint.
    exact plan digest once. Revision, evidence or plan changes require a new plan.
 4. A separate editor receives digest-checked `read_file` / `write_file` tools for
    the approved paths in a fresh clone. It cannot run tests or shell commands.
+   Cited planning evidence is revalidated and supplied to this new session within
+   the existing eight-source/40 KB reuse bound. The editor can retrieve further
+   repository and uploaded-document context through the read-only tools.
+   It must report whether implementation is ready or blocked, with concrete
+   missing prerequisites. A blocked result stops before tests and produces no
+   completed patch report or lesson, even if partial edits exist.
 5. The backend runs the approved commands against original code with proposed
    test-file changes, then against patched code. It rechecks patch scope and source
    evidence before publishing the report. A failing baseline helps demonstrate a
@@ -64,6 +73,9 @@ here. Native Windows coding execution is unavailable; read-only chat still works
   absolute paths and traversal are rejected. New test files must be approved.
 - One to three generated `python -m pytest` or `python -m unittest` path selections.
   Arbitrary flags, shell commands and dependency installation are unavailable.
+  Missing test targets must have approved creation paths when planning, and must
+  exist after editing before the backend starts either test run. This prevents a
+  missing proposed module from surfacing as a misleading baseline loader error.
 - Tests can read the checkout and installed Python runtime, write the disposable
   checkout/scratch area, and have no network access. Git metadata is read-only.
   The subprocess environment excludes inherited credentials/operator variables.

@@ -11,7 +11,11 @@ def plan():
     return {
         "summary": "Recover ingestion after restart",
         "steps": [f"Recovery step {i}" for i in range(13)],
-        "files": ["backend/app/ingestion.py", "backend/migrations/001_recovery.sql"],
+        "files": [
+            "backend/app/ingestion.py",
+            "backend/migrations/001_recovery.sql",
+            "backend/test_ingestion_recovery.py",
+        ],
         "tests": [{"runner": "unittest", "path": "backend/test_ingestion_recovery.py"}],
     }
 
@@ -26,6 +30,17 @@ def test_thirteen_step_migration_plan_is_preserved_and_validated(tmp_path):
         ["python", "-m", "unittest", "backend/test_ingestion_recovery.py", "-v"]
     ]
     assert "commands" not in draft and "plan_digest" not in draft
+
+
+def test_missing_test_target_must_have_an_approved_creation_path(tmp_path):
+    candidate = plan()
+    candidate["files"].remove("backend/test_ingestion_recovery.py")
+    with pytest.raises(ValueError, match="missing and has no approved files"):
+        actions.validate_plan(candidate, tmp_path)
+    test = tmp_path / "backend/test_ingestion_recovery.py"
+    test.parent.mkdir()
+    test.write_text("# existing regression suite\n")
+    actions.validate_plan(candidate, tmp_path)
 
 
 def test_schema_and_validator_agree_on_step_limit(tmp_path):

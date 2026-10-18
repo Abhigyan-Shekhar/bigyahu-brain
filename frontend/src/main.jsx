@@ -36,6 +36,7 @@ import { sourceNeighborhood } from "./investigationPresentation";
 import IngestionPanel from "./IngestionPanel";
 import PersonalBrain from "./PersonalBrain";
 import TeamBrain from "./TeamBrain";
+import GitHubConnector from "./GitHubConnector";
 
 const fragment = location.hash.slice(1);
 if (fragment) {
@@ -839,6 +840,7 @@ function App() {
                   )}
                 </div>
                 <div className="workspace-actions">
+                <GitHubConnector key={project} project={project} latestTurn={turns.at(-1)} />
                 {mode === "chat" && <button className="context-toggle" aria-expanded={contextOpen}
                   aria-controls="context-panel" onClick={() => {
                     setContextOpen(!contextOpen);

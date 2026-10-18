@@ -13,7 +13,7 @@ from .memory_paths import path_evidence
 from .retrieval import RetrievalBudget
 
 
-def create_server(cfg, folder):
+def create_server(cfg, folder, *, app_state=None, project=None, turn=None):
     store, services = GraphStore(cfg), Services(GraphStore(cfg))
     mcp = FastMCP(
         "Company Brain application",
@@ -201,11 +201,75 @@ def create_server(cfg, folder):
         except (ValueError, OSError, UnicodeError) as exc:
             return {"status": "error", "error": str(exc)}
 
+    if app_state is not None and project and turn:
+        from .github_actions import preview
+
+        @mcp.tool
+        def draft_github_action(
+            kind: str,
+            body: str,
+            title: str = "",
+            number: int | None = None,
+            head: str = "",
+            base: str = "",
+        ) -> dict:
+            """Prepare an issue, draft PR or comment ONLY on explicit user request. Local draft only; the user reviews and publishes in the GitHub panel. PRs require an existing pushed head branch."""
+            try:
+                current = app_state.get(turn, "turn")
+                if current.get("project") != project or current.get("status") != "running":
+                    raise ValueError("GitHub drafting is limited to the active chat repository")
+                drafts = current.get("github_drafts", [])
+                if len(drafts) >= 3:
+                    raise ValueError("At most three GitHub drafts per chat turn")
+                value = preview(
+                    app_state,
+                    project,
+                    {
+                        "kind": kind,
+                        "body": body,
+                        "title": title,
+                        "number": number,
+                        "head": head,
+                        "base": base,
+                    },
+                )
+                app_state.update(
+                    turn,
+                    github_drafts=[
+                        *drafts,
+                        {
+                            "id": value["id"],
+                            "operation": kind,
+                            "title": title,
+                        },
+                    ],
+                )
+                return {
+                    "status": "draft",
+                    "id": value["id"],
+                    "repository": value["repository"],
+                    "notice": "Not published. Open GitHub in the app to review the draft and publish.",
+                }
+            except (ValueError, KeyError) as exc:
+                return {"status": "error", "error": str(exc)}
+
     return mcp
 
 
 def main():
-    create_server(load_config(), os.environ["BRAIN_APP_EVIDENCE"]).run()
+    cfg = load_config()
+    context = {}
+    if all(
+        os.environ.get(key) for key in ("BRAIN_APP_ROOT", "BRAIN_APP_PROJECT", "BRAIN_APP_TURN")
+    ):
+        from .state import State
+
+        context = {
+            "app_state": State(os.environ["BRAIN_APP_ROOT"], cfg, "", recover=False),
+            "project": os.environ["BRAIN_APP_PROJECT"],
+            "turn": os.environ["BRAIN_APP_TURN"],
+        }
+    create_server(cfg, os.environ["BRAIN_APP_EVIDENCE"], **context).run()
 
 
 if __name__ == "__main__":

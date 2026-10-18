@@ -218,6 +218,9 @@ launch commands, limits and verification. The application now supports repositor
 graph → cited answer → source → cited fix plan → explicit approval → isolated
 patch and test report. [Approved coding actions](docs/company-brain-actions.md)
 produce a downloadable diff without applying or publishing it.
+The [GitHub connector](docs/github-connector.md) lets chat prepare local issue,
+draft-PR and comment drafts for user review and publication. PRs use existing
+pushed branches; the connector uses GitHub CLI authentication on the app server.
 [Personal Brain](docs/personal-brain-app.md) now supports private notes, exact-consent
 selected-turn proposals, source review, acceptance/rejection/revocation and reviewed
 coding lesson recall through FalkorDB. A fresh real-agent chat returned two checked

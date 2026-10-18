@@ -48,6 +48,7 @@ def tool_activity(trace, running):
                 *TOOLS,
                 "read_file",
                 "write_file",
+                "draft_github_action",
             }:
                 continue
             key = item.get("id") or item["tool"]

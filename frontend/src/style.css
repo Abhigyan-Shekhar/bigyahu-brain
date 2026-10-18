@@ -3895,3 +3895,43 @@ h2 {
 .diff-meta { color: #748174; }
 .live-diff-empty { padding: 22px 18px; color: #6b7b68; font-size: 12px; }
 .live-diff .coverage { margin: 10px 18px; }
+.modal.github-connector {
+  max-height: 90vh;
+  overflow-y: auto;
+  width: min(720px, 94vw);
+}
+.github-connector fieldset {
+  border: 0;
+  padding: 0;
+  margin: 20px 0;
+  display: grid;
+  gap: 12px;
+}
+.modal.github-connector label {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  font-size: 12px;
+}
+.github-connector input,
+.github-connector textarea,
+.github-connector select {
+  width: 100%;
+  font: inherit;
+  font-size: 13px;
+  color: #292831;
+  padding: 10px 12px;
+  border: 1px solid #dcd1df;
+  border-radius: 6px;
+  background: #fffdfa;
+}
+.github-preview {
+  border-top: 1px solid var(--border, #d8dce2);
+  padding-top: 16px;
+}
+.github-preview pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 300px;
+  overflow-y: auto;
+}

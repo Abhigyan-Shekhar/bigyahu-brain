@@ -308,6 +308,7 @@ def test_invented_citation_does_not_trigger_automatic_retry(planning, monkeypatc
 
 
 def test_sql_plan_is_editable_but_only_python_tests_are_executable(tmp_path):
+    (tmp_path / "tests").mkdir()
     plan = {
         "summary": "Add a checked constraint",
         "files": ["migrations/constraint.sql"],
