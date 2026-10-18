@@ -397,7 +397,7 @@ export default function ActionPanel({
               <p>
                 {action.error ===
                 "This milestone edits bounded Python, documentation and TOML files"
-                  ? "The model returned a path outside the supported file scope. Use literal Python, documentation or TOML filenames without annotations such as '(new)'. No execution was approved. Review the objective and retry."
+                  ? "This older plan used an outdated file scope. Retry planning to include the necessary backend and frontend files. Use literal repository-relative paths without annotations such as '(new)'. No execution was approved."
                   : action.error}
               </p>
               <ExecutionRecovery

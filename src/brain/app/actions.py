@@ -14,6 +14,7 @@ from ..graph import GraphStore
 from ..ingest.git_parser import git
 from ..memory import canonical, digest
 from .action_mcp import read_file, target
+from .action_policy import EDITABLE_SUFFIXES, execution_capabilities
 from .activity import elapsed_seconds, tool_activity
 from .agent import SCHEMA, command
 from .evidence import ready, reuse_evidence, verified_claims
@@ -129,7 +130,7 @@ def verification_result(action):
 MAX_PLAN_STEPS = 20
 MAX_STEP_CHARS = 2000
 MAX_PLAN_STEP_CHARS = 20000
-PLAN_FILE_SUFFIXES = {".py", ".md", ".rst", ".txt", ".toml", ".sql"}
+PLAN_FILE_SUFFIXES = EDITABLE_SUFFIXES
 
 
 PLAN_SCHEMA = {
@@ -275,7 +276,9 @@ def validate_plan(plan, root):
         file = target(root, path)
         if file.suffix not in PLAN_FILE_SUFFIXES or len(path) > 200:
             raise ValueError(
-                "Invalid planned file path: use literal repository-relative Python, documentation, TOML or SQL filenames without annotations such as '(new)'. No execution was approved."
+                "Invalid planned file path: use a literal repository-relative filename with a supported extension "
+                + ", ".join(sorted(PLAN_FILE_SUFFIXES))
+                + "; omit annotations such as '(new)'. No execution was approved."
             )
         if file.exists() and (not file.is_file() or file.stat().st_size > 100000):
             raise ValueError("Approved files must be text files under 100 KB")
@@ -531,9 +534,13 @@ def _plan_candidate(state, uid, action, cfg, turn, feedback, budget=None):
         "For each claim include influence: how that evidence informs this specific proposed change or its validation. "
         "Do not invent used sources, causal contributions, or binding policy from personal/team preferences. "
         "Propose the smallest justified change for the user objective, explicit relative files (including new tests), "
-        "one to twenty nonempty steps (at most 2000 characters each and 20000 characters total), a summary under 3000 characters, one to twelve unique Python/documentation/TOML/SQL files, and one to three pytest/unittest path selections. SQL files are patch artifacts only; do not propose applying migrations during tests or startup. Every file and test path must be a literal repository-relative path under 200 characters; put annotations such as (new) only in steps, never in paths. There is no shell, dependency installation or execution at this stage. "
+        "one to twenty nonempty steps (at most 2000 characters each and 20000 characters total), a summary under 3000 characters, one to twelve unique files using the supplied execution_capabilities.editable_extensions, and one to three pytest/unittest path selections. SQL files are patch artifacts only; do not propose applying migrations during tests or startup. Every file and test path must be a literal repository-relative path under 200 characters; put annotations such as (new) only in steps, never in paths. There is no shell, dependency installation or execution at this stage. "
         "Do not approve anything. The human will review these files and exact generated test commands before isolated execution. "
-        "Editable extensions are .py, .sql, .md, .rst, .txt and .toml. "
+        "The supplied execution_capabilities describe application configuration, not user-imposed requirements or repository evidence. "
+        "Never claim the user imposed an editing restriction unless their objective explicitly says so. "
+        "Include companion frontend/backend changes needed to preserve legitimate existing workflows, such as browser authentication token propagation. "
+        "Do not defer a necessary supported source edit just because it is JavaScript or TypeScript. "
+        "Frontend files can be edited, but this executor runs only the selected Python tests: explicitly mark frontend build/browser verification pending rather than claiming it ran. "
         "Use repository_files to establish file layout and test/migration locations; read schema and constraints "
         "before recommending migrations. A bounded filename search does not prove absence of a convention. "
         "Distinguish observed facts from proposals and explicitly mark deployment/provider checks pending. "
@@ -545,6 +552,7 @@ def _plan_candidate(state, uid, action, cfg, turn, feedback, budget=None):
         + canonical(
             {
                 "objective": action["objective"],
+                "execution_capabilities": execution_capabilities(),
                 "execution_runtime": {
                     "python_version": sys.version.split()[0],
                     "standard_library_unittest": True,

@@ -16,6 +16,62 @@ from .findings import FINDING_SCHEMA
 from .relevance import assess
 from .timing import finish_stage, set_stage
 
+
+def codex_failure(run):
+    """Classify bounded CLI diagnostics without publishing source text or secrets."""
+    messages = []
+    trace = run / "trace.jsonl"
+    if trace.exists():
+        with trace.open("rb") as stream:
+            stream.seek(max(0, trace.stat().st_size - 65536))
+            lines = stream.read(65536).decode("utf-8", errors="replace").splitlines()
+        for line in lines:
+            try:
+                event = json.loads(line)
+            except ValueError:
+                continue
+            if not isinstance(event, dict) or event.get("type") not in {"error", "turn.failed"}:
+                continue
+            error = event.get("error")
+            message = error.get("message") if isinstance(error, dict) else event.get("message")
+            if isinstance(message, str):
+                messages.append(message.lower())
+    stderr = run / "stderr.txt"
+    if stderr.exists():
+        with stderr.open("rb") as stream:
+            stream.seek(max(0, stderr.stat().st_size - 8192))
+            messages.append(stream.read(8192).decode("utf-8", errors="replace").lower())
+    details = "\n".join(messages)
+    if any(
+        marker in details
+        for marker in (
+            "flagged for possible cybersecurity risk",
+            "safety policy",
+            "content_policy_violation",
+        )
+    ):
+        return (
+            "Codex stopped this investigation because its safety system flagged the content. "
+            "No answer was published. This is a policy block; signing in again will not resolve it."
+        )
+    if any(marker in details for marker in ("usage limit", "rate limit", "quota exceeded")):
+        return "Codex reported a usage or rate limit. Wait for the limit to reset before retrying."
+    if any(
+        marker in details
+        for marker in (
+            "401 unauthorized",
+            "authentication failed",
+            "token has expired",
+            "not logged in",
+        )
+    ):
+        return "Codex authentication failed. Run codex login on the app server, then retry."
+    return (
+        "Codex stopped before producing a complete answer. "
+        "Inspect this run's local trace.jsonl and stderr.txt for details. No answer was published."
+    )
+
+
 SCHEMA = {
     "type": "object",
     "additionalProperties": False,
@@ -201,7 +257,7 @@ def run_turn(state, project, session, turn):
             or not (run / "answer.json").exists()
             or (run / "answer.json").stat().st_size > 100_000
         ):
-            raise ValueError("Codex did not complete. Check local Codex authentication and retry.")
+            raise ValueError(codex_failure(run))
         output = json.loads((run / "answer.json").read_text(encoding="utf-8"))
         set_stage(state, turn, "validation", "Checking cited evidence")
         claims = verified_claims(GraphStore(state.config(project)), run / "evidence", output)
@@ -248,11 +304,16 @@ def run_turn(state, project, session, turn):
         )
     except Exception as exc:  # noqa: BLE001 - background jobs must persist failure states
         finish_stage(state, turn)
-        message = (
-            str(exc)
-            if isinstance(exc, ValueError)
-            else "Turn failed or evidence could not be verified. Retry; no draft answer was published."
-        )
+        if isinstance(exc, subprocess.TimeoutExpired):
+            message = "Codex exceeded the investigation time limit. No answer was published."
+        elif isinstance(exc, FileNotFoundError) and exc.filename == "codex":
+            message = "Codex CLI is unavailable on the app server PATH. Install or configure it before retrying."
+        else:
+            message = (
+                str(exc)
+                if isinstance(exc, ValueError)
+                else "Turn failed or evidence could not be verified. Retry; no draft answer was published."
+            )
         state.update(
             turn,
             status="failed",

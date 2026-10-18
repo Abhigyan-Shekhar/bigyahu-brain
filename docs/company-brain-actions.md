@@ -68,7 +68,8 @@ host-file denial and loopback-network denial probes. Linux is supported only whe
 its installed CLI/OS can enforce the profile; it has not been acceptance-tested
 here. Native Windows coding execution is unavailable; read-only chat still works.
 
-- One to twelve approved relative files; Python, Markdown, RST, text or TOML;
+- One to twelve approved relative files: Python, SQL, Markdown, RST, text, TOML,
+  JavaScript/JSX, TypeScript/TSX, HTML, CSS, JSON or YAML;
   100 KB per edited file, 200 KB total displayed patch. Hidden paths, symlinks,
   absolute paths and traversal are rejected. New test files must be approved.
 - One to three generated `python -m pytest` or `python -m unittest` path selections.
@@ -76,6 +77,10 @@ here. Native Windows coding execution is unavailable; read-only chat still works
   Missing test targets must have approved creation paths when planning, and must
   exist after editing before the backend starts either test run. This prevents a
   missing proposed module from surfacing as a misleading baseline loader error.
+  Frontend edits can accompany backend fixes, but frontend builds and browser
+  checks must be verified separately; the action executor runs only Python tests.
+  Editing capabilities are application configuration, not restrictions imposed
+  by the user's request. Both planner and reviewer receive the same capabilities.
 - Tests can read the checkout and installed Python runtime, write the disposable
   checkout/scratch area, and have no network access. Git metadata is read-only.
   The subprocess environment excludes inherited credentials/operator variables.

@@ -6,6 +6,7 @@ import sys
 
 from ..memory import canonical
 from ..semantic_model import structured_extract
+from .action_policy import execution_capabilities
 
 SCHEMA = {
     "type": "object",
@@ -65,6 +66,7 @@ def assess(question, claims, folder, model, *, plan=None, document=None, timeout
         }
     if plan is not None:
         payload["plan"] = plan
+        payload["execution_capabilities"] = execution_capabilities()
         schema = {
             **SCHEMA,
             "required": ["assessments", "action"],
@@ -121,6 +123,12 @@ def assess(question, claims, folder, model, *, plan=None, document=None, timeout
             + " and its standard-library unittest runner in its OS sandbox. "
             "Selecting these capabilities does not require a repository citation. Optional project dependencies "
             "remain an execution limitation unless established; do not infer that they are installed.\n"
+            "execution_capabilities is application configuration, not a user-imposed requirement. "
+            "Do not accept claims attributing these restrictions to the user without explicit support in the user objective. "
+            "Frontend JavaScript and TypeScript edits are supported. Require necessary companion caller/client changes "
+            "when a backend contract changes; deferring a supported companion edit does not preserve legitimate access. "
+            "Frontend build/browser tests cannot run in this executor and must remain pending; do not confuse that "
+            "verification limitation with a prohibition on editing frontend files.\n"
             if plan is not None
             else ""
         )

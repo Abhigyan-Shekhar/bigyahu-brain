@@ -331,7 +331,7 @@ def test_planning_failure_preserves_display_only_plan(planning, monkeypatch, fai
             raise subprocess.TimeoutExpired("planner", 240)
         output = original(*args, **kwargs)
         if failure == "invalid_path":
-            output["plan"]["files"] = ["frontend/widget.jsx"]
+            output["plan"]["files"] = ["frontend/widget.exe"]
         if failure == "missing_evidence":
             output["claims"] = []
         return output
