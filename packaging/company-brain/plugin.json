@@ -1,0 +1,17 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "company-brain",
+  "version": "0.1.0",
+  "description": "Verified repository context, code history and change impact for Codex.",
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "interface": {
+        "displayName": "Company Brain",
+        "shortDescription": "Verified repository evidence for Codex",
+        "developerName": "Abhigyan Shekhar",
+        "category": "Developer Tools"
+      }
+    }
+  }
+}

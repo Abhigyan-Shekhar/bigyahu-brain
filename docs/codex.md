@@ -1,5 +1,8 @@
 # Company Brain in native Codex
 
+For an installable desktop plugin ZIP and local marketplace, see
+[plugin packaging and setup](plugin.md). The standalone installer below remains supported.
+
 Codex can use the standalone graph server directly, without launching the web
 application or a nested agent. The skill supplies the investigation workflow;
 MCP supplies repository evidence. This follows the official

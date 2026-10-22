@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "company-brain": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "--frozen", "--no-dev", "--project", "${PLUGIN_ROOT}", "python", "-m", "brain.plugin_server"],
+      "cwd": "${PLUGIN_ROOT}"
+    }
+  }
+}
