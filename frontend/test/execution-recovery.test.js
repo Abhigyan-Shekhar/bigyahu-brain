@@ -9,7 +9,7 @@ test("resume is offered only for a recoverable editing timeout and never accepts
   const server = await createServer({
     root: fileURLToPath(new URL("../", import.meta.url)), configFile: false,
     optimizeDeps: { noDiscovery: true, include: [], entries: [] },
-    server: { middlewareMode: true, hmr: false }, appType: "custom",
+    server: { middlewareMode: true, ws: false, hmr: false }, appType: "custom",
   });
   try {
     const { default: Recovery } = await server.ssrLoadModule("/src/ExecutionRecovery.jsx");

@@ -57,3 +57,21 @@ test("watch authenticates in headers, falls back after interruption, and stops a
     globalThis.sessionStorage = oldStorage;
   }
 });
+
+test("oversized complete and fragmented events are rejected before publication", async () => {
+  const event = `event: snapshot\ndata: ${JSON.stringify({ text: "x".repeat(4_000_000) })}\n\n`;
+  for (const size of [event.length, 1_000_000]) {
+    await assert.rejects(
+      consumeSnapshots(responseFor(event, size), () => assert.fail("Oversized snapshot published")),
+      /exceeds size limit/,
+    );
+  }
+});
+
+test("size limit applies to each event rather than the combined network chunk", async () => {
+  const value = { text: "x".repeat(2_000_000) };
+  const event = `event: snapshot\ndata: ${JSON.stringify(value)}\n\n`;
+  const values = [];
+  await consumeSnapshots(responseFor(event.repeat(3), event.length * 3), (v) => values.push(v));
+  assert.deepEqual(values, [value, value, value]);
+});

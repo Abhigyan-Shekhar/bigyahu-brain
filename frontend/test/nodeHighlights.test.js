@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 test("node highlights render decision evidence and qualified live scope", async () => {
   const server = await createServer({ root: fileURLToPath(new URL("../", import.meta.url)), configFile: false,
     optimizeDeps: { noDiscovery: true, include: [], entries: [] },
-    server: { middlewareMode: true, hmr: false }, appType: "custom" });
+    server: { middlewareMode: true, ws: false, hmr: false }, appType: "custom" });
   try {
     const { default: Inspector } = await server.ssrLoadModule("/src/GraphInspector.jsx");
     const html = renderToStaticMarkup(React.createElement(Inspector, {

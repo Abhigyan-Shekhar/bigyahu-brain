@@ -22,6 +22,30 @@ def source_digest(frontend):
     return digest.hexdigest()
 
 
+def current_build(assets, expected):
+    """Treat malformed or incomplete manifests as rebuildable cache misses."""
+    try:
+        manifest = json.loads((assets / "build-info.json").read_text())
+        if not isinstance(manifest, dict) or manifest.get("source_digest") != expected:
+            return False
+        names = manifest.get("assets")
+        return (
+            isinstance(names, list)
+            and bool(names)
+            and (assets / "index.html").is_file()
+            and all(
+                isinstance(name, str)
+                and bool(name)
+                and not Path(name).is_absolute()
+                and ".." not in Path(name).parts
+                and (assets / name).is_file()
+                for name in names
+            )
+        )
+    except (OSError, ValueError, TypeError):
+        return False
+
+
 def ensure_client(*, root=None):
     root = Path(root) if root else Path(__file__).resolve().parents[3]
     frontend = root / "frontend"
@@ -32,15 +56,8 @@ def ensure_client(*, root=None):
             return
         raise RuntimeError("UI assets missing. Start from a source checkout and build frontend first.")
     expected = source_digest(frontend)
-    try:
-        manifest = json.loads((assets / "build-info.json").read_text())
-        if (manifest.get("source_digest") == expected
-                and (assets / "index.html").is_file()
-                and manifest.get("assets")
-                and all((assets / name).is_file() for name in manifest["assets"])):
-            return
-    except (OSError, ValueError, TypeError):
-        pass
+    if current_build(assets, expected):
+        return
     npm = shutil.which("npm.cmd" if os.name == "nt" else "npm")
     if not npm:
         raise RuntimeError(
@@ -59,8 +76,7 @@ def ensure_client(*, root=None):
             subprocess.run([npm, "ci", "--ignore-scripts"], cwd=frontend, check=True, timeout=300)
             stamp.write_text(lock)
         subprocess.run([npm, "run", "build"], cwd=frontend, check=True, timeout=180)
-        manifest = json.loads((assets / "build-info.json").read_text())
-        if manifest.get("source_digest") != expected:
-            raise ValueError("UI changed during build; restart to retry")
+        if not current_build(assets, expected) or source_digest(frontend) != expected:
+            raise ValueError("UI build is incomplete or sources changed; restart to retry")
     except (OSError, ValueError, subprocess.SubprocessError) as exc:
         raise RuntimeError("UI build failed; app startup stopped to avoid serving an old interface.") from exc

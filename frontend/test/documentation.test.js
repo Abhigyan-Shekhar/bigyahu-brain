@@ -9,7 +9,7 @@ test("documentation preview renders cited text and code without evaluating sourc
   const server = await createServer({
     root: fileURLToPath(new URL("../", import.meta.url)), configFile: false,
     optimizeDeps: { noDiscovery: true, include: [], entries: [] },
-    server: { middlewareMode: true, hmr: false }, appType: "custom",
+    server: { middlewareMode: true, ws: false, hmr: false }, appType: "custom",
   });
   try {
     const { default: Preview } = await server.ssrLoadModule("/src/MarkdownPreview.jsx");

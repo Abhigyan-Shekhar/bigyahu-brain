@@ -10,7 +10,7 @@ test("activity hero renders recorded operations without fabricating future stage
     root: fileURLToPath(new URL("../", import.meta.url)),
     configFile: false,
     optimizeDeps: { noDiscovery: true, include: [], entries: [] },
-    server: { middlewareMode: true },
+    server: { middlewareMode: true, ws: false },
     appType: "custom",
   });
   try {

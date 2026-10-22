@@ -278,7 +278,7 @@ def validate_plan(plan, root):
             raise ValueError(
                 "Invalid planned file path: use a literal repository-relative filename with a supported extension "
                 + ", ".join(sorted(PLAN_FILE_SUFFIXES))
-                + "; omit annotations such as '(new)'. No execution was approved."
+                + ", without annotations such as '(new)'. No execution was approved."
             )
         if file.exists() and (not file.is_file() or file.stat().st_size > 100000):
             raise ValueError("Approved files must be text files under 100 KB")

@@ -75,3 +75,48 @@ def test_missing_npm_or_failed_build_blocks_stale_ui(checkout, monkeypatch):
     monkeypatch.setattr(client_build.subprocess, 'run', fail)
     with pytest.raises(RuntimeError, match='startup stopped'):
         client_build.ensure_client(root=root)
+
+
+@pytest.mark.parametrize('manifest', [None, [], 'invalid', 42, {'assets': 'index.html'},
+                                      {'assets': [None]}, {'assets': ['../outside.js']}])
+def test_malformed_manifests_trigger_rebuild(checkout, monkeypatch, manifest):
+    root, frontend, assets = checkout
+    mark_built(frontend, assets)
+    if isinstance(manifest, dict):
+        manifest['source_digest'] = client_build.source_digest(frontend)
+    (assets / 'build-info.json').write_text(json.dumps(manifest))
+    monkeypatch.setattr(client_build.shutil, 'which', lambda _: 'npm')
+    calls = []
+
+    def run(argv, **kwargs):
+        calls.append(argv)
+        if 'ci' in argv:
+            (frontend / 'node_modules').mkdir(exist_ok=True)
+        else:
+            mark_built(frontend, assets)
+
+    monkeypatch.setattr(client_build.subprocess, 'run', run)
+    client_build.ensure_client(root=root)
+    assert calls[-1] == ['npm', 'run', 'build']
+
+
+@pytest.mark.parametrize('failure', ['missing_asset', 'invalid_manifest', 'changed_source'])
+def test_incomplete_or_racing_build_cannot_start(checkout, monkeypatch, failure):
+    root, frontend, assets = checkout
+    monkeypatch.setattr(client_build.shutil, 'which', lambda _: 'npm')
+
+    def run(argv, **kwargs):
+        if 'ci' in argv:
+            (frontend / 'node_modules').mkdir(exist_ok=True)
+            return
+        mark_built(frontend, assets)
+        if failure == 'missing_asset':
+            (assets / 'current.js').unlink()
+        elif failure == 'invalid_manifest':
+            (assets / 'build-info.json').write_text('null')
+        else:
+            (frontend / 'src/main.jsx').write_text('changed during build')
+
+    monkeypatch.setattr(client_build.subprocess, 'run', run)
+    with pytest.raises(RuntimeError, match='startup stopped'):
+        client_build.ensure_client(root=root)

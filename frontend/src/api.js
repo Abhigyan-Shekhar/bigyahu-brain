@@ -35,6 +35,8 @@ export async function consumeSnapshots(response, onSnapshot) {
       buffer = buffer.replaceAll("\r\n", "\n");
       let boundary;
       while ((boundary = buffer.indexOf("\n\n")) >= 0) {
+        if (boundary > 4_000_000)
+          throw Error("Stream event exceeds size limit");
         const event = buffer.slice(0, boundary);
         buffer = buffer.slice(boundary + 2);
         if (event.split("\n").some((line) => line === "event: snapshot")) {

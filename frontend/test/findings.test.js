@@ -9,7 +9,7 @@ test("finding alerts sort severity, retain citations, escape source text and hid
     root: fileURLToPath(new URL("../", import.meta.url)),
     configFile: false,
     optimizeDeps: { noDiscovery: true, include: [], entries: [] },
-    server: { middlewareMode: true, hmr: false },
+    server: { middlewareMode: true, ws: false, hmr: false },
     appType: "custom",
   });
   try {
