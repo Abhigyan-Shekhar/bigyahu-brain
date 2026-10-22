@@ -8,7 +8,21 @@ from .graph import GraphStore
 def main():
     parser = argparse.ArgumentParser(description="Company Brain operator utilities")
     sub = parser.add_subparsers(dest="command", required=True)
-    sub.add_parser("sync")
+    init = sub.add_parser("init", help="Create a standalone config for an existing local checkout")
+    init.add_argument("--repo", required=True)
+    init.add_argument("--config", required=True)
+    init.add_argument("--repo-id", required=True)
+    init.add_argument("--repo-url", default="", help="Public GitHub URL for source citations/enrichment")
+    init.add_argument("--principal", required=True)
+    init.add_argument("--host", default="127.0.0.1")
+    init.add_argument("--port", type=int, default=6379)
+    init.add_argument("--sync", action="store_true", help="Index using an already-running FalkorDB")
+    sync_parser = sub.add_parser("sync")
+    sync_parser.add_argument("--registry")
+    sync_parser.add_argument("--repo-root")
+    register = sub.add_parser("register", help="Allowlist a repository config for native MCP routing")
+    register.add_argument("--registry", required=True)
+    register.add_argument("--config", required=True)
     sub.add_parser("health")
     sub.add_parser("ingest-snapshots").add_argument("directory")
     sub.add_parser("ingest-graphify").add_argument("paths", nargs="*")
@@ -31,7 +45,36 @@ def main():
     review.add_argument("--action",choices=["reject","expire","rollback"],required=True)
     review.add_argument("--reason",required=True)
     args = parser.parse_args()
-    store = GraphStore(load_config())
+    if args.command == "register":
+        from .registry import register_repository
+
+        print(json.dumps(register_repository(args.registry, args.config), indent=2))
+        return
+    if args.command == "init":
+        from .setup import initialize
+
+        cfg, destination = initialize(
+            args.repo, args.config, args.repo_id, args.principal, args.host, args.port, args.repo_url
+        )
+        result = {"config": str(destination), "repo_id": cfg.repo_id, "indexed": False}
+        if args.sync:
+            from .ingest.sync import sync
+
+            result["sync"] = sync(GraphStore(cfg))
+            result["indexed"] = True
+        print(json.dumps(result, indent=2))
+        return
+    if args.command == "sync" and (args.registry or args.repo_root):
+        if not args.registry or not args.repo_root:
+            parser.error("Registry sync requires both --registry and --repo-root")
+        from pathlib import Path
+
+        from .registry import load_registry, select_repository
+
+        _, cfg = select_repository(load_registry(Path(args.registry).expanduser().resolve()), args.repo_root)
+    else:
+        cfg = load_config()
+    store = GraphStore(cfg)
     if args.command == "sync":
         from .ingest.sync import sync
 

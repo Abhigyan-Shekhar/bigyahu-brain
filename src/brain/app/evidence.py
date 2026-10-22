@@ -250,12 +250,13 @@ def resolve(store, evidence):
 
 
 def register(folder, evidence):
-    folder = Path(folder)
-    folder.mkdir(parents=True, exist_ok=True)
     uid = digest(
         canonical([evidence["kind"], evidence["ref"], evidence["digest"], evidence["revision"]])
     )[:24]
-    (folder / (uid + ".json")).write_text(canonical({"id": uid, **evidence}), encoding="utf-8")
+    if folder is not None:
+        folder = Path(folder)
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / (uid + ".json")).write_text(canonical({"id": uid, **evidence}), encoding="utf-8")
     return {"id": uid, **evidence}
 
 

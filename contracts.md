@@ -1,7 +1,27 @@
 # Company Brain contract — 0.1
 
-Default five MCP tools: get_context, trace_decision, find_owner, check_change, remember.
+Default MCP tools: repository_status, get_context, trace_decision, find_owner,
+check_change, remember, search_code, read_code, repository_files, search_history,
+resolve_evidence. The original five operations keep their signatures.
 No administrative tool or arbitrary Cypher endpoint exists.
+
+Standalone repository retrieval uses the same byte/provenance/history checks as
+the application, with a process-local cache of at most 128 citation descriptors.
+Reopening a citation rechecks its source and topology; IDs expire on restart or
+eviction. A direct source UID resolves only within the configured org repository.
+Tenant mode authorizes company access before every call, including reopening an
+issued ID. No client selects a tenant, filesystem evidence directory, or arbitrary
+Git object. See [native Codex setup and bounds](docs/codex.md).
+
+Optional `BRAIN_REGISTRY` selects a validated operator-owned allowlist rather than
+one `BRAIN_CONFIG`. In this mode `list_repositories` exposes registered roots/IDs;
+every other tool requires the absolute `repo_root` on every call. Context and
+citation caches are separate per root, with no mutable shared selection. All
+configs must share the same trusted principal, tenant and memory settings.
+Unregistered roots fail before retrieval. Registry/config changes require a server
+restart; live index refresh is checked on subsequent calls. Operator CLI registry
+sync preserves the existing clean committed-checkout requirement. Single-config
+mode retains its signatures and tool inventory.
 
 Opt-in extension: `memory_db` plus `tenant_id` enables memory_search(query, brains?,
 include_graph?, include_proposals?, limit?, backend?) and memory_propose(text, sources,
@@ -33,9 +53,11 @@ docs/falkor-memory-retrieval.md for ranking, index refresh and bounds.
 
 Operation `status` is ok/error/unavailable/unknown/incomplete. Decision lifecycle
 uses the separate `decision_status` field: proposed, active, superseded.
-All responses include graph_revision, evidence, warnings, verification, and
+The original graph-operation responses include graph_revision, evidence, warnings, verification, and
 untrusted_source_excerpts. Source and decision prose are quoted in the latter;
 only structured evidence metadata appears in must_preserve/review.
+Shared repository reads carry source text in checked_evidence; history retains
+its existing items/coverage/ranking envelope and advisory association metadata.
 
 Graphs are fixed to org_demo and private_<configured principal>. Scope arguments
 accept only org/private. Configuration, not MCP arguments, selects the repository.

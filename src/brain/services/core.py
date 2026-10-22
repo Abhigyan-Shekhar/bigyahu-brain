@@ -1,4 +1,4 @@
-"""Five bounded operations; no administrative mutation is reachable here."""
+"""Bounded graph operations; no administrative mutation is reachable here."""
 
 import re
 import subprocess
@@ -45,6 +45,34 @@ class Services:
         if not state["sha"] or state["syncing"]:
             raise GraphUnavailable("No completed sync")
         return state["sha"]
+
+    @operation
+    def repository_status(self) -> dict:
+        """Identify the configured checkout and compare it with the indexed revision."""
+        local_revision = revision(self.cfg.repo_root)
+        dirty = not clean(self.cfg.repo_root)
+        identity = {
+            "repo_root": str(self.cfg.repo_root),
+            "repo_id": self.cfg.repo_id,
+            "repo_url": self.cfg.repo_url,
+            "local_revision": local_revision,
+            "working_tree_dirty": dirty,
+        }
+        try:
+            state = self.store.revision()
+        except GraphUnavailable:
+            return envelope(status="unavailable", warnings=["graph_unavailable"], **identity)
+        warnings = []
+        if state["syncing"]:
+            warnings.append("sync_in_progress")
+        if not state["sha"]:
+            warnings.append("repository_not_indexed")
+        elif state["sha"] != local_revision or dirty:
+            warnings.append("stale_index")
+        return envelope(
+            status="incomplete" if warnings else "ok",
+            graph_revision=state["sha"], warnings=warnings, **identity,
+        )
 
     @operation
     def remember(

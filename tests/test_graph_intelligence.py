@@ -61,7 +61,7 @@ async def test_check_change_history_without_decision_over_real_stdio(real, tmp_p
                 cwd=directory,
             )
         ) as client:
-            assert len(await client.list_tools()) == 5
+            assert len(await client.list_tools()) == 11
             result = (
                 await client.call_tool("check_change", {"files": ["x.py"], "symbols": ["a"]})
             ).data

@@ -169,7 +169,7 @@ def test_real_injected_evidence_stays_quoted_and_proposed(real):
 
 
 @pytest.mark.asyncio
-async def test_real_stdio_all_five_tools_share_sync_database(real):
+async def test_real_stdio_all_eleven_tools_share_sync_database(real):
 
     import yaml
     from fastmcp import Client
@@ -191,6 +191,8 @@ async def test_real_stdio_all_five_tools_share_sync_database(real):
         )
         async with Client(transport) as client:
             assert {t.name for t in await client.list_tools()} == {
+                "repository_status",
+                "search_code", "read_code", "repository_files", "search_history", "resolve_evidence",
                 "get_context",
                 "trace_decision",
                 "find_owner",
@@ -391,7 +393,7 @@ async def test_real_stdio_context_delivers_history_without_decisions(real, tmp_p
             cwd=directory,
         )
         async with Client(transport) as client:
-            assert len(await client.list_tools()) == 5
+            assert len(await client.list_tools()) == 11
             related = (await client.call_tool("get_context", {"query": "#5181"})).data
             assert any(
                 p["relationships"] == ["REFERENCES"] and p["directions"] == ["incoming"]

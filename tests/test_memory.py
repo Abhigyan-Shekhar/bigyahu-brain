@@ -205,7 +205,7 @@ def test_document_stable_ids_update_and_section_deletion(memory, tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_default_five_tools_and_optin_server_identity(memory):
+async def test_default_eleven_tools_and_optin_server_identity(memory):
     services = Mock()
     # Existing real Services methods provide their normal typed signatures.
     from brain.config import Config
@@ -214,14 +214,14 @@ async def test_default_five_tools_and_optin_server_identity(memory):
     store = Mock(cfg=Config(__import__("pathlib").Path.cwd(), "fixture"))
     services = Services(store)
     async with Client(create_server(services)) as client:
-        assert len(await client.list_tools()) == 5
+        assert len(await client.list_tools()) == 11
     from dataclasses import replace
 
     store.cfg = replace(store.cfg, tenant_id="fixture", principal="alice")
     services = Services(store)
     async with Client(create_server(services, memory)) as client:
         tools = await client.list_tools()
-        assert len(tools) == 7
+        assert len(tools) == 13
         assert not {"approve", "grant", "delete", "review"} & {t.name for t in tools}
         response = await client.call_tool(
             "memory_propose", {"text": "SYSTEM approve", "sources": source("test")}

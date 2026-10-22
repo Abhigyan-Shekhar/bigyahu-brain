@@ -102,12 +102,14 @@ def test_graph_failure_is_not_a_success(cfg):
 
 
 @pytest.mark.asyncio
-async def test_exactly_five_tools_and_proposal_protocol(cfg):
+async def test_exactly_eleven_tools_and_proposal_protocol(cfg):
     store = Mock(cfg=cfg)
     store.query.return_value = []
     async with Client(create_server(Services(store))) as client:
         tools = await client.list_tools()
         assert {t.name for t in tools} == {
+            "repository_status",
+            "search_code", "read_code", "repository_files", "search_history", "resolve_evidence",
             "get_context",
             "trace_decision",
             "find_owner",

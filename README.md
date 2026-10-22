@@ -42,6 +42,10 @@ Personal Brain and Team Brain extend the company workflow with selected, reviewe
 
 ## Run locally
 
+To use graph evidence directly in an existing Codex chat, see
+[Native Codex skill and MCP setup](docs/codex.md). It supports an already indexed
+checkout or CLI initialization without the web application.
+
 The supported product is a **single trusted operator's local application**, bound to loopback. You need Git, [uv](https://docs.astral.sh/uv/getting-started/installation/), Python 3.12, Node.js **20.19+ or 22.12+**, npm, an installed/authenticated Codex CLI with access to the selected model, and an authenticated GitHub CLI (`gh auth login`). Model calls consume your configured account's usage. No embedding model is required for native graph retrieval.
 
 Use macOS or Linux for the Lite path. On macOS, install its runtime prerequisite with `brew install libomp`. Native Windows Lite is unavailable; use Docker Desktop Linux containers or WSL. Approved editing/tests additionally require a supported Codex OS sandbox; Windows patch-portability checks do not establish native Windows execution support.

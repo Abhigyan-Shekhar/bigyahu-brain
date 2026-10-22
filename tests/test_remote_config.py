@@ -125,7 +125,7 @@ async def test_all_five_mcp_tools_fail_closed_without_remote_db(tmp_path, monkey
     driver = Mock(side_effect=ConnectionError("synthetic-secret"))
     monkeypatch.setattr("brain.graph.FalkorDB", driver)
     async with Client(create_server(Services(GraphStore(remote(tmp_path))))) as client:
-        assert len(await client.list_tools()) == 5
+        assert len(await client.list_tools()) == 11
         driver.assert_not_called()
         calls = {
             "get_context": {"query": "auth"},

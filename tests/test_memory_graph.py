@@ -237,7 +237,7 @@ async def test_live_optin_mcp_graph_tool(live):
     accepted(memory, "Use `upload`", uid="mcp")
     projection.sync("private:alice")
     async with Client(create_server(Services(store), memory)) as client:
-        assert len(await client.list_tools()) == 8
+        assert len(await client.list_tools()) == 14
         data = (await client.call_tool("memory_graph", {})).data
         assert data["status"] == "ok" and data["edges"]
         denied = (await client.call_tool("memory_graph", {"brains": ["private:bob"]})).data
