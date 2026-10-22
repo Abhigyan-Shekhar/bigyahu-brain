@@ -7,7 +7,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - run: python -m pip install uv==0.12.23
       - run: python scripts/build_plugin.py
+      - name: Start isolated artifact database
+        run: |
+          docker run -d --name brain-plugin-smoke -p 127.0.0.1:6379:6379 falkordb/falkordb:v4.14.7
+          for attempt in {1..30}; do
+            if docker exec brain-plugin-smoke redis-cli ping | grep -q PONG; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Install and exercise the exact packaged ZIP
+        run: python scripts/verify_plugin_package.py dist/company-brain-plugin/company-brain-0.1.0.zip
+      - name: Stop artifact database
+        if: always()
+        run: docker rm -f brain-plugin-smoke
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: company-brain-desktop-plugin

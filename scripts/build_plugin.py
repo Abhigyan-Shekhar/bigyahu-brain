@@ -22,26 +22,31 @@ def build_plugin(output, root=ROOT):
 
     def copy(source, destination):
         source = root / source
-        if source.is_symlink() or not source.resolve().is_relative_to(root):
+        if any(p.is_symlink() for p in (source, *source.parents) if p != root) or not source.resolve().is_relative_to(root):
             raise ValueError("Package inputs must be ordinary files inside the source root")
         destination = plugin / destination
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(source.read_bytes().replace(b"\r\n", b"\n"))
 
-    for name in ("plugin.json", "mcp.json"):
-        copy("packaging/company-brain/" + name, name)
-    for name in ("pyproject.toml", "uv.lock", "README.md", "docs/plugin.md", "docs/codex.md",
-                 "config/brain.example.yaml", "scripts/run_lite.py", "scripts/verify_codex_discovery.py"):
-        copy(name, name)
-    for directory in ("src/brain", "skills/company-brain", "skills/company-brain-setup"):
-        for source in sorted((root / directory).rglob("*")):
-            if source.is_file() and source.suffix in {".py", ".md", ".yaml"}:
-                copy(source.relative_to(root), source.relative_to(root))
+    # Every shipped input requires an explicit, reviewed manifest entry. Never
+    # discover inputs by walking a developer's checkout.
+    files = json.loads((root / "packaging/company-brain/files.json").read_text())
+    for source, destination in files.items():
+        for name in (source, destination):
+            path = Path(name)
+            if path.is_absolute() or ".." in path.parts or "\\" in name:
+                raise ValueError("Package manifest paths must stay inside their root")
+            if any(part.startswith(".") or part in {"data", "__pycache__"} for part in path.parts):
+                raise ValueError("Local or hidden state cannot be packaged")
+            if path.name.endswith((".local.yaml", ".local.yml", ".pyc", ".pem", ".key")):
+                raise ValueError("Sensitive or generated files cannot be packaged")
+        copy(source, destination)
 
     # The installed CLI also supports the legacy overlay. Generate it from the
     # portable manifests so identities and launch commands cannot drift.
     legacy = {k: manifest[k] for k in ("name", "version", "description")}
     legacy.update({"skills": "./skills/", "mcpServers": "./mcp.json", "requires_local_executor": True})
+    legacy["extensions"] = {"com.openai": {"onboardingSkill": manifest["extensions"]["com.openai"]["onboardingSkill"]}}
     legacy["interface"] = manifest["extensions"]["com.openai"]["interface"]
     (plugin / ".codex-plugin").mkdir()
     (plugin / ".codex-plugin/plugin.json").write_text(json.dumps(legacy, indent=2) + "\n", encoding="utf-8", newline="\n")

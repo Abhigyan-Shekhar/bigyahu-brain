@@ -11,7 +11,8 @@
         "shortDescription": "Verified repository evidence for Codex",
         "developerName": "Abhigyan Shekhar",
         "category": "Developer Tools"
-      }
+      },
+      "onboardingSkill": "./skills/company-brain-setup/SKILL.md"
     }
   }
 }

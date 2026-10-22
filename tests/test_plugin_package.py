@@ -1,6 +1,8 @@
 import hashlib
 import importlib.util
 import json
+import shutil
+import subprocess
 import zipfile
 from pathlib import Path
 from unittest.mock import Mock
@@ -32,6 +34,10 @@ def test_archive_is_reproducible_and_excludes_local_state(tmp_path):
             assert not name.endswith((".local.yaml", ".pyc"))
         portable = json.loads(bundle.read("company-brain/mcp.json"))
         legacy = json.loads(bundle.read("company-brain/.codex-plugin/plugin.json"))
+        metadata = json.loads(bundle.read("company-brain/plugin.json"))
+        onboarding = metadata["extensions"]["com.openai"]["onboardingSkill"]
+        assert legacy["extensions"]["com.openai"]["onboardingSkill"] == onboarding
+        assert "company-brain/" + onboarding.removeprefix("./") in names
         assert legacy["mcpServers"] == "./mcp.json"
         assert portable["mcpServers"]["company-brain"]["command"] == "uv"
         assert "${PLUGIN_ROOT}" in portable["mcpServers"]["company-brain"]["args"]
@@ -84,3 +90,33 @@ def test_invalid_config_stays_in_setup_without_exposing_contents(tmp_path, monke
     plugin_server.main()
     assert create_setup.call_args.args == ("BRAIN_CONFIG", config, "configuration_invalid")
     assert "PRIVATE_CONFIGURATION_TEXT" not in str(create_setup.call_args)
+
+
+def test_manifest_excludes_untracked_files_inside_source_directories(tmp_path):
+    source = tmp_path / "source"
+    files = json.loads((ROOT / "packaging/company-brain/files.json").read_text())
+    for name in (*files, "packaging/company-brain/files.json"):
+        target = source / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / name, target)
+    subprocess.run(["git", "init", "--quiet", str(source)], check=True)
+    subprocess.run(["git", "-C", str(source), "add", "."], check=True)
+    # Untracked files alongside the declared inputs must never ship.
+    for name in ("src/brain/private-settings.yaml", "src/brain/private.py",
+                 "skills/company-brain/private-notes.md"):
+        (source / name).write_text("PRIVATE_LOCAL_SENTINEL")
+    artifact = builder.build_plugin(tmp_path / "output", root=source)
+    with zipfile.ZipFile(artifact["archive"]) as bundle:
+        assert all(b"PRIVATE_LOCAL_SENTINEL" not in bundle.read(n) for n in bundle.namelist())
+        assert "company-brain/src/brain/private-settings.yaml" not in bundle.namelist()
+
+
+@pytest.mark.parametrize("name", ["../escape.py", "src/brain/settings.local.yaml", "src/brain/.env"])
+def test_manifest_rejects_sensitive_or_escaping_paths(tmp_path, name):
+    source = tmp_path / "source"
+    (source / "packaging/company-brain").mkdir(parents=True)
+    shutil.copyfile(ROOT / "packaging/company-brain/plugin.json", source / "packaging/company-brain/plugin.json")
+    shutil.copyfile(ROOT / "pyproject.toml", source / "pyproject.toml")
+    (source / "packaging/company-brain/files.json").write_text(json.dumps({name: name}))
+    with pytest.raises(ValueError):
+        builder.build_plugin(tmp_path / "output", root=source)

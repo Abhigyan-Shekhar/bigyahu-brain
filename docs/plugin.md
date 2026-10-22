@@ -21,10 +21,14 @@ codex plugin add company-brain@company-brain-local
 The builder refuses an existing output directory. Use `--output` with a fresh
 directory for subsequent builds. It produces a self-contained server-source ZIP,
 a SHA-256 checksum and a local marketplace directory. The allowlist includes
-server Python source, both skills, manifests, the dependency lock, selected
+only paths explicitly listed in `packaging/company-brain/files.json`: server
+Python source, both skills, manifests, the dependency lock, selected
 documentation and the Lite/discovery helper scripts. It excludes `.git`, local
 configs, registry contents, secrets, runtime databases, model traces, tests,
-frontend build output and virtual environments.
+frontend build output and virtual environments. New source files require a
+reviewed entry in that manifest; unlisted files are excluded even inside source
+and skill directories. Hidden files, local YAML configs, keys and escaping paths
+are rejected even if added to the manifest.
 
 The ZIP contains one top-level `company-brain/` folder. Share it with your team,
 or share the generated marketplace folder to install from a local source. The
@@ -59,7 +63,10 @@ for other layouts. Custom profiles therefore keep their own default registry.
 
 ## Configure a fresh installation
 
-In a new chat, invoke the plugin's `$company-brain:company-brain-setup` skill.
+The plugin declares `extensions.com.openai.onboardingSkill` in both manifests.
+Run the client's setup action after installation to open the packaged guided
+workflow in a new or existing chat. You can also invoke the plugin's
+`$company-brain:company-brain-setup` skill directly.
 With no config, the MCP server
 exposes a read-only `setup_status` diagnostic rather than claiming graph readiness.
 Configuration priority is:
@@ -117,7 +124,18 @@ registry. After registering a clean fixture and restarting the server, actual
 Codex protocol calls verified repository/index revisions and returned code
 excerpts checked against source bytes and native FalkorDB paths.
 
-Package tests check deterministic ZIP bytes, omitted local state, checksum and
+CI verifies the ZIP checksum, extracts it into a fresh profile, installs its locked
+base dependencies, and launches its declared MCP command. It checks `setup_status`
+before configuration, then indexes a clean fixture against an isolated FalkorDB
+and verifies a configured MCP `read_code` result against the source. This test
+uses the packaged stdio server without requiring a model or Codex account. Run it
+locally against a disposable running database with:
+
+```sh
+python scripts/verify_plugin_package.py dist/company-brain-plugin/company-brain-0.1.0.zip --port 6379
+```
+
+Package tests check deterministic ZIP bytes, unlisted source exclusion, checksum and
 marketplace resolution, setup behavior, explicit configuration and isolated
 profile detection. No public plugin submission or account-wide replacement of
 the existing manual installation was performed by these checks.
