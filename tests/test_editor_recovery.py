@@ -352,12 +352,13 @@ async def test_resumed_editor_diff_keeps_original_baseline(tmp_path):
     from brain.app.action_mcp import create_server
     from brain.app.live_changes import read_changes
 
-    (tmp_path / "x.py").write_text("value = 2\n")
+    # The expected digest below describes LF bytes on every host.
+    (tmp_path / "x.py").write_bytes(b"value = 2\n")
     log = tmp_path / "events.jsonl"
     # A new MCP server resumes already-edited bytes, with the pre-edit baseline.
     server = create_server(tmp_path, ["x.py"], log, {"x.py": "value = 1\n"})
     async with Client(server) as client:
-        await client.call_tool(
+        result = await client.call_tool(
             "write_file",
             {
                 "path": "x.py",
@@ -366,5 +367,7 @@ async def test_resumed_editor_diff_keeps_original_baseline(tmp_path):
                 "explanation": "Complete approved edit",
             },
         )
+        assert result.data == {"path": "x.py", "digest": digest("value = 3\n"), "bytes": 10}
+    assert (tmp_path / "x.py").read_bytes() == b"value = 3\n"
     diff = read_changes(log, ["x.py"])["files"][0]["diff"]
     assert "-value = 1" in diff and "+value = 3" in diff and "-value = 2" not in diff

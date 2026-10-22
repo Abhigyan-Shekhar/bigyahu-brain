@@ -119,6 +119,8 @@ def test_review_is_exact_idempotent_and_stale_revision_is_blocked(authored):
         "[x](javascript:bad)",
         "x" * 61441,
     ],
+    # Pytest puts node IDs in PYTEST_CURRENT_TEST, which is size-limited on Windows.
+    ids=["html", "embedded-image", "unsafe-link", "oversized-utf8"],
 )
 def test_markdown_content_limits(text):
     with pytest.raises(ValueError):

@@ -157,13 +157,14 @@ async def test_actual_editor_writes_emit_cumulative_diff_and_explanation_only_af
 ):
     work = tmp_path / "work"
     work.mkdir()
-    (work / "x.py").write_text("value = 1\n")
+    # The expected digest below describes LF bytes on every host.
+    (work / "x.py").write_bytes(b"value = 1\n")
     log = tmp_path / "editor" / "changes.jsonl"
     server = create_server(work, ["x.py", "test_x.py"], events=log)
     async with Client(server) as client:
         await client.call_tool("read_file", {"path": "x.py"})
         assert not log.exists()
-        await client.call_tool(
+        rejected = await client.call_tool(
             "write_file",
             {
                 "path": "x.py",
@@ -172,8 +173,10 @@ async def test_actual_editor_writes_emit_cumulative_diff_and_explanation_only_af
                 "explanation": "Rejected stale write",
             },
         )
+        assert rejected.data["status"] == "error" and "File changed" in rejected.data["error"]
+        assert (work / "x.py").read_bytes() == b"value = 1\n"
         assert not log.exists()
-        await client.call_tool(
+        first = await client.call_tool(
             "write_file",
             {
                 "path": "x.py",
@@ -182,9 +185,10 @@ async def test_actual_editor_writes_emit_cumulative_diff_and_explanation_only_af
                 "explanation": "Apply approved normalization",
             },
         )
+        assert first.data == {"path": "x.py", "digest": digest("value = 2\n"), "bytes": 10}
         preview = read_changes(log, ["x.py", "test_x.py"])
         assert len(preview["files"]) == 1 and "+value = 2" in preview["files"][0]["diff"]
-        await client.call_tool(
+        second = await client.call_tool(
             "write_file",
             {
                 "path": "x.py",
@@ -193,6 +197,7 @@ async def test_actual_editor_writes_emit_cumulative_diff_and_explanation_only_af
                 "explanation": "Handle the approved edge case",
             },
         )
+        assert second.data == {"path": "x.py", "digest": digest("value = 3\n"), "bytes": 10}
         latest = read_changes(log, ["x.py"])["files"][0]
         assert "-value = 1" in latest["diff"] and "+value = 3" in latest["diff"]
         assert "+value = 2" not in latest["diff"] and latest["additions"] == 1
@@ -200,6 +205,52 @@ async def test_actual_editor_writes_emit_cumulative_diff_and_explanation_only_af
     action = {"phase": "planning", "plan": {"files": ["x.py"]}}
     assert actions.live_changes(None, action)["files"] == []
     assert read_changes(log, ["other.py"])["files"] == []
+
+
+@pytest.mark.asyncio
+async def test_crlf_editor_write_requires_exact_byte_digest_before_recording_diff(tmp_path):
+    original = b"value = 1\r\n"
+    updated = b"value = 2\r\n"
+    file = tmp_path / "x.py"
+    file.write_bytes(original)
+    log = tmp_path / "changes.jsonl"
+    server = create_server(tmp_path, ["x.py"], events=log)
+    async with Client(server) as client:
+        current = (await client.call_tool("read_file", {"path": "x.py"})).data
+        assert current["text"].encode("utf-8") == original
+        assert current["digest"] == digest(original.decode("utf-8"))
+        # Universal-newline reads would produce this incorrect digest for CRLF bytes.
+        normalized_digest = digest("value = 1\n")
+        assert current["digest"] != normalized_digest
+        request = {
+            "path": "x.py",
+            "text": updated.decode("utf-8"),
+            "expected_digest": normalized_digest,
+            "explanation": "Update approved value while retaining CRLF",
+        }
+        rejected = await client.call_tool("write_file", request)
+        assert rejected.data["status"] == "error" and "File changed" in rejected.data["error"]
+        assert file.read_bytes() == original
+        assert not log.exists()
+
+        result = await client.call_tool(
+            "write_file", {**request, "expected_digest": current["digest"]}
+        )
+        assert result.data == {
+            "path": "x.py",
+            "digest": digest(updated.decode("utf-8")),
+            "bytes": len(updated),
+        }
+        assert file.read_bytes() == updated
+        reread = (await client.call_tool("read_file", {"path": "x.py"})).data
+        assert reread["text"].encode("utf-8") == updated
+        assert reread["digest"] == result.data["digest"]
+
+    changes = read_changes(log, ["x.py"])["files"]
+    assert len(changes) == 1
+    assert "-value = 1\r\n+value = 2\r\n" in changes[0]["diff"]
+    assert changes[0]["explanation"] == request["explanation"]
+    assert changes[0]["additions"] == changes[0]["deletions"] == 1
 
 
 def test_diff_preview_handles_missing_newline_and_incomplete_log_records(tmp_path):

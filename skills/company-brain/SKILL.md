@@ -37,6 +37,8 @@ edits require restarting the MCP server; ordinary index refresh does not.
 
 - Use `get_context` for focused keywords, exact node IDs, issue/PR URLs, or #numbers.
   Refine a broad query when results are incomplete; missing edges are unknowns.
+  Its optional `scope` accepts only `org` or `private`; repository selection uses
+  the configured checkout or `repo_root`, rather than a scope named `repo`.
 - Use `trace_decision` to examine a decision's sources, review state, and history.
   Source discussions and proposals do not establish approved constraints.
 - Use `find_owner` for an affected file or symbol. Distinguish explicit CODEOWNERS

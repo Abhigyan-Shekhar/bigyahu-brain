@@ -1,0 +1,62 @@
+{
+  "baseline_revision": "397ed0a493d37cd1ef365b26d53333aee1ffdef7",
+  "repository": "Abhigyan-Shekhar/bigyahu-brain",
+  "model": "gpt-6.1-sol",
+  "task": "Fix actual Windows CI editor-fixture and pytest-ID failures; no bug seeded",
+  "host": "macOS",
+  "falkordb_graph_module_version": 41803,
+  "index": {
+    "revision": "397ed0a493d37cd1ef365b26d53333aee1ffdef7",
+    "files": 408,
+    "calls": 2337,
+    "statically_resolved_imports": 1507,
+    "symbols": 1277,
+    "unresolved_calls": 11452
+  },
+  "mcp_completed_calls": 19,
+  "mcp_tool_counts": {
+    "check_change": 1,
+    "find_owner": 1,
+    "get_context": 2,
+    "read_code": 6,
+    "repository_status": 1,
+    "resolve_evidence": 6,
+    "search_code": 1,
+    "search_history": 1
+  },
+  "mcp_status_counts": {
+    "ok": 17,
+    "error": 1,
+    "unknown": 1
+  },
+  "calls_returning_checked_evidence": 13,
+  "all_graph_retrieval_before_first_edit": true,
+  "model_turn_completed": true,
+  "patch_files": [
+    "tests/test_documentation.py",
+    "tests/test_editor_recovery.py",
+    "tests/test_run_efficiency.py"
+  ],
+  "requested_test_files": {
+    "passed": 41,
+    "skipped": 1
+  },
+  "targeted_digest_scope_approval_checks_passed": 21,
+  "portable_windows_simulation": {
+    "baseline_failed": 2,
+    "baseline_errors": 2,
+    "baseline_passed": 3,
+    "model_after_passed": 7
+  },
+  "limitations": [
+    "macOS trial with portable Windows newline/environment-limit reproduction; real Windows CI verified separately",
+    "One get_context scope=repo call returned an error; the model corrected the scope and continued",
+    "No automatic approval of memory or production code changes demonstrated"
+  ],
+  "independent_full_suite": {
+    "passed": 657,
+    "skipped": 1,
+    "database": "isolated FalkorDBLite"
+  },
+  "independent_windows_simulation_after_passed": 7
+}

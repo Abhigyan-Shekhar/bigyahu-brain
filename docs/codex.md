@@ -1,5 +1,8 @@
 # Company Brain in native Codex
 
+For an installable desktop plugin ZIP and local marketplace, see
+[plugin packaging and setup](plugin.md). The standalone installer below remains supported.
+
 Codex can use the standalone graph server directly, without launching the web
 application or a nested agent. The skill supplies the investigation workflow;
 MCP supplies repository evidence. This follows the official
@@ -175,5 +178,7 @@ existing authorized app workflows; the standalone memory extension is unchanged.
   a two-repository STDIO regression: root isolation, cross-root citation rejection,
   dirty sync refusal and live refresh without server restart. Interleaved in-process
   calls retain their explicit roots; registry conflicts/mixed identities fail closed.
-- Ruff and skill frontmatter validation passed. No model-driven investigation was
-  run; the smoke check verifies the tool transport and database path.
+- Ruff and skill frontmatter validation passed. A subsequent
+  [model-driven Windows CI investigation](native-codex-validation.md) exercised
+  graph retrieval, citation reopening, native edits and tests on this repository.
+  It includes a sanitized receipt and distinguishes macOS reproduction from Windows CI.
