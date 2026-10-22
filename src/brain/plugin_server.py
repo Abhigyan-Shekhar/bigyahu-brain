@@ -16,7 +16,12 @@ def plugin_configuration(environ=None, plugin_root=None):
         return "BRAIN_REGISTRY", Path(env["BRAIN_REGISTRY"])
     if env.get("BRAIN_CONFIG"):
         return "BRAIN_CONFIG", Path(env["BRAIN_CONFIG"])
-    root = Path(plugin_root or Path(__file__).resolve().parents[2])
+    module = Path(__file__).resolve()
+    # Wheel installs live below the plugin's uv-managed .venv. Editable imports
+    # cannot be used here: macOS clients can hide cached .pth files, which Python
+    # then skips on a subsequent launch.
+    installed_root = next((p.parent for p in module.parents if p.name == ".venv"), module.parents[2])
+    root = Path(plugin_root or installed_root)
     parents = root.parents
     cached_home = (
         parents[4]

@@ -4,7 +4,17 @@
     "company-brain": {
       "type": "stdio",
       "command": "uv",
-      "args": ["run", "--frozen", "--no-dev", "--project", "${PLUGIN_ROOT}", "python", "-m", "brain.plugin_server"],
+      "args": [
+        "run",
+        "--no-editable",
+        "--frozen",
+        "--no-dev",
+        "--project",
+        "${PLUGIN_ROOT}",
+        "python",
+        "-m",
+        "brain.plugin_server"
+      ],
       "cwd": "${PLUGIN_ROOT}"
     }
   }

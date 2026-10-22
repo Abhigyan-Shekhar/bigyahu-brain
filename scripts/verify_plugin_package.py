@@ -42,6 +42,15 @@ async def exercise(plugin, work, port):
     if registry.exists():
         raise RuntimeError("Setup diagnostic unexpectedly wrote configuration")
 
+    # Reproduce clients hiding cached .pth files: Python will no longer process
+    # them on restart. The installed server must work without editable imports.
+    for path in (plugin / ".venv").rglob("*.pth"):
+        path.rename(path.with_suffix(".pth.disabled"))
+    async with Client(transport()) as client:
+        setup = (await client.call_tool("setup_status", {})).data
+        if setup["status"] != "setup_required" or Path(setup["configuration_path"]) != registry:
+            raise RuntimeError("Restart without .pth files lost the isolated profile")
+
     repo = work / "fixture"
     repo.mkdir()
     source = "def packaged_target():\n    return 'artifact_smoke_sentinel'\n"
@@ -64,7 +73,7 @@ async def exercise(plugin, work, port):
             raise RuntimeError("Configured artifact failed MCP retrieval")
         if source not in value["checked_evidence"][0]["text"]:
             raise RuntimeError("Retrieved evidence differs from the fixture source")
-    print(json.dumps({"setup_status_verified": True, "packaged_mcp_retrieval_verified": True}))
+    print(json.dumps({"setup_status_verified": True, "restart_without_pth_verified": True, "packaged_mcp_retrieval_verified": True}))
 
 
 def main():
@@ -99,8 +108,8 @@ def main():
         env = {k: v for k, v in os.environ.items()
                if not k.startswith(("BRAIN_", "UV_")) and k not in {"PYTHONPATH", "VIRTUAL_ENV", "CODEX_HOME"}}
         env["PYTHONNOUSERSITE"] = "1"
-        run(["uv", "sync", "--frozen", "--no-dev", "--project", str(installed)], cwd=work, env=env)
-        run(["uv", "run", "--frozen", "--no-dev", "--project", str(installed), "python",
+        run(["uv", "sync", "--frozen", "--no-dev", "--no-editable", "--project", str(installed)], cwd=work, env=env)
+        run(["uv", "run", "--frozen", "--no-dev", "--no-editable", "--project", str(installed), "python",
              str(Path(__file__).resolve()), str(work), "--installed", str(installed),
              "--port", str(args.port)], cwd=work, env=env)
 

@@ -120,3 +120,12 @@ def test_manifest_rejects_sensitive_or_escaping_paths(tmp_path, name):
     (source / "packaging/company-brain/files.json").write_text(json.dumps({name: name}))
     with pytest.raises(ValueError):
         builder.build_plugin(tmp_path / "output", root=source)
+
+
+@pytest.mark.parametrize("site_path", [".venv/lib/python3.12/site-packages", ".venv/Lib/site-packages"])
+def test_wheel_install_retains_owning_profile(tmp_path, monkeypatch, site_path):
+    plugin = tmp_path / "profile/plugins/cache/catalog/company-brain/0.1.0"
+    monkeypatch.setattr(plugin_server, "__file__", str(plugin / site_path / "brain/plugin_server.py"))
+    assert plugin_server.plugin_configuration({}) == (
+        "BRAIN_REGISTRY", tmp_path / "profile/company-brain/registry.json",
+    )
