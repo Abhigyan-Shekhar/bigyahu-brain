@@ -43,15 +43,21 @@ After extracting that artifact, add its `marketplace` directory with the same
 commands above. It includes the plugin ZIP and checksum; it is not a public
 directory listing or a GitHub Release.
 
-The plugin launches `uv run --frozen --no-dev` against its own installed source.
+The plugin launches `uv run --frozen --no-dev --no-editable` against its own installed source.
 It requires uv on PATH. Python and third-party wheels are not bundled: first
 launch may download the locked dependencies and create a virtual environment in
 the plugin cache. To prepare it ahead of time, locate the installed plugin root
 using `codex plugin list` and run:
 
 ```sh
-uv sync --frozen --no-dev --project /absolute/path/to/installed/company-brain
+uv sync --frozen --no-dev --no-editable --project /absolute/path/to/installed/company-brain
 ```
+
+The project is installed as a wheel rather than through an editable `.pth` file.
+This preserves restart behavior when macOS clients mark cached files hidden;
+Python skips hidden `.pth` files. The launcher still derives the owning profile
+from the wheel's enclosing plugin environment. CI also restarts the packaged
+server with `.pth` processing disabled before checking retrieval.
 
 The MCP declaration uses `${PLUGIN_ROOT}` so it follows the installed cache copy.
 Configuration uses the desktop client's process environment. Restart the client
